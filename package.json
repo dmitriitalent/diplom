@@ -1,0 +1,32 @@
+{
+	"name": "Diplom",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"build": "nuxt build",
+		"dev": "nuxt dev",
+		"generate": "nuxt generate",
+		"preview": "nuxt preview",
+		"postinstall": "nuxt prepare"
+	},
+	"dependencies": {
+		"@nuxt/eslint": "^1.12.1",
+		"@nuxt/fonts": "^0.12.1",
+		"@nuxt/icon": "^2.1.1",
+		"@pinia/nuxt": "^0.11.3",
+		"@types/axios": "^0.9.36",
+		"@vuepic/vue-datepicker": "^12.1.0",
+		"axios": "^1.13.2",
+		"eslint": "^9.39.2",
+		"nuxt": "^4.2.2",
+		"pinia": "^3.0.4",
+		"three": "^0.182.0",
+		"v-calendar": "^3.1.2",
+		"vue": "^3.5.26",
+		"vue-router": "^4.6.4"
+	},
+	"devDependencies": {
+		"@types/three": "^0.182.0",
+		"sass": "^1.89.2"
+	}
+}

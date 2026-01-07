@@ -1,0 +1,15 @@
+$color-white: #fffaf0;
+$color-black: #47360d;
+$color-accent: #f8c24e;
+$color-error: #eb7676;
+$color-ok: #a5d377;
+
+$transition-fast: 0.1s;
+$transition-default: 0.3s;
+$transition: $transition-default;
+$transition-slow: 0.5s;
+
+$devices: (
+	desktop: 1440px,
+	mobile: calc(100% - 24px),
+);

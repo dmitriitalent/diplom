@@ -1,0 +1,218 @@
+@use "./vars.scss" as *;
+@use "sass:string" as str;
+
+// FONTS //////////////////////////////////////////////////////////////////////////////
+@mixin text-xs($indent: false) {
+	font-family: Montserrat;
+
+	font-weight: 400;
+	font-size: 10px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin text-s($indent: false) {
+	font-family: Montserrat;
+
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin text-m($indent: false) {
+	font-family: Montserrat;
+
+	font-weight: 500;
+	font-size: 16px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin text-l($indent: false) {
+	font-family: Montserrat;
+
+	font-weight: 500;
+	font-size: 20px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin text-xl($indent: false) {
+	font-family: Montserrat;
+
+	font-weight: 600;
+	font-size: 24px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin title-xs($indent: false) {
+	font-family: "Poiret One";
+
+	font-weight: 600;
+	font-size: 20px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin title-s($indent: false) {
+	font-family: "Poiret One";
+
+	font-weight: 600;
+	font-size: 28px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin title-m($indent: false) {
+	font-family: "Poiret One";
+
+	font-weight: 600;
+	font-size: 36px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin title-l($indent: false) {
+	font-family: "Poiret One";
+
+	font-weight: 600;
+	font-size: 48px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+@mixin title-xl($indent: false) {
+	font-family: "Poiret One";
+
+	font-weight: 600;
+	font-size: 64px;
+	line-height: 130%;
+
+	@if $indent {
+		text-indent: 2em;
+	}
+}
+
+// COLORS /////////////////////////////////////////////////////////////////////////////
+@mixin color-white-bg($opacity: 1) {
+	background-color: rgba($color-white, $opacity);
+}
+
+@mixin color-white($opacity: 1) {
+	color: rgba($color-white, $opacity);
+}
+
+@mixin color-black-bg($opacity: 1) {
+	background-color: rgba($color-black, $opacity);
+}
+
+@mixin color-black($opacity: 1) {
+	color: rgba($color-black, $opacity);
+}
+
+@mixin color-accent-bg($opacity: 1) {
+	background-color: rgba($color-accent, $opacity);
+}
+
+@mixin color-accent($opacity: 1) {
+	color: rgba($color-accent, $opacity);
+}
+
+// SHADOWS ////////////////////////////////////////////////////////////////////////////
+@mixin shadow($set: true, $back: false) {
+	@if ($set) {
+		@if ($back) {
+			box-shadow: -1px -1px 5px 0px rgba($color-black, 0.2);
+		} @else {
+			box-shadow: 1px 1px 5px 0px rgba($color-black, 0.2);
+		}
+	} @else {
+		box-shadow: unset;
+	}
+}
+
+// Others //////////////////////////////////////////////////////////////////////////////
+@mixin unselectable() {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+@mixin reset() {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+	line-height: 1;
+	list-style: none;
+	font-weight: normal;
+	quotes: none;
+	border-collapse: collapse;
+	border-spacing: 0;
+	outline: none;
+	text-decoration: none;
+}
+
+@mixin container($device: desktop) {
+	@each $name, $size in $devices {
+		@if ($name == $device) {
+			min-width: $size;
+			max-width: $size;
+		}
+	}
+
+	margin: 0 auto;
+}
+
+@mixin respond-to($device) {
+	$full-selector: "#{&}";
+	$space-index: str.index($full-selector, " ");
+
+	$parent: null;
+	$child: null;
+
+	@if $space-index != null {
+		$parent: str.slice($full-selector, 1, $space-index - 1);
+		$child: str.slice($full-selector, $space-index);
+	} @else {
+		$parent: $full-selector;
+		$child: $full-selector;
+	}
+
+	@at-root #{$parent}:global(.--is-#{$device})#{$child} {
+		@content;
+	}
+}
