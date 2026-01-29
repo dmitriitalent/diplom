@@ -110,13 +110,16 @@ definePageMeta({
 	}
 
 	.grid {
+		$width: 700px;
+		$gap: 15px;
+
 		border-radius: 100%;
 
 		display: flex;
 		flex-wrap: wrap;
-		width: 900px;
-		row-gap: 30px;
-		column-gap: 30px;
+		width: $width;
+		row-gap: $gap;
+		column-gap: $gap;
 
 		.elem {
 			@include shadow;
@@ -126,8 +129,8 @@ definePageMeta({
 			flex-direction: column;
 			align-items: center;
 			border-radius: 10px;
-			padding: 10px 30px 30px 30px;
-			width: 435px;
+			padding: 10px 20px 20px 20px;
+			width: calc($width / 2 - $gap / 2);
 			box-sizing: border-box;
 
 			.subtitle {

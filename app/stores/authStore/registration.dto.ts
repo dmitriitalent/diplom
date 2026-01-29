@@ -1,11 +1,10 @@
 export type RegistrationDto = {
-	login: string;
-	password: string;
-	passwordConfirm: string;
-	educationEmail: string;
-	hei: string;
-	birthdate: Date;
-	phone: string;
+	login?: string;
+	password?: string;
+	passwordConfirm?: string;
+	educationEmail?: string;
+	hei?: string;
+	birthdate?: Date;
 	dormitory?: string;
 	building?: string;
 	floor?: string;

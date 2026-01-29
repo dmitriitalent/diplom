@@ -7,8 +7,9 @@
 <style module lang="scss">
 .wrapper {
 	@include unselectable;
+	@include color-black;
 
-	font-size: 40px;
+	font-size: 32px;
 	font-family: "Rubik Glitch";
 }
 </style>

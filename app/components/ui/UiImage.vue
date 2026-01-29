@@ -19,6 +19,8 @@ const props = defineProps({
 	width: 100%;
 
 	.image {
+		@include unselectable;
+
 		display: block;
 		width: 100%;
 		height: 100%;

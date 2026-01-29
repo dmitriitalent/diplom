@@ -10,11 +10,9 @@ const props = defineProps({
 		type: [String, Number],
 	},
 
-	type: {
-		type: String,
-		default: "text",
-		validator: (value: string) =>
-			["text", "number", "password"].includes(value),
+	rows: {
+		type: Number,
+		default: 1,
 	},
 
 	variant: {
@@ -30,91 +28,63 @@ const props = defineProps({
 	placeholder: {
 		type: String,
 	},
-
-	leftIconName: {
-		type: String,
-	},
 });
 
 const classList = computed(() => {
-	return [
-		[`--variant-${props.variant}`],
-		[`--size-${props.size}`],
-		{ [`--has-left-icon`]: !!props.leftIconName },
-	];
+	return [[`--variant-${props.variant}`], [`--size-${props.size}`]];
 });
 
 const onInput = ($event: Event) => {
 	emit("update:modelValue", ($event.target as HTMLInputElement).value);
 	emit("input");
+	resizeTextarea();
+};
+
+const textareaElem = useTemplateRef<HTMLTextAreaElement>("textarea");
+
+const resizeTextarea = async () => {
+	if (!textareaElem.value) return;
+
+	await nextTick();
+
+	textareaElem.value.style.height = "auto";
+	textareaElem.value.style.height =
+		textareaElem.value.scrollHeight + 3 + "px";
 };
 </script>
 
 <template>
-	<div class="uiInput__wrapper">
-		<Icon
-			v-if="props.leftIconName !== undefined"
-			:name="props.leftIconName"
-			class="uiInput__leftIcon"
-			:class="classList"
-		></Icon>
-		<input
-			class="uiInput__input"
-			:type="props.type"
+	<div class="uiTextarea__wrapper">
+		<textarea
+			class="uiTextarea__textarea"
+			:rows="props.rows"
 			:value="modelValue"
 			:class="classList"
 			:placeholder="props.placeholder"
+			ref="textarea"
 			@input="onInput($event)"
 		/>
 	</div>
 </template>
 
 <style lang="scss">
-.uiInput__ {
+.uiTextarea__ {
 	&wrapper {
 		width: 100%;
-		position: relative;
 	}
 
-	&leftIcon {
-		@include color-black;
-
-		position: absolute;
-		top: 50%;
-		transform: translate(0, -50%);
-
-		&.--variant-underline {
-			transform: translate(0, calc(-50% + 0.2em));
-		}
-
-		&.--size-small {
-			height: 16px;
-			width: 16px;
-			left: 12px;
-		}
-
-		&.--size-medium {
-			height: 20px;
-			width: 20px;
-			left: 16px;
-		}
-
-		&.--size-large {
-			height: 24px;
-			width: 24px;
-			left: 20px;
-		}
-	}
-
-	&input {
+	&textarea {
 		@include reset;
+		@include scroll;
 		@include color-black;
+		@include text-s;
 		@include color-white-bg;
 
+		display: block;
 		width: 100%;
 		box-sizing: border-box;
-
-		padding-left: 30px;
+		resize: none;
+		max-height: 200px;
 
 		&.--variant-block {
 			border-radius: 10px;

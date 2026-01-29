@@ -2,7 +2,7 @@ import type { LoginDto } from "./login.dto";
 import type { RegistrationDto } from "./registration.dto";
 
 export const useAuthStore = defineStore("authStore", () => {
-	const at = ref<string | null>(null);
+	const at = useCookie("at");
 
 	const isAuthenticated = computed(() => !!at.value);
 
@@ -25,8 +25,11 @@ export const useAuthStore = defineStore("authStore", () => {
 	};
 
 	const refresh = () => {
+		const headers = useRequestHeaders(["cookie"]);
+
 		return $fetch("/api/auth/refresh", {
 			method: "POST",
+			headers: headers,
 		}).then((res) => {
 			console.log(res);
 		});
@@ -35,6 +38,7 @@ export const useAuthStore = defineStore("authStore", () => {
 	const logout = () => {};
 
 	return {
+		at,
 		isAuthenticated,
 		registration,
 		login,

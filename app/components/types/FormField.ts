@@ -1,17 +1,14 @@
-import type { Option } from "./Option";
+import type { FormElement } from "./Form";
 
-type FormField = {
+type FormFieldType = "text" | "number" | "password";
+type FormField = FormElement & {
+	type: FormFieldType;
 	key: string;
 	value: string;
-	date?: Date;
 	placeholder?: string;
-	separatorTop?: boolean;
-	separatorBottom?: boolean;
-	validator?: Function;
 	required?: boolean;
-	type?: "text" | "number" | "password" | "select" | "date";
+	validator?: Function;
 	leftIconName?: string;
-	selectOptions?: Array<Option>;
 };
 
-export { type FormField };
+export { type FormField, type FormFieldType };

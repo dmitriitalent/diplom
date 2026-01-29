@@ -1,7 +1,7 @@
 type Device = "mobile" | "desktop";
 
 const DEVICES = new Map<Device, number>([
-	["desktop", 1440],
+	["desktop", 1080],
 	["mobile", 0],
 ]);
 

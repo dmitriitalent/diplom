@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const FILENAME = "login.post.ts";
+const FILENAME = "auth/login.post.ts";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -12,14 +12,15 @@ export default defineEventHandler(async (event) => {
 		setCookie(
 			event,
 			"at",
-			"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcklkIjoxLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2Nzc1ODU0MywiZXhwIjoxNzY3NzYyMTQzfQ.gy88ar5lRt0Io7qa22ll0Ajxknt-xb18NB2UC_mm7os"
+			// "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcklkIjoxLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2Nzc1ODU0MywiZXhwIjoxNzY3NzYyMTQzfQ.gy88ar5lRt0Io7qa22ll0Ajxknt-xb18NB2UC_mm7os"
+			"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcklkIjoyLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2Nzc1ODU0MywiZXhwIjoxNzY3NzYyMTQzfQ.jIFFnoA8jqA7enqPBdcN5Qj8-zHkRcvboy0an398Qnw"
 		);
 		return "login success";
 	} catch (err) {
-		// console.log("error at " + FILENAME + ": " + String(err));
-		// console.log(err);
-		// throw createError({
-		// 	statusCode: 500,
-		// });
+		console.log("error at " + FILENAME + ": " + String(err));
+		console.log(err);
+		throw createError({
+			statusCode: 500,
+		});
 	}
 });

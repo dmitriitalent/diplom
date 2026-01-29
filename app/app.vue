@@ -1,15 +1,4 @@
-<script setup lang="ts">
-import { useAuthStore } from "./stores/authStore";
-
-const { refresh } = useAuthStore();
-const router = useRouter();
-
-onBeforeMount(() => {
-	refresh().catch(() => {
-		router.push("/welcome");
-	});
-});
-</script>
+<script setup lang="ts"></script>
 
 <template>
 	<div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
-import type { Option } from "../types/Option";
+import type { FormSelectOption } from "../types/FormSelect";
 
 type Size = "small" | "medium" | "large" | "custom";
 
@@ -15,8 +15,8 @@ const props = defineProps({
 	},
 
 	options: {
-		type: Array as PropType<Option[]>,
-		required: true,
+		type: Array as PropType<FormSelectOption[]>,
+		default: () => [],
 	},
 
 	placeholder: {
@@ -49,11 +49,16 @@ const label = computed(() => selectedOption.value?.name ?? props.placeholder);
 const classList = computed(() => [
 	`--size-${props.size}`,
 	{ "--open": isOpen.value },
+	{ "--is-disable": props.options.length === 0 },
 	{ "--has-left-icon": !!props.leftIconName },
 ]);
 
 /* methods */
 const open = () => {
+	if (props.options.length === 0) {
+		return;
+	}
+
 	isOpen.value = true;
 	requestAnimationFrame(() => {
 		listRef.value?.focus();
@@ -69,7 +74,7 @@ const toggle = () => {
 	isOpen.value ? close() : open();
 };
 
-const select = (option: Option, index: number) => {
+const select = (option: FormSelectOption, index: number) => {
 	if (option.value === undefined) return;
 	emit("update:modelValue", option.value);
 	focusedIndex.value = index;
@@ -192,6 +197,7 @@ watch(
 
 	&__control {
 		@include color-white-bg;
+		@include color-black;
 
 		width: 100%;
 		border-radius: 10px;
@@ -206,6 +212,10 @@ watch(
 		&.--open {
 			border-bottom-left-radius: 0;
 			border-bottom-right-radius: 0;
+		}
+
+		&.--is-disable {
+			@include color-black(0.3);
 		}
 
 		transition: border-bottom-left-radius $transition,

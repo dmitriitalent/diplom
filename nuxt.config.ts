@@ -4,9 +4,10 @@ export default defineNuxtConfig({
 	devtools: { enabled: true },
 
 	runtimeConfig: {
-		api: "http://localhost:8180", // приватная переменная, доступна только на сервере
+		api: "http://localhost:8180",
 		public: {
-			api: "http://localhost:8180", // публичная, доступна и на клиенте
+			publicRoutes: ["/welcome", "/login", "/registration"],
+			api: "http://localhost:8180",
 		},
 	},
 
@@ -28,5 +29,11 @@ export default defineNuxtConfig({
 		transpile: ["@vuepic/vue-datepicker"],
 	},
 
-	modules: ["@nuxt/icon", "@nuxt/eslint", "@nuxt/fonts", "@pinia/nuxt"],
+	modules: [
+		"@nuxt/icon",
+		"@nuxt/eslint",
+		"@nuxt/fonts",
+		"@pinia/nuxt",
+		"nuxt-swiper",
+	],
 });

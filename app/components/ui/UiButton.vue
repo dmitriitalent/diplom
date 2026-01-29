@@ -84,6 +84,7 @@ const classList = computed(() => {
 
 	&button {
 		@include reset;
+		@include unselectable;
 		@include color-black;
 
 		display: flex;

@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { isFormField, type Form } from "~/components/types/Form";
 import type { FormField } from "~/components/types/FormField";
 import { useAuthStore, type LoginDto } from "~/stores/authStore";
 
@@ -12,36 +13,48 @@ const { login } = useAuthStore();
 
 const onClickLogin = () => {
 	const loginData: LoginDto = {
-		login: studentFields.value[0]!.value,
-		password: studentFields.value[1]!.value,
+		login: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "login",
+			) as FormField | undefined
+		)?.value,
+		password: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "password",
+			) as FormField | undefined
+		)?.value,
 	};
 
 	login(loginData).then(() => {
-		router.push("/profile");
+		console.log(loginData);
+		router.push("/profile/self");
 	});
 };
 
-const studentFields: Ref<Array<FormField>> = ref([
-	{
-		type: "text",
-		key: "login",
-		value: "",
-		placeholder: "Логин",
-		validator: (v: string) => v.length != 0,
-		required: true,
-	},
-	{
-		type: "password",
-		key: "password",
-		value: "",
-		placeholder: "Пароль",
-		validator: (v: string) => {
-			const regex = /^(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
-			return regex.test(v);
+const form: Ref<Form> = ref({
+	title: "Вход",
+	elems: [
+		{
+			elemType: "field",
+			type: "text",
+			key: "login",
+			value: "",
+			placeholder: "Логин",
+			validator: (v: string) => v.length >= 6,
+			required: true,
+			leftIconName: "material-symbols:account-circle-full",
 		},
-		required: true,
-	},
-]);
+		{
+			elemType: "field",
+			type: "password",
+			key: "password",
+			value: "",
+			placeholder: "Пароль",
+			required: true,
+			leftIconName: "carbon:password",
+		},
+	],
+});
 </script>
 
 <template>
@@ -50,9 +63,9 @@ const studentFields: Ref<Array<FormField>> = ref([
 			<UiAppear>
 				<FormComponent
 					:class="$style.form"
-					:fields="studentFields"
-					button="Войти"
-					@buttonClick="onClickLogin"
+					:form="form"
+					submit="Войти"
+					@submit="onClickLogin"
 				/>
 			</UiAppear>
 		</div>

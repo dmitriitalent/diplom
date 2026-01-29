@@ -1,5 +1,16 @@
 <script lang="ts" setup>
+import {
+	type Form,
+	isFormDate,
+	isFormField,
+	isFormSelect,
+} from "~/components/types/Form";
+import type { FormDate } from "~/components/types/FormDate";
 import type { FormField } from "~/components/types/FormField";
+import type { FormSelect } from "~/components/types/FormSelect";
+import type { DormitroyDTO } from "~/dto/dormitory.dto";
+import type { HeiDTO } from "~/dto/hei.dto";
+import type { Dormitory } from "~/entities/Dormitory";
 import { useAuthStore } from "~/stores/authStore";
 import type { RegistrationDto } from "~/stores/authStore/registration.dto";
 
@@ -11,234 +22,298 @@ const router = useRouter();
 
 const { registration } = useAuthStore();
 
+const { data: hei } = useAsyncData<Array<HeiDTO>>(
+	async (_nuxtApp, { signal }) => {
+		return $fetch("/api/hei/hei", { signal });
+	},
+);
+
 const onClickRegistration = () => {
 	const regData: RegistrationDto = {
-		login: studentFields.value[0]!.value,
-		password: studentFields.value[1]!.value,
-		passwordConfirm: studentFields.value[2]!.value,
-		educationEmail: studentFields.value[3]!.value,
-		hei: studentFields.value[4]!.value,
-		birthdate: studentFields.value[5]!.date!,
-		phone: studentFields.value[6]!.value,
-		dormitory: residentFields.value[0]!.value,
-		building: residentFields.value[1]!.value,
-		floor: residentFields.value[2]!.value,
-		room: residentFields.value[3]!.value,
-		surname: residentFields.value[4]!.value,
-		name: residentFields.value[5]!.value,
-		patronymic: residentFields.value[6]!.value,
+		login: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "login",
+			) as FormField | undefined
+		)?.value,
+		password: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "password",
+			) as FormField | undefined
+		)?.value,
+		passwordConfirm: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "passwordConfirm",
+			) as FormField | undefined
+		)?.value,
+		educationEmail: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "educationEmail",
+			) as FormField | undefined
+		)?.value,
+		hei: (
+			form.value.elems.find(
+				(el) => isFormSelect(el) && el.key === "hei",
+			) as FormSelect | undefined
+		)?.value,
+		birthdate: (
+			form.value.elems.find(
+				(el) => isFormDate(el) && el.key === "birthdate",
+			) as FormDate | undefined
+		)?.value,
+		surname: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "surname",
+			) as FormField | undefined
+		)?.value,
+		name: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "name",
+			) as FormField | undefined
+		)?.value,
+		patronymic: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "patronymic",
+			) as FormField | undefined
+		)?.value,
+		dormitory: (
+			form.value.elems.find(
+				(el) => isFormSelect(el) && el.key === "dormitory",
+			) as FormSelect | undefined
+		)?.value,
+		building: (
+			form.value.elems.find(
+				(el) => isFormSelect(el) && el.key === "building",
+			) as FormSelect | undefined
+		)?.value,
+		floor: (
+			form.value.elems.find(
+				(el) => isFormSelect(el) && el.key === "floor",
+			) as FormSelect | undefined
+		)?.value,
+		room: (
+			form.value.elems.find(
+				(el) => isFormField(el) && el.key === "room",
+			) as FormField | undefined
+		)?.value,
 	};
 
 	registration(regData).then(() => {
-		router.push("/profile");
+		router.push("/profile/self");
 	});
 };
 
-const studentFields: Ref<Array<FormField>> = ref([
-	{
-		type: "text",
-		key: "login",
-		value: "",
-		placeholder: "Логин",
-		validator: (v: string) => v.length >= 6,
-		required: true,
-		leftIconName: "material-symbols:account-circle-full",
-	},
-	{
-		type: "password",
-		key: "password",
-		value: "",
-		placeholder: "Пароль",
-		validator: (v: string) => {
-			const regex = /^(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
-			return regex.test(v);
+const form = ref<Form>({
+	title: "Регистрация",
+	elems: [
+		{
+			elemType: "field",
+			type: "text",
+			key: "login",
+			value: "",
+			placeholder: "Логин",
+			validator: (v: string) => v.length >= 6,
+			required: true,
+			leftIconName: "material-symbols:account-circle-full",
 		},
-		required: true,
-		leftIconName: "carbon:password",
-	},
-	{
-		type: "password",
-		key: "passwordConfirm",
-		value: "",
-		placeholder: "Подтвердите пароль",
-		validator: (v: string) => {
-			const password = studentFields.value.find(
-				(value) => value.key == "password"
-			)?.value;
+		{
+			elemType: "field",
+			type: "password",
+			key: "password",
+			value: "",
+			placeholder: "Пароль",
+			validator: (v: string) => {
+				const regex =
+					/^(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
+				return regex.test(v);
+			},
+			required: true,
+			leftIconName: "carbon:password",
+		},
+		{
+			elemType: "field",
+			type: "password",
+			key: "passwordConfirm",
+			value: "",
+			placeholder: "Подтвердите пароль",
+			validator: (v: string): Boolean => {
+				const password = form.value.elems.find((value) => {
+					if (!isFormField(value)) {
+						return false;
+					}
+					return value.key == "password";
+				});
 
-			return password !== undefined ? password === v : false;
-		},
-		required: true,
-		leftIconName: "carbon:password",
-	},
-	{
-		type: "text",
-		key: "educationEmail",
-		value: "",
-		separatorTop: true,
-		placeholder: "Студенческая почта",
-		validator: (v: string) => {
-			const regex =
-				/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-			return regex.test(v);
-		},
-		required: true,
-		leftIconName: "material-symbols:mail-outline",
-	},
-	{
-		type: "select",
-		key: "hei",
-		value: "",
-		placeholder: "Учебное заведение",
-		validator: (v: string) => v.length != 0,
-		required: true,
-		leftIconName: "tdesign:education",
-		selectOptions: [
-			{
-				name: "МАИ (Московский Авиационный Институт)",
-				value: "mai",
-				leftIconName: "tdesign:education",
-			},
-		],
-	},
-	{
-		type: "date",
-		key: "birthdate",
-		value: "",
-		validator: (v: Date) => {
-			return v != undefined;
-		},
-		separatorTop: true,
-		placeholder: "Дата рождения",
-		required: true,
-		leftIconName: "cil:birthday-cake",
-	},
-	{
-		type: "text",
-		key: "phone",
-		value: "",
-		placeholder: "Номер телефона",
-		validator: (v: string) => v.length != 0,
-		required: true,
-		leftIconName: "material-symbols:call-outline",
-	},
-]);
+				if (!isFormField(password)) {
+					return false;
+				}
 
-const residentFields: Ref<Array<FormField>> = ref([
-	{
-		type: "select",
-		key: "dormitory",
-		value: "",
-		placeholder: "Общежитие",
-		validator: (v: String) => v.length != 0,
-		required: true,
-		leftIconName: "material-symbols:home-work-outline-rounded",
-		selectOptions: [
-			{
-				name: "Икар (г. Москва, ул. Дубосековская, д. 13)",
-				value: "icar",
-				leftIconName: "material-symbols:home-work-outline-rounded",
+				return password !== undefined ? password.value === v : false;
 			},
-		],
+			required: true,
+			leftIconName: "carbon:password",
+		},
+
+		{
+			elemType: "field",
+			type: "text",
+			key: "educationEmail",
+			value: "",
+			placeholder: "Студенческая почта",
+			validator: (v: string) => {
+				const regex =
+					/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+				return regex.test(v);
+			},
+			required: true,
+			leftIconName: "material-symbols:mail-outline",
+		},
+
+		{
+			elemType: "select",
+			key: "hei",
+			value: undefined,
+			placeholder: "Учебное заведение",
+			validator: (v: string) => {
+				console.log(v);
+				return v.length != 0;
+			},
+			required: true,
+			leftIconName: "tdesign:education",
+			options: () => {
+				return hei.value;
+			},
+		},
+
+		{
+			elemType: "date",
+			value: undefined,
+			key: "birthdate",
+			validator: (v: Date) => {
+				return v != undefined;
+			},
+			placeholder: "Дата рождения",
+			required: true,
+			leftIconName: "cil:birthday-cake",
+		},
+	],
+});
+
+const dormitories: Ref<Array<Dormitory>> | Ref<undefined> = ref();
+const oldHei = ref();
+watch(
+	form,
+	async () => {
+		const heiElem = form.value.elems.find(
+			(elem) => isFormSelect(elem) && elem.key === "hei",
+		) as FormSelect | undefined;
+		const hei = heiElem?.value;
+		if (hei?.length !== 0 && oldHei.value !== hei) {
+			const res = await $fetch<Array<Dormitory>>(
+				"/api/hei/dormitoriesByHei?hei=" + hei,
+			);
+			dormitories.value = res;
+		}
+		const heiElemForOld = form.value.elems.find(
+			(elem) => isFormField(elem) && elem.key === "hei",
+		);
+		oldHei.value = isFormField(heiElemForOld)
+			? heiElemForOld.value
+			: undefined;
 	},
-	{
-		type: "select",
-		key: "building",
-		value: "",
-		placeholder: "Корпус",
-		validator: (v: String) => v.length != 0,
-		required: true,
-		leftIconName: "material-symbols:home-work-outline-rounded",
-		selectOptions: [
-			{
-				name: "1",
-				value: "1",
-				leftIconName: "material-symbols:home-work-outline-rounded",
+	{ deep: true },
+);
+
+const residentForm = ref<Form>({
+	title: "Для проживающих",
+	elems: [
+		{
+			elemType: "field",
+			type: "text",
+			key: "surname",
+			value: "",
+			placeholder: "Фамилия",
+			validator: (v: string) => v.length != 0,
+			required: true,
+			leftIconName:
+				"material-symbols:drive-file-rename-outline-outline-rounded",
+		},
+		{
+			elemType: "field",
+			type: "text",
+			key: "name",
+			value: "",
+			placeholder: "Имя",
+			validator: (v: string) => v.length != 0,
+			required: true,
+			leftIconName:
+				"material-symbols:drive-file-rename-outline-outline-rounded",
+		},
+		{
+			elemType: "field",
+			type: "text",
+			key: "patronymic",
+			value: "",
+			placeholder: "Отчество",
+			validator: (v: string) => v.length != 0,
+			required: true,
+			leftIconName:
+				"material-symbols:drive-file-rename-outline-outline-rounded",
+		},
+
+		{
+			elemType: "select",
+			key: "dormitory",
+			value: "",
+			placeholder: "Общежитие",
+			validator: (v: string) => v.length != 0,
+			required: true,
+			leftIconName: "material-symbols:home-work-outline-rounded",
+			group: "dormitory",
+			options: () => {
+				return dormitories.value;
 			},
-			{
-				name: "2",
-				value: "2",
-				leftIconName: "material-symbols:home-work-outline-rounded",
+		},
+		{
+			elemType: "select",
+			key: "building",
+			value: "",
+			placeholder: "Корпус",
+			validator: (v: String) => v.length != 0,
+			required: true,
+			leftIconName: "material-symbols:home-work-outline-rounded",
+			group: "dormitory",
+			options: (v1: FormSelect) => {
+				return dormitories.value?.find((d) => d.value === v1.value)
+					?.buildings;
 			},
-		],
-	},
-	{
-		type: "select",
-		key: "floor",
-		value: "",
-		placeholder: "Этаж",
-		validator: (v: String) => v.length != 0,
-		required: true,
-		leftIconName: "material-symbols:home-work-outline-rounded",
-		selectOptions: [
-			{
-				name: "1",
-				value: "1",
-				leftIconName: "material-symbols:home-work-outline-rounded",
+		},
+		{
+			elemType: "select",
+			key: "floor",
+			value: "",
+			placeholder: "Этаж",
+			validator: (v: String) => v.length != 0,
+			required: true,
+			leftIconName: "material-symbols:home-work-outline-rounded",
+			group: "dormitory",
+			options: (v1: FormSelect, v2: FormSelect) => {
+				return dormitories.value
+					?.find((d) => d.value === v1.value)
+					?.buildings.find((b) => b.value === v2.value)?.floors;
 			},
-			{
-				name: "2",
-				value: "2",
-				leftIconName: "material-symbols:home-work-outline-rounded",
-			},
-			{
-				name: "3",
-				value: "3",
-				leftIconName: "material-symbols:home-work-outline-rounded",
-			},
-			{
-				name: "4",
-				value: "4",
-				leftIconName: "material-symbols:home-work-outline-rounded",
-			},
-			{
-				name: "5",
-				value: "5",
-				leftIconName: "material-symbols:home-work-outline-rounded",
-			},
-		],
-	},
-	{
-		type: "text",
-		key: "room",
-		value: "",
-		placeholder: "Комната",
-		validator: (v: String) => v.length != 0,
-		required: true,
-		leftIconName: "material-symbols:home-work-outline-rounded",
-	},
-	{
-		type: "text",
-		key: "surname",
-		value: "",
-		separatorTop: true,
-		placeholder: "Фамилия",
-		validator: (v: string) => v.length != 0,
-		required: true,
-		leftIconName:
-			"material-symbols:drive-file-rename-outline-outline-rounded",
-	},
-	{
-		type: "text",
-		key: "name",
-		value: "",
-		placeholder: "Имя",
-		validator: (v: string) => v.length != 0,
-		required: true,
-		leftIconName:
-			"material-symbols:drive-file-rename-outline-outline-rounded",
-	},
-	{
-		type: "text",
-		key: "patronymic",
-		value: "",
-		placeholder: "Отчество",
-		validator: (v: string) => v.length != 0,
-		required: true,
-		leftIconName:
-			"material-symbols:drive-file-rename-outline-outline-rounded",
-	},
-]);
+		},
+		{
+			elemType: "field",
+			type: "text",
+			key: "room",
+			value: "",
+			placeholder: "Комната",
+			validator: (v: String) => v.length != 0,
+			required: true,
+			leftIconName: "material-symbols:home-work-outline-rounded",
+		},
+	],
+});
 </script>
 
 <template>
@@ -248,20 +323,16 @@ const residentFields: Ref<Array<FormField>> = ref([
 				<UiAppear :delay="100">
 					<FormComponent
 						:class="$style.form"
-						:fields="studentFields"
-						button="Зарегистрироваться"
-						@buttonClick="onClickRegistration"
+						:form="form"
+						submit="Зарегистрироваться"
+						@submit="onClickRegistration"
 					/>
 				</UiAppear>
 			</div>
 
 			<div :class="$style.right">
 				<UiAppear :delay="200">
-					<FormComponent
-						:class="$style.form"
-						:fields="residentFields"
-						title="Поля для проживающих"
-					/>
+					<FormComponent :class="$style.form" :form="residentForm" />
 				</UiAppear>
 			</div>
 		</div>

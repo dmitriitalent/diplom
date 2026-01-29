@@ -26,7 +26,7 @@
 					</RouterLink>
 				</div>
 
-				<RouterLink to="/profile">
+				<RouterLink to="/profile/self">
 					<UiButton :class="$style.profile" inset>
 						<Icon
 							:class="$style.icon"
@@ -44,7 +44,7 @@
 
 <style module lang="scss">
 .wrapper {
-	$height: 70px;
+	$height: 50px;
 
 	.margin {
 		height: $height;
@@ -79,8 +79,8 @@
 
 			.profile {
 				.icon {
-					height: 32px;
-					width: 32px;
+					height: 24px;
+					width: 24px;
 				}
 			}
 		}

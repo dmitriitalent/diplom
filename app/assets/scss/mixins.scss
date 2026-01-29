@@ -30,7 +30,7 @@
 	font-family: Montserrat;
 
 	font-weight: 500;
-	font-size: 16px;
+	font-size: 14px;
 	line-height: 130%;
 
 	@if $indent {
@@ -66,7 +66,7 @@
 	font-family: "Poiret One";
 
 	font-weight: 600;
-	font-size: 20px;
+	font-size: 16px;
 	line-height: 130%;
 
 	@if $indent {
@@ -78,7 +78,7 @@
 	font-family: "Poiret One";
 
 	font-weight: 600;
-	font-size: 28px;
+	font-size: 24px;
 	line-height: 130%;
 
 	@if $indent {
@@ -90,7 +90,7 @@
 	font-family: "Poiret One";
 
 	font-weight: 600;
-	font-size: 36px;
+	font-size: 30px;
 	line-height: 130%;
 
 	@if $indent {
@@ -161,6 +161,34 @@
 }
 
 // Others //////////////////////////////////////////////////////////////////////////////
+@mixin scroll(
+	$size: 6px,
+	$thumb: rgba($color-accent, 0.7),
+	$track: $color-white,
+	$radius: 6px
+) {
+	/* Firefox */
+	scrollbar-width: thin;
+	scrollbar-color: $thumb $track;
+
+	/* WebKit */
+	&::-webkit-scrollbar {
+		width: $size;
+		height: $size;
+	}
+
+	&::-webkit-scrollbar-track {
+		background-color: $track;
+		border-radius: $radius;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background-color: $thumb;
+		border-radius: $radius;
+		transition: background-color 0.2s ease;
+	}
+}
+
 @mixin unselectable() {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
