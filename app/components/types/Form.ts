@@ -3,6 +3,7 @@ import type { FormSelect } from "./FormSelect";
 import type { FormDate } from "./FormDate";
 import type { FormSeparator } from "./FormSeparator";
 import type { FormRow } from "./FormRow";
+import type { FormCheckbox } from "./FormCheckbox";
 
 function isFormField(elem: FormElement | undefined): elem is FormField {
 	if (elem === undefined) {
@@ -34,6 +35,12 @@ function isFormRow(elem: FormElement | undefined): elem is FormRow {
 	}
 	return elem.elemType === "row";
 }
+function isFormCheckbox(elem: FormElement | undefined): elem is FormCheckbox {
+	if (elem === undefined) {
+		return false;
+	}
+	return elem.elemType === "checkbox";
+}
 
 type Form = {
 	title: string;
@@ -41,7 +48,7 @@ type Form = {
 };
 
 type FormElement = {
-	elemType: "field" | "select" | "date" | "separator" | "row";
+	elemType: "field" | "select" | "date" | "separator" | "row" | "checkbox";
 };
 
 export {
@@ -52,4 +59,5 @@ export {
 	isFormDate,
 	isFormSelect,
 	isFormRow,
+	isFormCheckbox,
 };

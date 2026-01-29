@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import {
 	type Form,
+	isFormCheckbox,
 	isFormDate,
 	isFormField,
 	isFormSelect,
 } from "~/components/types/Form";
+import type { FormCheckbox } from "~/components/types/FormCheckbox";
 import type { FormDate } from "~/components/types/FormDate";
 import type { FormField } from "~/components/types/FormField";
 import type { FormSelect } from "~/components/types/FormSelect";
@@ -59,6 +61,11 @@ const onClickRegistration = () => {
 			form.value.elems.find(
 				(el) => isFormDate(el) && el.key === "birthdate",
 			) as FormDate | undefined
+		)?.value,
+		consentUserAgreement: (
+			form.value.elems.find(
+				(el) => isFormCheckbox(el) && el.key === "consentUserAgreement",
+			) as FormCheckbox | undefined
 		)?.value,
 		surname: (
 			form.value.elems.find(
@@ -152,7 +159,6 @@ const form = ref<Form>({
 			required: true,
 			leftIconName: "carbon:password",
 		},
-
 		{
 			elemType: "field",
 			type: "text",
@@ -167,7 +173,6 @@ const form = ref<Form>({
 			required: true,
 			leftIconName: "material-symbols:mail-outline",
 		},
-
 		{
 			elemType: "select",
 			key: "hei",
@@ -183,7 +188,6 @@ const form = ref<Form>({
 				return hei.value;
 			},
 		},
-
 		{
 			elemType: "date",
 			value: undefined,
@@ -194,6 +198,13 @@ const form = ref<Form>({
 			placeholder: "Дата рождения",
 			required: true,
 			leftIconName: "cil:birthday-cake",
+		},
+		{
+			elemType: "checkbox",
+			value: undefined,
+			key: "consentUserAgreement",
+			required: true,
+			name: "Я даю <a href='/agreement'>согласие на обработку моих персональных данных</a>",
 		},
 	],
 });
@@ -259,7 +270,6 @@ const residentForm = ref<Form>({
 			leftIconName:
 				"material-symbols:drive-file-rename-outline-outline-rounded",
 		},
-
 		{
 			elemType: "select",
 			key: "dormitory",

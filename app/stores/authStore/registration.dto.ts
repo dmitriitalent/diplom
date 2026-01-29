@@ -5,6 +5,7 @@ export type RegistrationDto = {
 	educationEmail?: string;
 	hei?: string;
 	birthdate?: Date;
+	consentUserAgreement?: boolean;
 	dormitory?: string;
 	building?: string;
 	floor?: string;

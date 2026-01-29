@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+	isFormCheckbox,
 	isFormDate,
 	isFormField,
 	isFormRow,
@@ -75,7 +76,8 @@ const isDisabled = computed(() => {
 				!isValidDate(elem.validator, elem.value)) ||
 			(isFormSelect(elem) &&
 				elem.required &&
-				!isValidSelect(elem.validator, elem.value))
+				!isValidSelect(elem.validator, elem.value)) ||
+			(isFormCheckbox(elem) && elem.required && !elem.value)
 		) {
 			reqEmpty = true;
 		}
@@ -174,6 +176,14 @@ const isValidSelect = (
 					:options="selectOptions(elem.options, elem.group)"
 					:leftIconName="elem.leftIconName"
 					:placeholder="elem.placeholder"
+				/>
+			</div>
+
+			<div v-else-if="isFormCheckbox(elem)" :class="$style.elem">
+				<UiCheckbox
+					v-model="elem.value"
+					:name="elem.name"
+					:leftIconName="elem.leftIconName"
 				/>
 			</div>
 
