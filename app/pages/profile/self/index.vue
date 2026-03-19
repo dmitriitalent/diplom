@@ -23,7 +23,7 @@ const onAddFriend = () => {
 
 				<UiImage
 					:class="$style.avatar"
-					src="https://i.pinimg.com/1200x/41/71/e5/4171e5df61e980579bfe32063d949755.jpg"
+					src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4XYC_5HYOYpsgDOTOf-8Hi--2ThYeictydQ&s"
 				></UiImage>
 
 				<UiTransition name="fade-right">
