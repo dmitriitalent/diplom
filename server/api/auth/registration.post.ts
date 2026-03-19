@@ -1,26 +1,50 @@
 import axios from "axios";
+import { RegistrationDto } from "~~/server/dto/registration.dto";
 
 const FILENAME = "auth/registration.post.ts";
 
 export default defineEventHandler(async (event) => {
 	try {
-		// const res = await axios.get(
-		// 	"https://jsonplaceholder.typicode.com/todos/1"
-		// );
-		// return res.data;
+		const config = useRuntimeConfig();
+		const body = await readBody(event);
 
-		setCookie(
-			event,
-			"at",
-			// "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcklkIjoxLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2Nzc1ODU0MywiZXhwIjoxNzY3NzYyMTQzfQ.gy88ar5lRt0Io7qa22ll0Ajxknt-xb18NB2UC_mm7os"
-			"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcklkIjoyLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2Nzc1ODU0MywiZXhwIjoxNzY3NzYyMTQzfQ.jIFFnoA8jqA7enqPBdcN5Qj8-zHkRcvboy0an398Qnw"
+		const date = body.birthdate.split("T")[0].split(".");
+		const birthdate = date[2] + "." + date[1] + "." + date[0];
+
+		const res = await axios.post<RegistrationDto>(
+			`${config.api}/auth/registration`,
+			{
+				login: body.login,
+				password: body.password,
+				password_confirm: body.passwordConfirm,
+				education_email: body.educationEmail,
+				hei: body.hei,
+				birthdate: birthdate,
+				consent_user_agreement: body.consentUserAgreement,
+				dormitory: body.dormitory,
+				building: body.building,
+				floor: body.floor,
+				room: body.room,
+				surname: body.surname,
+				name: body.name,
+				patronymic: body.patronymic,
+			},
+			{
+				withCredentials: true,
+			},
 		);
-		return "registration success";
-	} catch (err) {
-		console.log("error at " + FILENAME + ": " + String(err));
-		console.log(err);
+
+		setCookie(event, "accessToken", res.data.accessToken);
+		setCookie(event, "refreshToken", res.data.refreshToken);
+
+		return "login success";
+	} catch (err: any) {
+		console.log("error at " + FILENAME, err?.response?.data);
+
 		throw createError({
-			statusCode: 500,
+			statusCode: err?.response?.status || 500,
+			statusMessage:
+				err?.response?.data?.message || "Неверный логин или пароль",
 		});
 	}
 });

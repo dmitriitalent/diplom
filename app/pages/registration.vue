@@ -14,7 +14,7 @@ import type { DormitroyDTO } from "~/dto/dormitory.dto";
 import type { HeiDTO } from "~/dto/hei.dto";
 import type { Dormitory } from "~/entities/Dormitory";
 import { useAuthStore } from "~/stores/authStore";
-import type { RegistrationDto } from "~/stores/authStore/registration.dto";
+import type { RegistrationDto } from "~/dto/registration.dto";
 
 definePageMeta({
 	layout: "welcome",

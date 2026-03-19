@@ -1,38 +1,34 @@
 import axios from "axios";
+import { RefreshDto } from "~~/server/dto/refresh.dto";
 
 const FILENAME = "auth/refresh.post.ts";
 
 export default defineEventHandler(async (event) => {
 	try {
-		// const res = await axios.get(
-		// 	"https://jsonplaceholder.typicode.com/todos/1"
-		// );
-		// return res.data;
-		const at = parseCookies(event).at;
-		if (at.length === 0) {
-			throw "user is not authenticated";
-		}
+		const config = useRuntimeConfig();
+		const cookie = getHeader(event, "cookie");
 
-		setCookie(
-			event,
-			"at",
-			// "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcklkIjoxLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2Nzc1ODU0MywiZXhwIjoxNzY3NzYyMTQzfQ.gy88ar5lRt0Io7qa22ll0Ajxknt-xb18NB2UC_mm7os"
-			"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwidXNlcklkIjoyLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTc2Nzc1ODU0MywiZXhwIjoxNzY3NzYyMTQzfQ.jIFFnoA8jqA7enqPBdcN5Qj8-zHkRcvboy0an398Qnw"
+		const res = await axios.post<RefreshDto>(
+			`${config.api}/auth/refresh`,
+			{},
+			{
+				headers: {
+					cookie,
+				},
+				withCredentials: true,
+			},
 		);
+
+		setCookie(event, "accessToken", res.data.accessToken);
+		setCookie(event, "refreshToken", res.data.refreshToken);
+
 		return "refresh success";
-	} catch (err) {
-		if (err != "user is not authenticated") {
-			console.log("error at " + FILENAME + ": " + String(err));
-			console.log(err);
-			throw createError({
-				statusCode: 403,
-			});
-		} else {
-			console.log("error at " + FILENAME + ": " + String(err));
-			console.log(err);
-			throw createError({
-				statusCode: 500,
-			});
-		}
+	} catch (err: any) {
+		console.log("error at " + FILENAME, err?.response?.data);
+
+		throw createError({
+			statusCode: err?.response?.status || 500,
+			message: err?.response?.data?.message,
+		});
 	}
 });

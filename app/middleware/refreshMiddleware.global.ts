@@ -1,16 +1,16 @@
 import { useAuthStore } from "~/stores/authStore";
-import { useUserStore } from "~/stores/userStore";
+import { useSelfStore } from "~/stores/selfStore";
 
 export default defineNuxtRouteMiddleware(async (to) => {
 	const cfg = useRuntimeConfig();
 	if (cfg.public.publicRoutes.includes(to.path)) return;
 
 	const auth = useAuthStore();
-	const user = useUserStore();
+	const self = useSelfStore();
 
 	try {
 		await auth.refresh();
-		await user.refreshUser();
+		await self.refreshSelf();
 	} catch {
 		return navigateTo("/welcome");
 	}

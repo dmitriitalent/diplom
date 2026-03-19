@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+	isFormButton,
 	isFormCheckbox,
 	isFormDate,
 	isFormField,
@@ -7,15 +8,9 @@ import {
 	isFormSelect,
 	isFormSeparator,
 	type Form,
-	type FormElement,
 } from "~/components/types/Form";
-import type { FormField } from "./types/FormField";
-import type { FormSeparator } from "./types/FormSeparator";
-import type { FormDate } from "./types/FormDate";
 import type { FormSelect } from "./types/FormSelect";
 import type { FormRow } from "./types/FormRow";
-import { select } from "three/tsl";
-import { cloneDeep } from "lodash";
 
 const props = defineProps({
 	form: {
@@ -156,6 +151,7 @@ const isValidSelect = (
 					:placeholder="elem.placeholder"
 					:type="elem.type"
 					v-model="elem.value"
+					:status="elem.status"
 					:class="$style.input"
 				></UiInput>
 			</div>
@@ -184,6 +180,14 @@ const isValidSelect = (
 					v-model="elem.value"
 					:name="elem.name"
 					:leftIconName="elem.leftIconName"
+				/>
+			</div>
+
+			<div v-else-if="isFormButton(elem)" :class="$style.elem">
+				<UiButton
+					:name="elem.name"
+					:leftIconName="elem.leftIconName"
+					@click="elem.action"
 				/>
 			</div>
 
@@ -220,6 +224,14 @@ const isValidSelect = (
 							"
 							:leftIconName="rowElem.leftIconName"
 							:placeholder="rowElem.placeholder"
+						/>
+					</div>
+
+					<div v-else-if="isFormButton(elem)" :class="$style.elem">
+						<UiButton
+							:name="elem.name"
+							:leftIconName="elem.leftIconName"
+							@click="elem.action"
 						/>
 					</div>
 				</template>

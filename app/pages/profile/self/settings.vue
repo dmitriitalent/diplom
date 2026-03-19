@@ -17,12 +17,11 @@ import type {
 } from "~/components/types/FormSelect";
 import type { FormSeparator } from "~/components/types/FormSeparator";
 import type { DormitroyDTO } from "~/dto/dormitory.dto";
-import type { User, UserDataVisibility } from "~/entities/User";
+import type { Self, SelfDataVisibility } from "~/entities/Self";
 
-import { useUserStore } from "~/stores/userStore";
+import { useSelfStore } from "~/stores/selfStore";
 
-const { user, refreshUser } = useUserStore();
-
+const { self, updateSelf } = useSelfStore();
 const formVisibility = ref<Array<FormSelectOption>>([
 	{
 		value: "EVERYONE",
@@ -40,12 +39,27 @@ const formVisibility = ref<Array<FormSelectOption>>([
 
 const { data: dormitory } = useAsyncData<Array<DormitroyDTO>>(
 	async (_nuxtApp, { signal }) => {
-		return $fetch("/api/hei/dormitoriesByHei?hei=" + user?.hei, { signal });
-	}
+		return $fetch("/api/hei/dormitoriesByHei?hei=" + self?.hei, { signal });
+	},
 );
 
+const addContact = () => {
+	if (!self) {
+		return;
+	}
+
+	self.contacts.push({
+		key: "123",
+		value: "1233131",
+		visibility: "ADMIN",
+	});
+};
+
 const contacts = (): Array<FormRow> => {
-	const rows: Array<FormRow> = user?.contacts!.map((contact, index) => {
+	if (!self?.contacts) {
+		return [];
+	}
+	const rows: Array<FormRow> = self?.contacts.map((contact, index) => {
 		return {
 			elemType: "row",
 			elems: [
@@ -87,13 +101,13 @@ const generateForm = (): Form => {
 						elemType: "field",
 						key: "surname",
 						type: "text",
-						value: user?.surname.value ?? "",
+						value: self?.surname.value ?? "",
 					},
 
 					{
 						elemType: "select",
 						key: "surnameVisibility",
-						value: user?.surname.visibility,
+						value: self?.surname.visibility,
 						group: "surnameVisibility",
 						options: () => formVisibility.value,
 					},
@@ -106,13 +120,13 @@ const generateForm = (): Form => {
 						elemType: "field",
 						key: "name",
 						type: "text",
-						value: user?.name.value ?? "",
+						value: self?.name.value ?? "",
 					},
 
 					{
 						elemType: "select",
 						key: "nameVisibility",
-						value: user?.name.visibility,
+						value: self?.name.visibility,
 						group: "nameVisibility",
 						options: () => formVisibility.value,
 					},
@@ -125,13 +139,13 @@ const generateForm = (): Form => {
 						elemType: "field",
 						key: "patronymic",
 						type: "text",
-						value: user?.patronymic.value ?? "",
+						value: self?.patronymic.value ?? "",
 					},
 
 					{
 						elemType: "select",
 						key: "patronymicVisibility",
-						value: user?.patronymic.visibility,
+						value: self?.patronymic.visibility,
 						group: "patronymicVisibility",
 						options: () => formVisibility.value,
 					},
@@ -145,12 +159,12 @@ const generateForm = (): Form => {
 					{
 						elemType: "date",
 						key: "birthdate",
-						value: user?.birthdate.value,
+						value: self?.birthdate.value,
 					},
 					{
 						elemType: "select",
 						key: "birthdateVisibility",
-						value: user?.birthdate.visibility,
+						value: self?.birthdate.visibility,
 						group: "birthdateVisibility",
 						options: () => formVisibility.value,
 					},
@@ -164,7 +178,7 @@ const generateForm = (): Form => {
 					{
 						elemType: "select",
 						key: "dormitory",
-						value: user?.dormitory.value,
+						value: self?.dormitory.value,
 						group: "dormitory",
 						options: () => {
 							return dormitory.value;
@@ -173,7 +187,7 @@ const generateForm = (): Form => {
 					{
 						elemType: "select",
 						key: "dormitoryVisibility",
-						value: user?.dormitory.visibility,
+						value: self?.dormitory.visibility,
 						group: "dormitoryVisibility",
 						options: () => formVisibility.value,
 					},
@@ -185,12 +199,12 @@ const generateForm = (): Form => {
 					{
 						elemType: "select",
 						key: "building",
-						value: user?.building.value,
+						value: self?.building.value,
 						group: "dormitory",
 						options: (s1: FormSelect) => {
 							if (s1.value !== undefined) {
 								return dormitory.value?.find(
-									(dorm) => dorm.value === s1.value
+									(dorm) => dorm.value === s1.value,
 								)?.buildings;
 							}
 							return [];
@@ -199,7 +213,7 @@ const generateForm = (): Form => {
 					{
 						elemType: "select",
 						key: "buildingVisibility",
-						value: user?.building.visibility,
+						value: self?.building.visibility,
 						group: "buildingVisibility",
 						options: () => formVisibility.value,
 					},
@@ -211,7 +225,7 @@ const generateForm = (): Form => {
 					{
 						elemType: "select",
 						key: "floor",
-						value: user?.floor.value,
+						value: self?.floor.value,
 						group: "dormitory",
 						options: (s1: FormSelect, s2: FormSelect) => {
 							if (
@@ -222,7 +236,7 @@ const generateForm = (): Form => {
 									?.find((dorm) => dorm.value === s1.value)
 									?.buildings.find(
 										(building) =>
-											building.value === s2.value
+											building.value === s2.value,
 									)?.floors;
 							}
 							return [];
@@ -231,7 +245,7 @@ const generateForm = (): Form => {
 					{
 						elemType: "select",
 						key: "floorVisibility",
-						value: user?.floor.visibility,
+						value: self?.floor.visibility,
 						group: "floorVisibility",
 						options: () => formVisibility.value,
 					},
@@ -244,12 +258,12 @@ const generateForm = (): Form => {
 						elemType: "field",
 						key: "room",
 						type: "text",
-						value: user?.room.value ?? "",
+						value: self?.room.value ?? "",
 					},
 					{
 						elemType: "select",
 						key: "roomVisibility",
-						value: user?.room.visibility,
+						value: self?.room.visibility,
 						group: "roomVisibility",
 						options: () => formVisibility.value,
 					},
@@ -258,6 +272,19 @@ const generateForm = (): Form => {
 
 			{ elemType: "separator", name: "Контакты", separator: true },
 			...contacts(),
+			{ elemType: "button", name: "Добавить", action: addContact },
+			{
+				elemType: "separator",
+				name: "Кто видит список друзей",
+				separator: true,
+			},
+			{
+				elemType: "select",
+				key: "friendsVisibility",
+				value: self?.floor.visibility,
+				group: "friendsVisibility",
+				options: () => formVisibility.value,
+			},
 		],
 	};
 };
@@ -270,7 +297,7 @@ const onClickSave = () => {
 				isFormField(elem) ||
 				isFormDate(elem) ||
 				isFormSelect(elem) ||
-				isFormRow(elem)
+				isFormRow(elem),
 		)
 		.map((elem) => {
 			if (isFormRow(elem)) {
@@ -279,7 +306,7 @@ const onClickSave = () => {
 						(rowElem) =>
 							isFormField(rowElem) ||
 							isFormDate(rowElem) ||
-							isFormSelect(rowElem)
+							isFormSelect(rowElem),
 					)
 					.map((rowElem) => {
 						return {
@@ -298,81 +325,87 @@ const onClickSave = () => {
 
 	const getContacts = () => {
 		const filterContacts = fields.filter((c) =>
-			c.key.startsWith("contact")
+			c.key.startsWith("contact"),
 		);
 		const fieldContacts: {
 			key: string;
 			value: string;
-			visibility: UserDataVisibility;
+			visibility: SelfDataVisibility;
 		}[] = [];
 
 		for (let i = 0; i < filterContacts.length; i += 3) {
 			fieldContacts.push({
 				key: filterContacts[i]?.value as string,
 				value: filterContacts[i + 1]?.value as string,
-				visibility: filterContacts[i + 2]?.value as UserDataVisibility,
+				visibility: filterContacts[i + 2]?.value as SelfDataVisibility,
 			});
 		}
 
 		return fieldContacts;
 	};
 
-	const newUser: User = {
-		id: user?.id!,
-		login: user?.login!,
-		educationEmail: user?.educationEmail!,
-		consentUserAgreement: user?.consentUserAgreement!,
-		hei: user?.hei!,
+	if (self === null || self === undefined) {
+		console.log("Вы не авторизованны. Не старайтесь нас взламывать!");
+		return;
+	}
+
+	const newSelf: Self = {
+		id: self.id,
+		login: self.login,
+		educationEmail: self.educationEmail,
+		consentUserAgreement: self.consentUserAgreement,
+		hei: self.hei,
 		birthdate: {
 			value: fields.find((f) => f.key === "birthdate")?.value as Date,
 			visibility: fields.find((f) => f.key === "birthdateVisibility")
-				?.value as UserDataVisibility,
+				?.value as SelfDataVisibility,
 		},
 		dormitory: {
 			value: fields.find((f) => f.key === "dormitory")?.value as string,
 			visibility: fields.find((f) => f.key === "dormitoryVisibility")
-				?.value as UserDataVisibility,
+				?.value as SelfDataVisibility,
 		},
 		building: {
 			value: fields.find((f) => f.key === "building")?.value as string,
 			visibility: fields.find((f) => f.key === "buildingVisibility")
-				?.value as UserDataVisibility,
+				?.value as SelfDataVisibility,
 		},
 		floor: {
 			value: fields.find((f) => f.key === "floor")?.value as string,
 			visibility: fields.find((f) => f.key === "floorVisibility")
-				?.value as UserDataVisibility,
+				?.value as SelfDataVisibility,
 		},
 		room: {
 			value: fields.find((f) => f.key === "room")?.value as string,
 			visibility: fields.find((f) => f.key === "roomVisibility")
-				?.value as UserDataVisibility,
+				?.value as SelfDataVisibility,
 		},
 		surname: {
 			value: fields.find((f) => f.key === "surname")?.value as string,
 			visibility: fields.find((f) => f.key === "surnameVisibility")
-				?.value as UserDataVisibility,
+				?.value as SelfDataVisibility,
 		},
 		name: {
 			value: fields.find((f) => f.key === "name")?.value as string,
 			visibility: fields.find((f) => f.key === "nameVisibility")
-				?.value as UserDataVisibility,
+				?.value as SelfDataVisibility,
 		},
 		patronymic: {
 			value: fields.find((f) => f.key === "patronymic")?.value as string,
 			visibility: fields.find((f) => f.key === "patronymicVisibility")
-				?.value as UserDataVisibility,
+				?.value as SelfDataVisibility,
+		},
+
+		friends: {
+			value: self.friends.value,
+			visibility: fields.find((f) => f.key === "friendsVisibility")
+				?.value as SelfDataVisibility,
 		},
 
 		contacts: getContacts(),
 	};
 
-	$fetch("/api/user/self/settings", {
-		method: "PUT",
-		body: newUser,
-	}).then(() => {
-		refreshUser();
-	});
+	updateSelf(newSelf);
 };
 
 const formKey = ref(0);

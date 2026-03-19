@@ -147,6 +147,30 @@
 	color: rgba($color-accent, $opacity);
 }
 
+@mixin color-error-bg($opacity: 1) {
+	background-color: rgba($color-error, $opacity);
+}
+
+@mixin color-error($opacity: 1) {
+	color: rgba($color-error, $opacity);
+}
+
+@mixin color-warn-bg($opacity: 1) {
+	background-color: rgba($color-warn, $opacity);
+}
+
+@mixin color-warn($opacity: 1) {
+	color: rgba($color-warn, $opacity);
+}
+
+@mixin color-success-bg($opacity: 1) {
+	background-color: rgba($color-success, $opacity);
+}
+
+@mixin color-success($opacity: 1) {
+	color: rgba($color-success, $opacity);
+}
+
 // SHADOWS ////////////////////////////////////////////////////////////////////////////
 @mixin shadow($set: true, $back: false) {
 	@if ($set) {

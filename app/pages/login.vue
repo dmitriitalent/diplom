@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { isFormField, type Form } from "~/components/types/Form";
 import type { FormField } from "~/components/types/FormField";
+import type { Status } from "~/components/types/Status";
 import { useAuthStore, type LoginDto } from "~/stores/authStore";
 
 definePageMeta({
@@ -25,12 +26,30 @@ const onClickLogin = () => {
 		)?.value,
 	};
 
-	login(loginData).then(() => {
-		console.log(loginData);
-		router.push("/profile/self");
-	});
+	login(loginData)
+		.then(() => {
+			errorText.value = "";
+			errorLoginStatus.value = "success";
+			errorPasswordStatus.value = "success";
+			router.push("/profile/self");
+		})
+		.catch((err) => {
+			if (err.statusCode === 401) {
+				errorText.value = "Неверный логин или пароль";
+				errorLoginStatus.value = "error";
+				errorPasswordStatus.value = "error";
+			}
+			if (err.statusCode === 500) {
+				errorText.value = "Ошибка сервера :(";
+				errorLoginStatus.value = "error";
+				errorPasswordStatus.value = "error";
+			}
+		});
 };
 
+const errorText = ref("");
+const errorLoginStatus = ref<Status>("ok");
+const errorPasswordStatus = ref<Status>("ok");
 const form: Ref<Form> = ref({
 	title: "Вход",
 	elems: [
@@ -43,6 +62,7 @@ const form: Ref<Form> = ref({
 			validator: (v: string) => v.length >= 6,
 			required: true,
 			leftIconName: "material-symbols:account-circle-full",
+			status: errorLoginStatus,
 		},
 		{
 			elemType: "field",
@@ -52,6 +72,7 @@ const form: Ref<Form> = ref({
 			placeholder: "Пароль",
 			required: true,
 			leftIconName: "carbon:password",
+			status: errorPasswordStatus,
 		},
 	],
 });
@@ -61,12 +82,17 @@ const form: Ref<Form> = ref({
 	<div :class="$style.wrapper">
 		<div :class="$style.container">
 			<UiAppear>
-				<FormComponent
-					:class="$style.form"
-					:form="form"
-					submit="Войти"
-					@submit="onClickLogin"
-				/>
+				<div :class="$style.form">
+					<FormComponent
+						:form="form"
+						submit="Войти"
+						@submit="onClickLogin"
+					/>
+
+					<h1 v-if="errorText" :class="$style.error">
+						{{ errorText }}
+					</h1>
+				</div>
 			</UiAppear>
 		</div>
 
@@ -105,6 +131,17 @@ const form: Ref<Form> = ref({
 
 		width: 500px;
 		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	.error {
+		@include reset;
+		@include text-m;
+		@include color-black;
+		@include color-error-bg;
+
+		text-align: center;
+		padding: 20px;
 	}
 
 	.registration {

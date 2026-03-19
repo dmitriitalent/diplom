@@ -1,8 +1,8 @@
-export type User = {
+export type UserDto = {
 	id: number;
 	login: string;
-	educationEmail: string;
-	consentUserAgreement: boolean;
+	education_email: string;
+	consent_user_agreement: boolean;
 	hei: string;
 	birthdate: Date;
 	dormitory: string;
@@ -13,7 +13,7 @@ export type User = {
 	name: string;
 	patronymic: string;
 
-	friends: Array<User>;
+	friends: Array<UserDto>;
 
 	contacts:
 		| Array<{

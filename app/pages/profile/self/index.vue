@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { useUserStore } from "~/stores/userStore";
+import { useSelfStore } from "~/stores/selfStore";
 
 type Tabs = "info" | "tools";
 
-const { user } = useUserStore();
+const { self, addFriend } = useSelfStore();
 
 const tab: Ref<Tabs> = ref("tools");
+
+const onAddFriend = () => {
+	addFriend();
+};
 </script>
 
 <template>
@@ -27,25 +31,25 @@ const tab: Ref<Tabs> = ref("tools");
 						<div :class="$style.field">
 							<div :class="$style.key">Общежитие:</div>
 							<div :class="$style.value">
-								{{ user?.dormitory }}
+								{{ self?.dormitory.value }}
 							</div>
 						</div>
 						<div :class="$style.field">
 							<div :class="$style.key">Корпус:</div>
 							<div :class="$style.value">
-								{{ user?.building }}
+								{{ self?.building.value }}
 							</div>
 						</div>
 						<div :class="$style.field">
 							<div :class="$style.key">Этаж:</div>
 							<div :class="$style.value">
-								{{ user?.floor }}
+								{{ self?.floor.value }}
 							</div>
 						</div>
 						<div :class="$style.field">
 							<div :class="$style.key">Комната:</div>
 							<div :class="$style.value">
-								{{ user?.room }}
+								{{ self?.room.value }}
 							</div>
 						</div>
 					</div>
@@ -73,12 +77,14 @@ const tab: Ref<Tabs> = ref("tools");
 							></UiButton>
 						</div>
 						<div :class="$style.column">
-							<UiButton :class="$style.tool" size="custom"
-								><Icon
-									:class="$style.icon"
-									name="material-symbols:drive-file-rename-outline-outline-rounded"
-								></Icon
-							></UiButton>
+							<RouterLink to="self/friends">
+								<UiButton :class="$style.tool" size="custom"
+									><Icon
+										:class="$style.icon"
+										name="material-symbols:drive-file-rename-outline-outline-rounded"
+									></Icon
+								></UiButton>
+							</RouterLink>
 							<UiButton :class="$style.tool" size="custom"
 								><Icon
 									:class="$style.icon"
@@ -109,8 +115,8 @@ const tab: Ref<Tabs> = ref("tools");
 
 			<div :class="$style.content">
 				<div :class="$style.profile">
-					<h1 v-if="user" :class="$style.name">
-						{{ user.name.value }} {{ user.surname.value }}
+					<h1 v-if="self" :class="$style.name">
+						{{ self.name.value }} {{ self.surname.value }}
 					</h1>
 					<div v-else :class="$style.name">Имя Фамилия</div>
 

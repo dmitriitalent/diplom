@@ -2,9 +2,6 @@ const FILENAME = "hei/dormitoriesByHei.get.ts";
 
 export default defineEventHandler(async (event) => {
 	try {
-		// const query = getQuery(event);
-		// console.log("Hei: " + query.hei);
-
 		return [
 			{
 				name: "Икар (г. Москва, ул. Дубосековская, д. 13)",

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PropType } from "vue";
+import type { Status } from "../types/Status";
 type Variant = "block" | "underline";
 type Size = "small" | "medium" | "large" | "custom";
 
@@ -34,12 +35,17 @@ const props = defineProps({
 	leftIconName: {
 		type: String,
 	},
+
+	status: {
+		type: String as PropType<Status>,
+	},
 });
 
 const classList = computed(() => {
 	return [
 		[`--variant-${props.variant}`],
 		[`--size-${props.size}`],
+		[`--status-${props.status}`],
 		{ [`--has-left-icon`]: !!props.leftIconName },
 	];
 });
@@ -173,6 +179,18 @@ const onInput = ($event: Event) => {
 					padding-left: 64px;
 				}
 			}
+		}
+
+		&.--status-success {
+			@include color-success-bg;
+		}
+
+		&.--status-warn {
+			@include color-warn-bg;
+		}
+
+		&.--status-error {
+			@include color-error-bg;
 		}
 	}
 }

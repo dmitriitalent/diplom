@@ -1,10 +1,10 @@
-export type User = {
+export type UserDto = {
 	id: number;
 	login: string;
 	educationEmail: string;
 	consentUserAgreement: boolean;
 	hei: string;
-	birthdate: Date;
+	birthdate: string;
 	dormitory: string;
 	building: string;
 	floor: string;
@@ -12,13 +12,11 @@ export type User = {
 	surname: string;
 	name: string;
 	patronymic: string;
-
-	friends: Array<User>;
-
-	contacts:
-		| Array<{
-				key: string;
-				value: string;
-		  }>
-		| [];
+	friends: Array<UserDto>;
+	contacts: [
+		{
+			key: string;
+			value: string;
+		},
+	];
 };

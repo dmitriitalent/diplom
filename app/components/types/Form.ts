@@ -4,6 +4,8 @@ import type { FormDate } from "./FormDate";
 import type { FormSeparator } from "./FormSeparator";
 import type { FormRow } from "./FormRow";
 import type { FormCheckbox } from "./FormCheckbox";
+import type { Status } from "./Status";
+import type { FormButton } from "./FormButton";
 
 function isFormField(elem: FormElement | undefined): elem is FormField {
 	if (elem === undefined) {
@@ -41,14 +43,30 @@ function isFormCheckbox(elem: FormElement | undefined): elem is FormCheckbox {
 	}
 	return elem.elemType === "checkbox";
 }
+function isFormButton(elem: FormElement | undefined): elem is FormButton {
+	if (elem === undefined) {
+		return false;
+	}
+	return elem.elemType === "button";
+}
 
 type Form = {
 	title: string;
-	elems: Array<FormField | FormSelect | FormDate | FormSeparator | FormRow>;
+	elems: Array<
+		FormField | FormSelect | FormDate | FormSeparator | FormRow | FormButton
+	>;
 };
 
 type FormElement = {
-	elemType: "field" | "select" | "date" | "separator" | "row" | "checkbox";
+	elemType:
+		| "field"
+		| "select"
+		| "date"
+		| "separator"
+		| "row"
+		| "checkbox"
+		| "button";
+	status?: Status;
 };
 
 export {
@@ -60,4 +78,5 @@ export {
 	isFormSelect,
 	isFormRow,
 	isFormCheckbox,
+	isFormButton,
 };
