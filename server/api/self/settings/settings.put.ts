@@ -11,16 +11,18 @@ export default defineEventHandler(async (event) => {
 		const config = useRuntimeConfig();
 		const cookie = getHeader(event, "cookie");
 
-		const date = body.birthdate.value.split("T")[0].split(".");
+		const date = body.birthdate.value
+			.split("T")[0]
+			.split(".")[0]
+			.split("-");
 		const birthdate = date[2] + "." + date[1] + "." + date[0];
 
 		let contacts = [];
-		console.log(body.contacts);
 		if (body.contacts) {
 			contacts = body.contacts.map((c: any) => {
-				key: c.key;
-				value: c.value;
-				visibility: c.visibility;
+				c.key;
+				c.value;
+				c.visibility;
 			});
 		}
 
