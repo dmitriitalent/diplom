@@ -188,7 +188,9 @@ const isValidSelect = (
 					:name="elem.name"
 					:leftIconName="elem.leftIconName"
 					@click="elem.action"
-				/>
+				>
+					{{ elem.name }}
+				</UiButton>
 			</div>
 
 			<div v-else-if="isFormRow(elem)" :class="$style.row">
@@ -227,12 +229,18 @@ const isValidSelect = (
 						/>
 					</div>
 
-					<div v-else-if="isFormButton(elem)" :class="$style.elem">
-						<UiButton
-							:name="elem.name"
-							:leftIconName="elem.leftIconName"
-							@click="elem.action"
-						/>
+					<div
+						v-else-if="isFormButton(rowElem)"
+						:class="[$style.elem, $style.rowButtonElem]"
+					>
+						<UiButton :name="rowElem.name" @click="rowElem.action">
+							<Icon
+								v-if="rowElem.leftIconName !== undefined"
+								:name="rowElem.leftIconName"
+							></Icon>
+
+							{{ rowElem.name }}
+						</UiButton>
 					</div>
 				</template>
 			</div>
@@ -291,6 +299,11 @@ const isValidSelect = (
 	display: flex;
 	justify-content: space-between;
 	column-gap: 10px;
+	align-items: center;
+
+	.rowButtonElem {
+		width: fit-content;
+	}
 }
 
 .separator {

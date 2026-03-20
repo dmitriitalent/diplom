@@ -1,11 +1,14 @@
 import type { FormElement } from "./Form";
+import type { FormButton } from "./FormButton";
 import type { FormDate } from "./FormDate";
 import type { FormField } from "./FormField";
 import type { FormSelect } from "./FormSelect";
 import type { FormSeparator } from "./FormSeparator";
 
 type FormRow = FormElement & {
-	elems: Array<FormField | FormSelect | FormDate | FormSeparator>;
+	elems: Array<
+		FormField | FormSelect | FormDate | FormSeparator | FormButton
+	>;
 };
 
 export { type FormRow };

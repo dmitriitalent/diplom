@@ -41,23 +41,88 @@ const { data: dormitory } = useAsyncData<Array<DormitroyDTO>>(
 	},
 );
 
+const extractContacts = () => {
+	const fields = form.value.elems
+		.filter(
+			(elem) =>
+				isFormField(elem) ||
+				isFormDate(elem) ||
+				isFormSelect(elem) ||
+				isFormRow(elem),
+		)
+		.map((elem) => {
+			if (isFormRow(elem)) {
+				return elem.elems
+					.filter(
+						(rowElem) =>
+							isFormField(rowElem) ||
+							isFormDate(rowElem) ||
+							isFormSelect(rowElem),
+					)
+					.map((rowElem) => {
+						return {
+							key: rowElem.key,
+							value: rowElem.value,
+						};
+					});
+			} else {
+				return {
+					key: elem.key,
+					value: elem.value,
+				};
+			}
+		})
+		.flat();
+
+	const filterContacts = fields.filter((c) => c.key.startsWith("contact"));
+	const fieldContacts: {
+		key: string;
+		value: string;
+		visibility: SelfDataVisibility;
+	}[] = [];
+
+	for (let i = 0; i < filterContacts.length; i += 3) {
+		fieldContacts.push({
+			key: filterContacts[i]?.value as string,
+			value: filterContacts[i + 1]?.value as string,
+			visibility: filterContacts[i + 2]?.value as SelfDataVisibility,
+		});
+	}
+
+	return fieldContacts;
+};
+
 const addContact = () => {
 	if (!self) {
 		return;
 	}
 
+	self.contacts = extractContacts();
+
 	self.contacts.push({
-		key: "123",
-		value: "1233131",
-		visibility: "ADMIN",
+		key: "",
+		value: "",
+		visibility: "EVERYONE",
 	});
+};
+
+const deleteContact = (index: number) => {
+	return () => {
+		if (self?.contacts) {
+			self.contacts = [
+				...self.contacts.slice(0, index),
+				...self.contacts.slice(index + 1),
+			];
+		}
+	};
 };
 
 const contacts = (): Array<FormRow> => {
 	if (!self?.contacts) {
 		return [];
 	}
-	const rows: Array<FormRow> = self?.contacts.map((contact, index) => {
+
+	const rows: Array<FormRow> = self.contacts.map((contact, index) => {
 		return {
 			elemType: "row",
 			elems: [
@@ -79,6 +144,11 @@ const contacts = (): Array<FormRow> => {
 					value: contact.visibility,
 					group: contact.key + "Visibility",
 					options: () => formVisibility.value,
+				},
+				{
+					elemType: "button",
+					leftIconName: "material-symbols:delete-outline",
+					action: deleteContact(index),
 				},
 			],
 		};
@@ -288,6 +358,14 @@ const generateForm = (): Form => {
 };
 const form = ref<Form>(generateForm());
 
+watch(
+	() => self?.contacts.length,
+	() => {
+		form.value = generateForm();
+		formKey.value++;
+	},
+);
+
 const onClickSave = () => {
 	const fields = form.value.elems
 		.filter(
@@ -320,27 +398,6 @@ const onClickSave = () => {
 			}
 		})
 		.flat();
-
-	const getContacts = () => {
-		const filterContacts = fields.filter((c) =>
-			c.key.startsWith("contact"),
-		);
-		const fieldContacts: {
-			key: string;
-			value: string;
-			visibility: SelfDataVisibility;
-		}[] = [];
-
-		for (let i = 0; i < filterContacts.length; i += 3) {
-			fieldContacts.push({
-				key: filterContacts[i]?.value as string,
-				value: filterContacts[i + 1]?.value as string,
-				visibility: filterContacts[i + 2]?.value as SelfDataVisibility,
-			});
-		}
-
-		return fieldContacts;
-	};
 
 	if (self === null || self === undefined) {
 		console.log("Вы не авторизованны. Не старайтесь нас взламывать!");
@@ -400,7 +457,7 @@ const onClickSave = () => {
 				?.value as SelfDataVisibility,
 		},
 
-		contacts: getContacts(),
+		contacts: extractContacts(),
 	};
 
 	updateSelf(newSelf);

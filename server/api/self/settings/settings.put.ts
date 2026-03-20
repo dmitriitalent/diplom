@@ -17,15 +17,6 @@ export default defineEventHandler(async (event) => {
 			.split("-");
 		const birthdate = date[2] + "." + date[1] + "." + date[0];
 
-		let contacts = [];
-		if (body.contacts) {
-			contacts = body.contacts.map((c: any) => {
-				c.key;
-				c.value;
-				c.visibility;
-			});
-		}
-
 		const res = await axios.put<UpdateSelfDto>(
 			`${config.api}/profile`,
 			{
@@ -38,7 +29,7 @@ export default defineEventHandler(async (event) => {
 					visibility: body.building.visibility,
 				},
 				consentUserAgreement: true,
-				contacts: contacts,
+				contacts: body.contacts,
 				dormitory: {
 					value: body.dormitory.value,
 					visibility: body.dormitory.visibility,
