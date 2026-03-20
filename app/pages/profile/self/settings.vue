@@ -1,26 +1,24 @@
 <script setup lang="ts">
-import { cloneDeep } from "lodash";
 import {
 	isFormDate,
 	isFormField,
 	isFormRow,
 	isFormSelect,
-	isFormSeparator,
 	type Form,
-	type FormElement,
 } from "~/components/types/Form";
-import type { FormField } from "~/components/types/FormField";
 import type { FormRow } from "~/components/types/FormRow";
 import type {
 	FormSelect,
 	FormSelectOption,
 } from "~/components/types/FormSelect";
-import type { FormSeparator } from "~/components/types/FormSeparator";
 import type { DormitroyDTO } from "~/dto/dormitory.dto";
 import type { Self, SelfDataVisibility } from "~/entities/Self";
+import { useAuthStore } from "~/stores/authStore";
 
 import { useSelfStore } from "~/stores/selfStore";
 
+const router = useRouter();
+const { logout } = useAuthStore();
 const { self, updateSelf } = useSelfStore();
 const formVisibility = ref<Array<FormSelectOption>>([
 	{
@@ -408,6 +406,12 @@ const onClickSave = () => {
 	updateSelf(newSelf);
 };
 
+const onClickLogout = () => {
+	logout().then(() => {
+		router.push("/welcome");
+	});
+};
+
 const formKey = ref(0);
 const onClickReset = async () => {
 	form.value = generateForm();
@@ -430,6 +434,12 @@ const onClickReset = async () => {
 					></FormComponent>
 				</div>
 			</UiAppear>
+
+			<UiAppear>
+				<UiButton :class="$style.logout" @click="onClickLogout"
+					>Выйти</UiButton
+				>
+			</UiAppear>
 		</div>
 	</div>
 </template>
@@ -438,6 +448,7 @@ const onClickReset = async () => {
 .wrapper {
 	.container {
 		@include container;
+		padding-bottom: 30px;
 
 		.forms {
 			.form {
@@ -446,16 +457,11 @@ const onClickReset = async () => {
 			}
 		}
 
-		.tools {
-			margin: auto;
-			width: 400px;
-			display: flex;
-			justify-content: center;
-			column-gap: 10px;
+		.logout {
+			@include color-error-bg;
 
-			.submit {
-				width: 150px;
-			}
+			width: 140px;
+			margin: auto;
 		}
 	}
 }

@@ -31,7 +31,14 @@ export const useAuthStore = defineStore("authStore", () => {
 		});
 	};
 
-	const logout = () => {};
+	const logout = () => {
+		const headers = useRequestHeaders(["cookie"]);
+
+		return $fetch("/api/auth/logout", {
+			method: "POST",
+			headers: headers,
+		});
+	};
 
 	return {
 		at,
