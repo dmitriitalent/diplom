@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 		const config = useRuntimeConfig();
 		const body = await readBody(event);
 
-		const date = body.birthdate.split("T")[0].split(".");
+		const date = body.birthdate.split("T")[0].split(".")[0].split("-");
 		const birthdate = date[2] + "." + date[1] + "." + date[0];
 
 		const res = await axios.post<RegistrationDto>(

@@ -68,37 +68,37 @@ const onClickRegistration = () => {
 			) as FormCheckbox | undefined
 		)?.value,
 		surname: (
-			form.value.elems.find(
+			residentForm.value.elems.find(
 				(el) => isFormField(el) && el.key === "surname",
 			) as FormField | undefined
 		)?.value,
 		name: (
-			form.value.elems.find(
+			residentForm.value.elems.find(
 				(el) => isFormField(el) && el.key === "name",
 			) as FormField | undefined
 		)?.value,
 		patronymic: (
-			form.value.elems.find(
+			residentForm.value.elems.find(
 				(el) => isFormField(el) && el.key === "patronymic",
 			) as FormField | undefined
 		)?.value,
 		dormitory: (
-			form.value.elems.find(
+			residentForm.value.elems.find(
 				(el) => isFormSelect(el) && el.key === "dormitory",
 			) as FormSelect | undefined
 		)?.value,
 		building: (
-			form.value.elems.find(
+			residentForm.value.elems.find(
 				(el) => isFormSelect(el) && el.key === "building",
 			) as FormSelect | undefined
 		)?.value,
 		floor: (
-			form.value.elems.find(
+			residentForm.value.elems.find(
 				(el) => isFormSelect(el) && el.key === "floor",
 			) as FormSelect | undefined
 		)?.value,
 		room: (
-			form.value.elems.find(
+			residentForm.value.elems.find(
 				(el) => isFormField(el) && el.key === "room",
 			) as FormField | undefined
 		)?.value,
