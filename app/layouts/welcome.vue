@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { useDevice } from "~/composables/device";
+import { useAuthStore } from "~/stores/authStore";
 
 const { deviceClassList } = useDevice();
+
+const { isAuthenticated } = useAuthStore();
+if (isAuthenticated) {
+	const router = useRouter();
+	router.push("profile/self");
+}
 </script>
 
 <template>
