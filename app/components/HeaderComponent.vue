@@ -1,4 +1,11 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+defineProps({
+	welcome: {
+		type: Boolean,
+		default: false,
+	},
+});
+</script>
 
 <template>
 	<div :class="$style.wrapper">
@@ -6,7 +13,7 @@
 			<div :class="$style.container">
 				<UiLogo />
 
-				<div :class="$style.links">
+				<div v-if="!welcome" :class="$style.links">
 					<RouterLink to="/schedule">
 						<UiButton :class="$style.link" inset>
 							Расписание
@@ -26,7 +33,7 @@
 					</RouterLink>
 				</div>
 
-				<RouterLink to="/profile/self">
+				<RouterLink v-if="!welcome" to="/profile/self">
 					<UiButton :class="$style.profile" inset>
 						<Icon
 							:class="$style.icon"
@@ -34,6 +41,19 @@
 						></Icon>
 					</UiButton>
 				</RouterLink>
+
+				<div v-if="welcome" :class="$style.sign">
+					<RouterLink to="/registration">
+						<UiButton :class="$style.profile" inset>
+							Регистрация
+						</UiButton>
+					</RouterLink>
+					<RouterLink to="/login">
+						<UiButton :class="$style.profile" inset>
+							Войти
+						</UiButton>
+					</RouterLink>
+				</div>
 			</div>
 
 			<div :class="$style.bg"></div>
@@ -82,6 +102,11 @@
 					height: 24px;
 					width: 24px;
 				}
+			}
+
+			.sign {
+				display: flex;
+				column-gap: 32px;
 			}
 		}
 

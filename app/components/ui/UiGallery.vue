@@ -27,6 +27,11 @@ const props = defineProps({
 	innerShadow: {
 		type: Boolean,
 	},
+
+	speed: {
+		type: Number,
+		default: 600,
+	},
 });
 
 const autoplaySettigs = props.autoplay
@@ -43,6 +48,7 @@ const classList = computed(() => {
 <template>
 	<ClientOnly>
 		<Swiper
+			:speed="speed"
 			:modules="[Autoplay]"
 			:loop="props.loop"
 			:autoplay="autoplaySettigs"

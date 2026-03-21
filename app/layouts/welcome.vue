@@ -14,7 +14,7 @@ if (isAuthenticated) {
 <template>
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<ClientOnly>
-			<ShaderComponent :class="$style.shader" :cubes="400" />
+			<ShaderComponent :class="$style.shader" :cubes="800" />
 		</ClientOnly>
 		<div :class="$style.container">
 			<slot></slot>
@@ -32,7 +32,6 @@ if (isAuthenticated) {
 	}
 
 	.container {
-		@include container;
 		position: relative;
 		z-index: 2;
 		max-height: 100vh;
