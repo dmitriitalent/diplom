@@ -1,74 +1,7 @@
 export type Dormitory = {
+	address: string;
+	commendantId: string;
+	commendantPhone: string;
+	id: string;
 	name: string;
-	value: string;
-	leftIconName: string;
-
-	buildings: [
-		{
-			name: string;
-			value: string;
-			leftIconName: string;
-
-			floors: [
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				},
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				},
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				},
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				},
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				}
-			];
-		},
-		{
-			name: string;
-			value: string;
-			leftIconName: string;
-
-			floors: [
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				},
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				},
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				},
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				},
-				{
-					name: string;
-					value: string;
-					leftIconName: string;
-				}
-			];
-		}
-	];
 };

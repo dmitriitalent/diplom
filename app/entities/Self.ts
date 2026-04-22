@@ -1,21 +1,16 @@
+import type { SelfDataVisibility } from "~~/server/dto/selfDataVisibility.dto";
+import type { Dormitory } from "./Dormitory";
 import type { User } from "./User";
 
-export type SelfDataVisibility = "ADMIN" | "FRIEND" | "EVERYONE";
-
 export type Self = {
-	id: number;
+	id: string;
 	login: string;
 	educationEmail: string;
-	consentUserAgreement: boolean;
-	hei: string;
 	birthdate: {
 		value: Date;
 		visibility: SelfDataVisibility;
 	};
-	dormitory: {
-		value: string;
-		visibility: SelfDataVisibility;
-	};
+	dormitory: Dormitory;
 	building: {
 		value: string;
 		visibility: SelfDataVisibility;
@@ -41,10 +36,10 @@ export type Self = {
 		visibility: SelfDataVisibility;
 	};
 
-	friends: {
-		value: Array<User>;
-		visibility: SelfDataVisibility;
-	};
+	friends: Array<{
+		friendId: string;
+		status: string;
+	}>;
 
 	contacts: Array<{
 		key: string;

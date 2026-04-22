@@ -1,11 +1,11 @@
+import type { Dormitory } from "./Dormitory";
+
 export type User = {
-	id: number;
+	id: string;
 	login: string;
 	educationEmail: string;
-	consentUserAgreement: boolean;
-	hei: string;
 	birthdate: Date;
-	dormitory: string;
+	dormitory: Dormitory;
 	building: string;
 	floor: string;
 	room: string;
@@ -13,12 +13,13 @@ export type User = {
 	name: string;
 	patronymic: string;
 
-	friends: Array<User>;
+	friends: Array<{
+		friendId: string;
+		status: string;
+	}>;
 
-	contacts:
-		| Array<{
-				key: string;
-				value: string;
-		  }>
-		| [];
+	contacts: Array<{
+		key: string;
+		value: string;
+	}>;
 };

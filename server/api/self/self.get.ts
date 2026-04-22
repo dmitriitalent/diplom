@@ -1,4 +1,5 @@
 import axios from "axios";
+import { byId } from "~~/server/dto/self/byId";
 import { SelfDto } from "~~/server/dto/self.dto";
 
 const FILENAME = "self/self.get.ts";
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
 		const config = useRuntimeConfig();
 		const cookie = getHeader(event, "cookie");
 
-		const res = await axios.get<SelfDto>(
+		const res = await axios.get<byId>(
 			`${config.api}/profile/` + String(uid),
 			{
 				headers: {

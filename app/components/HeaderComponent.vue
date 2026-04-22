@@ -28,8 +28,8 @@ defineProps({
 					<RouterLink to="/catalog">
 						<UiButton :class="$style.link" inset>Каталог</UiButton>
 					</RouterLink>
-					<RouterLink to="/messenger">
-						<UiButton :class="$style.link" inset>Чат</UiButton>
+					<RouterLink to="/news">
+						<UiButton :class="$style.link" inset>Новости</UiButton>
 					</RouterLink>
 				</div>
 

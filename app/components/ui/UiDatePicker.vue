@@ -7,6 +7,7 @@ const props = defineProps<{
 	modelValue: Date | undefined | null;
 	leftIconName: string | undefined;
 	placeholder: string | undefined;
+	enableTime: boolean | undefined;
 }>();
 
 const emit = defineEmits<{
@@ -17,9 +18,9 @@ const emit = defineEmits<{
 <template>
 	<VueDatePicker
 		:locale="ru"
-		:formats="{ input: 'dd.MM.yyyy' }"
+		:formats="{ input: 'dd.MM.yyyy' + (enableTime ? ' - HH:mm' : '') }"
 		:model-value="props.modelValue"
-		:time-config="{ enableTimePicker: false }"
+		:time-config="{ enableTimePicker: enableTime }"
 		:placeholder="props.placeholder"
 		@update:model-value="emit('update:modelValue', $event)"
 	>
@@ -75,8 +76,9 @@ const emit = defineEmits<{
 	--dp-range-between-dates-text-color: var(--dp-hover-text-color, #212121);
 	--dp-range-between-border-color: var(--dp-hover-color, #f3f3f3);
 
-	--dp-font-family: -apple-system, blinkmacsystemfont, Montserrat, roboto,
-		oxygen, ubuntu, cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+	--dp-font-family:
+		-apple-system, blinkmacsystemfont, Montserrat, roboto, oxygen, ubuntu,
+		cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 	--dp-border-radius: 10px; /*Configurable border-radius*/
 	--dp-cell-border-radius: 10px; /*Specific border radius for the calendar cell*/
 	--dp-common-transition: all 0.1s ease-in; /*Generic transition applied on buttons and calendar cells*/

@@ -12,14 +12,18 @@ import type {
 	FormSelectOption,
 } from "~/components/types/FormSelect";
 import type { DormitroyDTO } from "~/dto/dormitory.dto";
-import type { Self, SelfDataVisibility } from "~/entities/Self";
+import type { Dormitory } from "~/entities/Dormitory";
+import type { Self } from "~/entities/Self";
 import { useAuthStore } from "~/stores/authStore";
 
 import { useSelfStore } from "~/stores/selfStore";
+import type { DormitoryDtoGetList } from "~~/server/dto/dormitory/getList";
+import type { SelfDataVisibility } from "~~/server/dto/selfDataVisibility.dto";
 
 const router = useRouter();
 const { logout } = useAuthStore();
 const { self, updateSelf } = useSelfStore();
+
 const formVisibility = ref<Array<FormSelectOption>>([
 	{
 		value: "EVERYONE",
@@ -34,12 +38,6 @@ const formVisibility = ref<Array<FormSelectOption>>([
 		name: "Администрация",
 	},
 ]);
-
-const { data: dormitory } = useAsyncData<Array<DormitroyDTO>>(
-	async (_nuxtApp, { signal }) => {
-		return $fetch("/api/hei/dormitoriesByHei?hei=" + self?.hei, { signal });
-	},
-);
 
 const extractContacts = () => {
 	const fields = form.value.elems
@@ -157,6 +155,10 @@ const contacts = (): Array<FormRow> => {
 	return rows;
 };
 
+const { data: dormitoriesFetch } = await useFetch<DormitoryDtoGetList>(
+	"/api/dormitory/list",
+);
+
 const generateForm = (): Form => {
 	return {
 		title: "Настройки",
@@ -246,37 +248,40 @@ const generateForm = (): Form => {
 					{
 						elemType: "select",
 						key: "dormitory",
-						value: self?.dormitory.value,
+						value: self?.dormitory.id,
+						placeholder: "Общежитие",
+						validator: (v: string) => v.length != 0,
+						required: true,
+						leftIconName:
+							"material-symbols:home-work-outline-rounded",
 						group: "dormitory",
 						options: () => {
-							return dormitory.value;
+							return (
+								dormitoriesFetch.value?.items.map((d) => {
+									return {
+										name: d.address,
+										value: d.id,
+									};
+								}) ?? []
+							);
 						},
-					},
-					{
-						elemType: "select",
-						key: "dormitoryVisibility",
-						value: self?.dormitory.visibility,
-						group: "dormitoryVisibility",
-						options: () => formVisibility.value,
 					},
 				],
 			},
+
 			{
 				elemType: "row",
 				elems: [
 					{
-						elemType: "select",
+						elemType: "field",
+						type: "text",
 						key: "building",
-						value: self?.building.value,
-						group: "dormitory",
-						options: (s1: FormSelect) => {
-							if (s1.value !== undefined) {
-								return dormitory.value?.find(
-									(dorm) => dorm.value === s1.value,
-								)?.buildings;
-							}
-							return [];
-						},
+						value: self?.building.value ?? "",
+						placeholder: "Корпус",
+						validator: (v: String) => v.length != 0,
+						required: true,
+						leftIconName:
+							"material-symbols:home-work-outline-rounded",
 					},
 					{
 						elemType: "select",
@@ -287,28 +292,20 @@ const generateForm = (): Form => {
 					},
 				],
 			},
+
 			{
 				elemType: "row",
 				elems: [
 					{
-						elemType: "select",
+						elemType: "field",
+						type: "text",
 						key: "floor",
-						value: self?.floor.value,
-						group: "dormitory",
-						options: (s1: FormSelect, s2: FormSelect) => {
-							if (
-								s1.value !== undefined &&
-								s2.value !== undefined
-							) {
-								return dormitory.value
-									?.find((dorm) => dorm.value === s1.value)
-									?.buildings.find(
-										(building) =>
-											building.value === s2.value,
-									)?.floors;
-							}
-							return [];
-						},
+						value: self?.floor.value ?? "",
+						placeholder: "Этаж",
+						validator: (v: String) => v.length != 0,
+						required: true,
+						leftIconName:
+							"material-symbols:home-work-outline-rounded",
 					},
 					{
 						elemType: "select",
@@ -319,6 +316,7 @@ const generateForm = (): Form => {
 					},
 				],
 			},
+
 			{
 				elemType: "row",
 				elems: [
@@ -341,18 +339,6 @@ const generateForm = (): Form => {
 			{ elemType: "separator", name: "Контакты", separator: true },
 			...contacts(),
 			{ elemType: "button", name: "Добавить", action: addContact },
-			{
-				elemType: "separator",
-				name: "Кто видит список друзей",
-				separator: true,
-			},
-			{
-				elemType: "select",
-				key: "friendsVisibility",
-				value: self?.floor.visibility,
-				group: "friendsVisibility",
-				options: () => formVisibility.value,
-			},
 		],
 	};
 };
@@ -408,18 +394,12 @@ const onClickSave = () => {
 		id: self.id,
 		login: self.login,
 		educationEmail: self.educationEmail,
-		consentUserAgreement: self.consentUserAgreement,
-		hei: self.hei,
 		birthdate: {
 			value: fields.find((f) => f.key === "birthdate")?.value as Date,
 			visibility: fields.find((f) => f.key === "birthdateVisibility")
 				?.value as SelfDataVisibility,
 		},
-		dormitory: {
-			value: fields.find((f) => f.key === "dormitory")?.value as string,
-			visibility: fields.find((f) => f.key === "dormitoryVisibility")
-				?.value as SelfDataVisibility,
-		},
+
 		building: {
 			value: fields.find((f) => f.key === "building")?.value as string,
 			visibility: fields.find((f) => f.key === "buildingVisibility")
@@ -451,11 +431,12 @@ const onClickSave = () => {
 				?.value as SelfDataVisibility,
 		},
 
-		friends: {
-			value: self.friends.value,
-			visibility: fields.find((f) => f.key === "friendsVisibility")
-				?.value as SelfDataVisibility,
-		},
+		dormitory: {} as Dormitory,
+
+		friends: [] as Array<{
+			friendId: string;
+			status: string;
+		}>,
 
 		contacts: extractContacts(),
 	};

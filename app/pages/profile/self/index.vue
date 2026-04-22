@@ -23,7 +23,7 @@ const onAddFriend = () => {
 
 				<UiImage
 					:class="$style.avatar"
-					src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR4XYC_5HYOYpsgDOTOf-8Hi--2ThYeictydQ&s"
+					:src="`/api/images/byGuid?guid=avatar`"
 				></UiImage>
 
 				<UiTransition name="fade-right">
@@ -31,7 +31,7 @@ const onAddFriend = () => {
 						<div :class="$style.field">
 							<div :class="$style.key">Общежитие:</div>
 							<div :class="$style.value">
-								{{ self?.dormitory.value }}
+								{{ self?.dormitory.address }}
 							</div>
 						</div>
 						<div :class="$style.field">

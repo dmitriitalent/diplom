@@ -78,6 +78,8 @@ const classList = computed(() => {
 	}
 
 	.slide {
+		@include unselectable;
+
 		&:global(.--has-inner-shadow) {
 			:nth-child(n) {
 				@include shadow;

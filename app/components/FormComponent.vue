@@ -162,6 +162,7 @@ const isValidSelect = (
 						:leftIconName="elem.leftIconName"
 						:placeholder="elem.placeholder"
 						v-model="elem.value"
+						:enableTime="false"
 					/>
 				</ClientOnly>
 			</div>
@@ -214,6 +215,7 @@ const isValidSelect = (
 								:leftIconName="rowElem.leftIconName"
 								:placeholder="rowElem.placeholder"
 								v-model="rowElem.value"
+								:enableTime="false"
 							/>
 						</ClientOnly>
 					</div>

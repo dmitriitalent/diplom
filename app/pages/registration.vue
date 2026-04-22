@@ -15,6 +15,7 @@ import type { HeiDTO } from "~/dto/hei.dto";
 import type { Dormitory } from "~/entities/Dormitory";
 import { useAuthStore } from "~/stores/authStore";
 import type { RegistrationDto } from "~/dto/registration.dto";
+import type { DormitoryDtoGetList } from "~~/server/dto/dormitory/getList";
 
 definePageMeta({
 	layout: "welcome",
@@ -209,29 +210,8 @@ const form = ref<Form>({
 	],
 });
 
-const dormitories: Ref<Array<Dormitory>> | Ref<undefined> = ref();
-const oldHei = ref();
-watch(
-	form,
-	async () => {
-		const heiElem = form.value.elems.find(
-			(elem) => isFormSelect(elem) && elem.key === "hei",
-		) as FormSelect | undefined;
-		const hei = heiElem?.value;
-		if (hei?.length !== 0 && oldHei.value !== hei) {
-			const res = await $fetch<Array<Dormitory>>(
-				"/api/hei/dormitoriesByHei?hei=" + hei,
-			);
-			dormitories.value = res;
-		}
-		const heiElemForOld = form.value.elems.find(
-			(elem) => isFormField(elem) && elem.key === "hei",
-		);
-		oldHei.value = isFormField(heiElemForOld)
-			? heiElemForOld.value
-			: undefined;
-	},
-	{ deep: true },
+const { data: dormitoriesFetch } = await useFetch<DormitoryDtoGetList>(
+	"/api/dormitory/list",
 );
 
 const residentForm = ref<Form>({
@@ -280,37 +260,35 @@ const residentForm = ref<Form>({
 			leftIconName: "material-symbols:home-work-outline-rounded",
 			group: "dormitory",
 			options: () => {
-				return dormitories.value;
+				return (
+					dormitoriesFetch.value?.items.map((d) => {
+						return {
+							name: d.address,
+							value: d.id,
+						};
+					}) ?? []
+				);
 			},
 		},
 		{
-			elemType: "select",
+			elemType: "field",
+			type: "text",
 			key: "building",
 			value: "",
 			placeholder: "Корпус",
 			validator: (v: String) => v.length != 0,
 			required: true,
 			leftIconName: "material-symbols:home-work-outline-rounded",
-			group: "dormitory",
-			options: (v1: FormSelect) => {
-				return dormitories.value?.find((d) => d.value === v1.value)
-					?.buildings;
-			},
 		},
 		{
-			elemType: "select",
+			elemType: "field",
+			type: "text",
 			key: "floor",
 			value: "",
 			placeholder: "Этаж",
 			validator: (v: String) => v.length != 0,
 			required: true,
 			leftIconName: "material-symbols:home-work-outline-rounded",
-			group: "dormitory",
-			options: (v1: FormSelect, v2: FormSelect) => {
-				return dormitories.value
-					?.find((d) => d.value === v1.value)
-					?.buildings.find((b) => b.value === v2.value)?.floors;
-			},
 		},
 		{
 			elemType: "field",

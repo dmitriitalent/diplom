@@ -8,7 +8,7 @@ const { deviceClassList } = useDevice();
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<headerComponent :class="$style.header"></headerComponent>
 		<slot></slot>
-		<!-- <footerComponent></footerComponent> -->
+		<footerComponent></footerComponent>
 	</div>
 </template>
 
