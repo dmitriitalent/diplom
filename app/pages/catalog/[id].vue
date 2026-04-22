@@ -177,6 +177,12 @@ const deleteProduct = () => {
 
 			height: 100%;
 			border-radius: 10px;
+
+			.image {
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+			}
 		}
 	}
 

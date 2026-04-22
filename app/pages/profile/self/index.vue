@@ -18,13 +18,23 @@ const onAddFriend = () => {
 			<div :class="$style.header">
 				<UiImage
 					:class="$style.bg"
-					src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrTWrj1qZCYHNVihT9j9nBz6WzlRH55ELjsQ&s"
+					:src="`/api/images/byGuid?guid=bg`"
 				></UiImage>
 
 				<UiImage
 					:class="$style.avatar"
 					:src="`/api/images/byGuid?guid=avatar`"
 				></UiImage>
+
+				<!-- <Icon
+					:class="$style.bg"
+					name="material-symbols:drive-folder-upload-outline"
+				></Icon>
+
+				<Icon
+					:class="$style.avatar"
+					name="material-symbols:drive-folder-upload-outline"
+				></Icon> -->
 
 				<UiTransition name="fade-right">
 					<div v-show="tab == 'info'" :class="$style.tab">
@@ -130,19 +140,19 @@ const onAddFriend = () => {
 							</div>
 						</UiAppear>
 						<div :class="$style.threads">
-							<UiAppear
+							<!-- <UiAppear
 								v-for="(thread, index) in [1, 2, 3, 4, 5]"
 								:delay="100 * (index + 3)"
 							>
 								<div :class="$style.thread">
 									{{ thread }}
 								</div>
-							</UiAppear>
+							</UiAppear> -->
 						</div>
 					</div>
 				</div>
 
-				<div :class="$style.platforms">
+				<!-- <div :class="$style.platforms">
 					<UiAppear
 						v-for="(links, index) in [
 							[1, 2, 3, 4, 5, 6],
@@ -172,7 +182,7 @@ const onAddFriend = () => {
 							</UiGallery>
 						</div>
 					</UiAppear>
-				</div>
+				</div> -->
 			</div>
 		</div>
 	</div>
@@ -192,6 +202,8 @@ const onAddFriend = () => {
 		position: relative;
 
 		.bg {
+			@include color-black-bg(0.1);
+
 			height: 200px;
 			width: 100%;
 			overflow: hidden;

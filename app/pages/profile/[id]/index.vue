@@ -1,14 +1,64 @@
 <script setup lang="ts">
+import type { Dormitory } from "~/entities/Dormitory";
+import type { User } from "~/entities/User";
 import { useSelfStore } from "~/stores/selfStore";
+import type { byId } from "~~/server/dto/profile/byId";
 
 type Tabs = "info" | "tools";
 
 const { self, addFriend } = useSelfStore();
 
 const route = useRoute();
-const userFetch = await $fetch("/api/profile/byId?id=" + route.params.id, {
-	credentials: "include",
-	headers: useRequestHeaders(["cookie"]),
+const userFetch = await $fetch<byId>(
+	"/api/profile/byId?id=" + route.params.id,
+	{
+		credentials: "include",
+		headers: useRequestHeaders(["cookie"]),
+	},
+);
+
+const user = ref<User>({
+	id: typeof userFetch.id === "object" ? userFetch.id.value : userFetch.id,
+	login:
+		typeof userFetch.login === "object"
+			? userFetch.login.value
+			: userFetch.login,
+	educationEmail:
+		typeof userFetch.educationEmail === "object"
+			? userFetch.educationEmail.value
+			: userFetch.educationEmail,
+	birthdate: new Date(
+		typeof userFetch.birthdate === "object"
+			? userFetch.birthdate.value
+			: userFetch.birthdate,
+	),
+	dormitory: {} as Dormitory,
+	building:
+		typeof userFetch.building === "object"
+			? userFetch.building.value
+			: userFetch.building,
+	floor:
+		typeof userFetch.floor === "object"
+			? userFetch.floor.value
+			: userFetch.floor,
+	room:
+		typeof userFetch.room === "object"
+			? userFetch.room.value
+			: userFetch.room,
+	surname:
+		typeof userFetch.surname === "object"
+			? userFetch.surname.value
+			: userFetch.surname,
+	name:
+		typeof userFetch.name === "object"
+			? userFetch.name.value
+			: userFetch.name,
+	patronymic:
+		typeof userFetch.patronymic === "object"
+			? userFetch.patronymic.value
+			: userFetch.patronymic,
+	contacts: [],
+	friends: [],
 });
 
 if (route.params.id === self?.id) {
@@ -37,7 +87,7 @@ const tab: Ref<Tabs> = ref("tools");
 			<div :class="$style.content">
 				<div :class="$style.profile">
 					<h1 v-if="self" :class="$style.name">
-						{{ self.name.value }} {{ self.surname.value }}
+						{{ user.name }} {{ user.surname }}
 					</h1>
 					<div v-else :class="$style.name">Имя Фамилия</div>
 

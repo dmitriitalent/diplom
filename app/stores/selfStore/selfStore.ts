@@ -23,6 +23,10 @@ export const useSelfStore = defineStore("selfStore", () => {
 		}
 	};
 
+	const logout = () => {
+		self.value = null;
+	};
+
 	const addFriend = async () => {
 		if (at != null) {
 			return await $fetch<AddFriendDto>("/api/self/addFriend", {
@@ -74,6 +78,7 @@ export const useSelfStore = defineStore("selfStore", () => {
 
 	return {
 		self,
+		logout,
 		refreshSelf,
 		addFriend,
 		updateSelf,

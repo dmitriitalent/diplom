@@ -32,6 +32,14 @@ const { data: hei } = useAsyncData<Array<HeiDTO>>(
 );
 
 const onClickRegistration = () => {
+	console.log(
+		(
+			residentForm.value.elems.find(
+				(el) => isFormSelect(el) && el.key === "dormitory",
+			) as FormSelect | undefined
+		)?.value,
+	);
+
 	const regData: RegistrationDto = {
 		login: (
 			form.value.elems.find(

@@ -167,7 +167,9 @@ const { data: activity, error } = await useAsyncData<Activity>(
 const { self } = useSelfStore();
 const isAuthor = activity.value?.author.id === self?.id;
 
-const activityVisual = ref(JSON.parse(JSON.stringify(activity.value)));
+const activityVisual = ref<Activity>(
+	JSON.parse(JSON.stringify(activity.value)),
+);
 
 const deleteActivity = () => {
 	$fetch("/api/activity/delete?id=" + activity.value?.id, {
@@ -211,6 +213,77 @@ const generateInvates = () => {
 	}).then((res: any) => {
 		inviteCode.value = res.code;
 	});
+};
+
+const isParticipant = computed(() => {
+	return !!activityVisual.value?.participants.find((p) => {
+		return p.id == self?.id;
+	});
+});
+
+const joinActivity = () => {
+	$fetch("/api/activity/register", {
+		method: "POST",
+		body: {
+			id: activity.value?.id,
+		},
+		credentials: "include",
+	}).then((res) => {
+		activityVisual.value.participants.push({
+			id: typeof self?.id === "object" ? self?.id.value : self?.id,
+			login:
+				typeof self?.login === "object"
+					? self?.login.value
+					: self?.login,
+			educationEmail:
+				typeof self?.educationEmail === "object"
+					? self?.educationEmail.value
+					: self?.educationEmail,
+			birthdate: new Date(),
+			dormitory: {} as Dormitory,
+			building:
+				typeof self?.building === "object"
+					? self?.building.value
+					: self?.building,
+			floor:
+				typeof self?.floor === "object"
+					? self?.floor.value
+					: self?.floor,
+			room:
+				typeof self?.room === "object" ? self?.room.value : self?.room,
+			surname:
+				typeof self?.surname === "object"
+					? self?.surname.value
+					: self?.surname,
+			name:
+				typeof self?.name === "object" ? self?.name.value : self?.name,
+			patronymic:
+				typeof self?.patronymic === "object"
+					? self?.patronymic.value
+					: self?.patronymic,
+			contacts: [],
+			friends: [],
+		} as User);
+	});
+};
+
+const removeParticipant = () => {
+	const index = activityVisual.value.participants.findIndex((p) => {
+		return p.id == self?.id;
+	});
+
+	activityVisual.value.participants = [
+		...(activityVisual.value?.participants.splice(0, index) as Array<User>),
+		...(activityVisual.value?.participants.splice(index) as Array<User>),
+	];
+
+	$fetch("/api/activity/unregister", {
+		method: "DELETE",
+		body: {
+			id: activity.value?.id,
+		},
+		credentials: "include",
+	}).then((res) => {});
 };
 </script>
 
@@ -262,13 +335,15 @@ const generateInvates = () => {
 						>Создать приглашения</UiButton
 					>
 
-					<UiDatePicker
-						:class="$style.expiresAt"
-						enable-time
-						left-icon-name=""
-						placeholder="Активен до"
-						v-model="expiresAt"
-					></UiDatePicker>
+					<ClientOnly>
+						<UiDatePicker
+							:class="$style.expiresAt"
+							enable-time
+							left-icon-name=""
+							placeholder="Активен до"
+							v-model="expiresAt"
+						></UiDatePicker>
+					</ClientOnly>
 
 					<UiInput
 						type="number"
@@ -280,6 +355,24 @@ const generateInvates = () => {
 					Код приглашения: {{ inviteCode }}
 				</div>
 			</div>
+
+			<UiButton
+				v-if="!isParticipant"
+				:class="$style.join"
+				@click="joinActivity"
+				accent
+			>
+				Участвовать
+			</UiButton>
+
+			<UiButton
+				v-if="isParticipant"
+				:class="$style.remove"
+				accent
+				@click="removeParticipant"
+			>
+				Выйти из участия
+			</UiButton>
 
 			<div :class="$style.top">
 				<UiGallery :class="$style.gallery" :autoplay="3000" loop>
@@ -392,15 +485,18 @@ const generateInvates = () => {
 			</div>
 
 			<div
-				v-if="activity.participants.length != 0"
+				v-if="activityVisual.participants.length != 0"
 				:class="$style.participants"
 			>
 				<h2 :class="$style.title">Участники</h2>
-				<RouterLink
-					v-for="participant in activity.participants"
-					:to="`/profile/${participant.id}`"
+				<div
+					:class="$style.participant"
+					v-for="participant in activityVisual.participants"
 				>
-					<div :class="$style.participant">
+					<RouterLink
+						:to="`/profile/${participant.id}`"
+						:class="$style.link"
+					>
 						<img
 							:class="$style.avatar"
 							:src="`/api/images/byGuid?guid=avatar`"
@@ -408,13 +504,12 @@ const generateInvates = () => {
 						<div :class="$style.name">
 							{{ participant.name + " " + participant.surname }}
 						</div>
-					</div>
-				</RouterLink>
+					</RouterLink>
+				</div>
 			</div>
 		</div>
 	</div>
 </template>
-
 <style module lang="scss">
 .wrapper {
 	.container {
@@ -481,6 +576,12 @@ const generateInvates = () => {
 
 			height: 100%;
 			border-radius: 10px;
+
+			.image {
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+			}
 		}
 	}
 
@@ -544,17 +645,30 @@ const generateInvates = () => {
 		.participant {
 			display: flex;
 			align-items: center;
-			column-gap: 20px;
+			justify-content: space-between;
+			transition: $transition-fast;
+			padding: 5px;
+			border-radius: 10px;
 
-			.avatar {
-				height: 50px;
-				width: 50px;
-				border-radius: 100%;
+			&:hover {
+				@include color-black-bg(0.1);
 			}
 
-			.name {
-				@include text-m;
-				@include color-black;
+			.link {
+				display: flex;
+				column-gap: 20px;
+				align-items: center;
+
+				.avatar {
+					height: 50px;
+					width: 50px;
+					border-radius: 100%;
+				}
+
+				.name {
+					@include text-m;
+					@include color-black;
+				}
 			}
 		}
 	}

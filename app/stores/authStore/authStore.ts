@@ -1,5 +1,6 @@
 import type { LoginDto } from "../../dto/login.dto";
 import type { RegistrationDto } from "../../dto/registration.dto";
+import { useSelfStore } from "../selfStore";
 
 export const useAuthStore = defineStore("authStore", () => {
 	const at = useCookie("accessToken");
@@ -33,6 +34,9 @@ export const useAuthStore = defineStore("authStore", () => {
 
 	const logout = () => {
 		const headers = useRequestHeaders(["cookie"]);
+
+		const { logout } = useSelfStore();
+		logout();
 
 		return $fetch("/api/auth/logout", {
 			method: "POST",

@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
 				hei: body.hei,
 				birthdate: birthdate,
 				consent_user_agreement: body.consentUserAgreement,
-				dormitory: body.dormitory,
+				dormitory_id: body.dormitory,
 				building: body.building,
 				floor: body.floor,
 				room: body.room,
