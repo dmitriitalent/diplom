@@ -31,6 +31,9 @@ defineProps({
 					<RouterLink to="/news">
 						<UiButton :class="$style.link" inset>Новости</UiButton>
 					</RouterLink>
+					<RouterLink to="/chats">
+						<UiButton :class="$style.link" inset>Чаты</UiButton>
+					</RouterLink>
 				</div>
 
 				<RouterLink v-if="!welcome" to="/profile/self">

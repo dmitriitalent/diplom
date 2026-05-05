@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { Dormitory } from "~/entities/Dormitory";
 import type { Service, ServiceComment } from "~/entities/Service";
-import type { User } from "~/entities/User";
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { ServiceDtoById } from "~~/server/dto/service/byId";
@@ -18,27 +16,6 @@ const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
 
-const mapProfile = (p: byId): User => ({
-	id: typeof p.id === "object" ? p.id.value : p.id,
-	login: typeof p.login === "object" ? p.login.value : p.login,
-	educationEmail:
-		typeof p.educationEmail === "object"
-			? p.educationEmail.value
-			: p.educationEmail,
-	birthdate: new Date(
-		typeof p.birthdate === "object" ? p.birthdate.value : p.birthdate,
-	),
-	dormitory: {} as Dormitory,
-	building: typeof p.building === "object" ? p.building.value : p.building,
-	floor: typeof p.floor === "object" ? p.floor.value : p.floor,
-	room: typeof p.room === "object" ? p.room.value : p.room,
-	surname: typeof p.surname === "object" ? p.surname.value : p.surname,
-	name: typeof p.name === "object" ? p.name.value : p.name,
-	patronymic:
-		typeof p.patronymic === "object" ? p.patronymic.value : p.patronymic,
-	contacts: [],
-	friends: [],
-});
 
 const { data: service } = await useAsyncData<Service>(
 	"service-" + id,
@@ -56,7 +33,7 @@ const { data: service } = await useAsyncData<Service>(
 			name: s.name,
 			description: s.description,
 			images: s.images,
-			owner: mapProfile(ownerFetch),
+			owner: unwrapProfile(ownerFetch),
 			price: s.price,
 			publishedAt: s.publishedAt,
 			status: s.status,
@@ -82,7 +59,7 @@ const { data: commentsData } = await useAsyncData<ServiceComment[]>(
 					id: c.id,
 					listingId: c.listingId,
 					authorId: c.authorId,
-					author: mapProfile(authorFetch),
+					author: unwrapProfile(authorFetch),
 					body: c.body,
 					publishedAt: c.publishedAt,
 					updatedAt: c.updatedAt,
@@ -126,44 +103,20 @@ const addComment = async () => {
 			listingId: res.listingId,
 			authorId: res.authorId,
 			author: {
-				id: typeof self?.id === "object" ? self?.id.value : self?.id,
-				login:
-					typeof self?.login === "object"
-						? self?.login.value
-						: self?.login,
-				educationEmail:
-					typeof self?.educationEmail === "object"
-						? self?.educationEmail.value
-						: self?.educationEmail,
+				id: unwrapField(self?.id),
+				login: unwrapField(self?.login),
+				educationEmail: unwrapField(self?.educationEmail),
 				birthdate: new Date(),
-				dormitory: {} as Dormitory,
-				building:
-					typeof self?.building === "object"
-						? self?.building.value
-						: self?.building,
-				floor:
-					typeof self?.floor === "object"
-						? self?.floor.value
-						: self?.floor,
-				room:
-					typeof self?.room === "object"
-						? self?.room.value
-						: self?.room,
-				surname:
-					typeof self?.surname === "object"
-						? self?.surname.value
-						: self?.surname,
-				name:
-					typeof self?.name === "object"
-						? self?.name.value
-						: self?.name,
-				patronymic:
-					typeof self?.patronymic === "object"
-						? self?.patronymic.value
-						: self?.patronymic,
+				dormitory: {} as any,
+				building: unwrapField(self?.building),
+				floor: unwrapField(self?.floor),
+				room: unwrapField(self?.room),
+				surname: unwrapField(self?.surname),
+				name: unwrapField(self?.name),
+				patronymic: unwrapField(self?.patronymic),
 				contacts: [],
 				friends: [],
-			} as User,
+			},
 			body: res.body,
 			publishedAt: res.publishedAt,
 			updatedAt: res.updatedAt,

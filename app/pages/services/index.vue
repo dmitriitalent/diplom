@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { Dormitory } from "~/entities/Dormitory";
 import type { Service } from "~/entities/Service";
-import type { User } from "~/entities/User";
 import type { ServiceDtoList } from "~~/server/dto/service/list";
 import type { byId } from "~~/server/dto/profile/byId";
 
@@ -10,21 +8,6 @@ const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
 const priceMin = ref<number | undefined>(undefined);
 const priceMax = ref<number | undefined>(undefined);
 
-const mapOwner = (ownerFetch: byId): User => ({
-	id: typeof ownerFetch.id === "object" ? ownerFetch.id.value : ownerFetch.id,
-	login: typeof ownerFetch.login === "object" ? ownerFetch.login.value : ownerFetch.login,
-	educationEmail: typeof ownerFetch.educationEmail === "object" ? ownerFetch.educationEmail.value : ownerFetch.educationEmail,
-	birthdate: new Date(typeof ownerFetch.birthdate === "object" ? ownerFetch.birthdate.value : ownerFetch.birthdate),
-	dormitory: {} as Dormitory,
-	building: typeof ownerFetch.building === "object" ? ownerFetch.building.value : ownerFetch.building,
-	floor: typeof ownerFetch.floor === "object" ? ownerFetch.floor.value : ownerFetch.floor,
-	room: typeof ownerFetch.room === "object" ? ownerFetch.room.value : ownerFetch.room,
-	surname: typeof ownerFetch.surname === "object" ? ownerFetch.surname.value : ownerFetch.surname,
-	name: typeof ownerFetch.name === "object" ? ownerFetch.name.value : ownerFetch.name,
-	patronymic: typeof ownerFetch.patronymic === "object" ? ownerFetch.patronymic.value : ownerFetch.patronymic,
-	contacts: [],
-	friends: [],
-});
 
 const fetchServices = async (query: Record<string, any> = {}): Promise<Service[]> => {
 	const data = await $fetch<ServiceDtoList>("/api/service/list", { query });
@@ -39,7 +22,7 @@ const fetchServices = async (query: Record<string, any> = {}): Promise<Service[]
 				name: f.name,
 				description: f.description,
 				images: f.images,
-				owner: mapOwner(ownerFetch),
+				owner: unwrapProfile(ownerFetch),
 				price: f.price,
 				publishedAt: f.publishedAt,
 				status: f.status,

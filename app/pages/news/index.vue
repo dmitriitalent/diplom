@@ -1,48 +1,33 @@
 <script setup lang="ts">
-import type { Dormitory } from "~/entities/Dormitory";
 import type { News } from "~/entities/News";
-import type { User } from "~/entities/User";
 import type { byId } from "~~/server/dto/profile/byId";
 import type { NewsListDtoList } from "~~/server/dto/news/newsList";
+import { useAuthStore } from "~/stores/authStore";
+import { jwtDecode } from "jwt-decode";
 
-const { data: newsPendingFetch } = await useFetch<NewsListDtoList>(
-	"/api/news/list?status=pending",
-);
+const headers = useRequestHeaders(["cookie"]);
+
+const { at } = useAuthStore();
+const isAdmin = at.value
+	? (jwtDecode(at.value) as any).roles?.includes("ADMIN") ?? false
+	: false;
+
+const { data: newsPendingFetch } = isAdmin
+	? await useFetch<NewsListDtoList>("/api/news/list?status=pending")
+	: { data: ref(null) };
 
 const { data: newsFetch } = await useFetch<NewsListDtoList>("/api/news/list");
 
 const newsList = ref<Array<News>>([]);
 
-newsPendingFetch.value?.items.forEach(async (f) => {
-	const authorFetch = await $fetch<byId>(
-		"/api/profile/byId?id=" + f.authorId,
-		{
-			headers: useRequestHeaders(["cookie"]),
-		},
-	);
-
-	const author: User = {
-		id: authorFetch.id,
-		login: authorFetch.login,
-		educationEmail: authorFetch.educationEmail,
-		birthdate: new Date(authorFetch.birthdate),
-		dormitory: {} as Dormitory,
-		building: authorFetch.building,
-		floor: authorFetch.floor,
-		room: authorFetch.room,
-		surname: authorFetch.surname,
-		name: authorFetch.name,
-		patronymic: authorFetch.patronymic,
-		contacts: [],
-		friends: [],
-	};
-
-	const news: News = {
+const mapNews = async (f: NewsListDtoList["items"][number]): Promise<News> => {
+	const authorFetch = await $fetch<byId>("/api/profile/byId?id=" + f.authorId, { headers });
+	return {
 		content: f.content,
 		id: f.id,
 		imageIds: f.imageIds,
 		title: f.title,
-		author: author,
+		author: unwrapProfile(authorFetch),
 		activityIds: f.activityIds,
 		createdAt: f.createdAt,
 		dormitoryId: f.dormitoryId,
@@ -54,54 +39,14 @@ newsPendingFetch.value?.items.forEach(async (f) => {
 		userReaction: f.userReaction,
 		viewTemplate: f.viewTemplate,
 	};
+};
 
-	newsList.value.push(news);
-});
-
-newsFetch.value?.items.forEach(async (f) => {
-	const authorFetch = await $fetch<byId>(
-		"/api/profile/byId?id=" + f.authorId,
-		{
-			headers: useRequestHeaders(["cookie"]),
-		},
-	);
-
-	const author: User = {
-		id: authorFetch.id,
-		login: authorFetch.login,
-		educationEmail: authorFetch.educationEmail,
-		birthdate: new Date(authorFetch.birthdate),
-		dormitory: {} as Dormitory,
-		building: authorFetch.building,
-		floor: authorFetch.floor,
-		room: authorFetch.room,
-		surname: authorFetch.surname,
-		name: authorFetch.name,
-		patronymic: authorFetch.patronymic,
-		contacts: [],
-		friends: [],
-	};
-
-	const news: News = {
-		content: f.content,
-		id: f.id,
-		imageIds: f.imageIds,
-		title: f.title,
-		author: author,
-		activityIds: f.activityIds,
-		createdAt: f.createdAt,
-		dormitoryId: f.dormitoryId,
-		moderationComment: f.moderationComment,
-		moderationStatus: f.moderationStatus,
-		productIds: f.productIds,
-		reactionCount: f.reactionCount,
-		updatedAt: f.updatedAt,
-		userReaction: f.userReaction,
-		viewTemplate: f.viewTemplate,
-	};
-
-	newsList.value.push(news);
-});
+for (const f of newsPendingFetch.value?.items ?? []) {
+	newsList.value.push(await mapNews(f));
+}
+for (const f of newsFetch.value?.items ?? []) {
+	newsList.value.push(await mapNews(f));
+}
 </script>
 
 <template>

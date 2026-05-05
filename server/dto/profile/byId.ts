@@ -4,6 +4,7 @@ export type byId = {
 	contacts: Array<{
 		key: string;
 		value: string;
+		isPrimary?: boolean;
 	}>;
 	createdAt: string;
 

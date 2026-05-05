@@ -72,12 +72,9 @@ const declineRequest = async (id: string) => {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const unwrap = (v: any): string =>
-	typeof v === "object" && v !== null ? v.value : v ?? "";
-
 const profileLocation = (p: byId) => {
-	const building = unwrap(p.building);
-	const room = unwrap(p.room);
+	const building = unwrapField(p.building);
+	const room = unwrapField(p.room);
 	if (building && room) return `Корпус ${building}, комната ${room}`;
 	if (building) return `Корпус ${building}`;
 	return undefined;
@@ -123,11 +120,12 @@ const profileLocation = (p: byId) => {
 				<div v-else :class="$style.list">
 					<ProfileFriendPlate
 						v-for="p in friendProfiles"
-						:key="unwrap(p.id)"
-						:id="unwrap(p.id)"
-						:name="unwrap(p.name)"
-						:surname="unwrap(p.surname)"
+						:key="unwrapField(p.id)"
+						:id="unwrapField(p.id)"
+						:name="unwrapField(p.name)"
+						:surname="unwrapField(p.surname)"
 						:location="profileLocation(p)"
+						:contacts="p.contacts ?? []"
 						@delete="deleteFriend"
 					/>
 				</div>
@@ -141,13 +139,13 @@ const profileLocation = (p: byId) => {
 				<div v-else :class="$style.list">
 					<div
 						v-for="p in pendingInProfiles"
-						:key="unwrap(p.id)"
+						:key="unwrapField(p.id)"
 						:class="$style.requestPlate"
-						@click="$router.push(`/profile/${unwrap(p.id)}`)"
+						@click="$router.push(`/profile/${unwrapField(p.id)}`)"
 					>
 						<div :class="$style.requestInfo">
 							<span :class="$style.requestName">
-								{{ unwrap(p.name) }} {{ unwrap(p.surname) }}
+								{{ unwrapField(p.name) }} {{ unwrapField(p.surname) }}
 							</span>
 							<span
 								v-if="profileLocation(p)"

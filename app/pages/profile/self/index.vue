@@ -70,43 +70,45 @@ const onAddFriend = () => {
 						v-show="tab == 'tools'"
 						:class="[$style.tab, $style.tools]"
 					>
-						<div :class="$style.column">
-							<RouterLink to="self/settings">
-								<UiButton :class="$style.tool" size="custom"
-									><Icon
-										:class="$style.icon"
-										name="material-symbols:drive-file-rename-outline-outline-rounded"
-									></Icon
-								></UiButton>
-							</RouterLink>
+						<!-- <div :class="$style.column">
 							<UiButton :class="$style.tool" size="custom"
 								><Icon
 									:class="$style.icon"
 									name="material-symbols:drive-file-rename-outline-outline-rounded"
 								></Icon
 							></UiButton>
-						</div>
+							<UiButton :class="$style.tool" size="custom"
+								><Icon
+									:class="$style.icon"
+									name="material-symbols:drive-file-rename-outline-outline-rounded"
+								></Icon
+							></UiButton>
+						</div> -->
 						<div :class="$style.column">
 							<RouterLink to="self/friends">
 								<UiButton :class="$style.tool" size="custom"
 									><Icon
 										:class="$style.icon"
-										name="material-symbols:drive-file-rename-outline-outline-rounded"
+										name="fa7-solid:user-friends"
 									></Icon
 								></UiButton>
 							</RouterLink>
-							<UiButton :class="$style.tool" size="custom"
-								><Icon
-									:class="$style.icon"
-									name="material-symbols:drive-file-rename-outline-outline-rounded"
-								></Icon
-							></UiButton>
-							<UiButton :class="$style.tool" size="custom"
-								><Icon
-									:class="$style.icon"
-									name="material-symbols:drive-file-rename-outline-outline-rounded"
-								></Icon
-							></UiButton>
+							<RouterLink to="/chats">
+								<UiButton :class="$style.tool" size="custom"
+									><Icon
+										:class="$style.icon"
+										name="material-symbols:android-messages"
+									></Icon
+								></UiButton>
+							</RouterLink>
+							<RouterLink to="self/settings">
+								<UiButton :class="$style.tool" size="custom"
+									><Icon
+										:class="$style.icon"
+										name="material-symbols:settings"
+									></Icon
+								></UiButton>
+							</RouterLink>
 						</div>
 					</div>
 				</UiTransition>

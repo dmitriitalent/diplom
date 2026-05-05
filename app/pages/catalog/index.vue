@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import CategoryComponent from "~/components/CategoryComponent.vue";
 import type { Category } from "~/entities/Category";
-import type { Dormitory } from "~/entities/Dormitory";
 import type { Product } from "~/entities/Product";
-import type { User } from "~/entities/User";
 import { useCategoryStore } from "~/stores/categoryStore";
 import type { byId } from "~~/server/dto/profile/byId";
+
+const headers = useRequestHeaders(["cookie"]);
 
 const { data: productsFetch } = await useFetch("/api/product/list");
 
@@ -14,28 +14,10 @@ const products = ref<Array<Product>>([]);
 const { categories, init } = useCategoryStore();
 await init();
 
-productsFetch.value?.products.forEach(async (f) => {
+for (const f of productsFetch.value?.products ?? []) {
 	const category: Category = categories?.find((c) => c.id == f.categoryId)!;
 
-	const ownerFetch = await $fetch<byId>("/api/profile/byId?id=" + f.ownerId, {
-		headers: useRequestHeaders(["cookie"]),
-	});
-
-	const owner: User = {
-		id: ownerFetch.id,
-		login: ownerFetch.login,
-		educationEmail: ownerFetch.educationEmail,
-		birthdate: new Date(ownerFetch.birthdate),
-		dormitory: {} as Dormitory,
-		building: ownerFetch.building,
-		floor: ownerFetch.floor,
-		room: ownerFetch.room,
-		surname: ownerFetch.surname,
-		name: ownerFetch.name,
-		patronymic: ownerFetch.patronymic,
-		contacts: [],
-		friends: [],
-	};
+	const ownerFetch = await $fetch<byId>("/api/profile/byId?id=" + f.ownerId, { headers });
 
 	const product: Product = {
 		category: category,
@@ -43,7 +25,7 @@ productsFetch.value?.products.forEach(async (f) => {
 		id: f.id,
 		images: f.images,
 		name: f.name,
-		owner: owner,
+		owner: unwrapProfile(ownerFetch),
 		price: f.price,
 		publishedAt: f.publishedAt,
 		status: f.status,
@@ -52,7 +34,7 @@ productsFetch.value?.products.forEach(async (f) => {
 	};
 
 	products.value.push(product);
-});
+}
 </script>
 
 <template>

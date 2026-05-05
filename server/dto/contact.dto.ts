@@ -4,4 +4,5 @@ export type ContactDto = {
 	key: string;
 	value: string;
 	visibility: SelfDataVisibility;
+	isPrimary: boolean;
 };

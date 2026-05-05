@@ -45,5 +45,6 @@ export type Self = {
 		key: string;
 		value: string;
 		visibility: SelfDataVisibility;
+		isPrimary: boolean;
 	}>;
 };

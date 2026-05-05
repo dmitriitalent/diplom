@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import type { Dormitory } from "~/entities/Dormitory";
 import type { News } from "~/entities/News";
-import type { User } from "~/entities/User";
 import { useAuthStore } from "~/stores/authStore";
 import { useCategoryStore } from "~/stores/categoryStore";
 import { useSelfStore } from "~/stores/selfStore";
@@ -33,52 +31,7 @@ const { data: news, error } = await useAsyncData<News>(
 			},
 		);
 
-		const author: User = {
-			id:
-				typeof authorFetch.id === "object"
-					? authorFetch.id.value
-					: authorFetch.id,
-			login:
-				typeof authorFetch.login === "object"
-					? authorFetch.login.value
-					: authorFetch.login,
-			educationEmail:
-				typeof authorFetch.educationEmail === "object"
-					? authorFetch.educationEmail.value
-					: authorFetch.educationEmail,
-			birthdate: new Date(
-				typeof authorFetch.birthdate === "object"
-					? authorFetch.birthdate.value
-					: authorFetch.birthdate,
-			),
-			dormitory: {} as Dormitory,
-			building:
-				typeof authorFetch.building === "object"
-					? authorFetch.building.value
-					: authorFetch.building,
-			floor:
-				typeof authorFetch.floor === "object"
-					? authorFetch.floor.value
-					: authorFetch.floor,
-			room:
-				typeof authorFetch.room === "object"
-					? authorFetch.room.value
-					: authorFetch.room,
-			surname:
-				typeof authorFetch.surname === "object"
-					? authorFetch.surname.value
-					: authorFetch.surname,
-			name:
-				typeof authorFetch.name === "object"
-					? authorFetch.name.value
-					: authorFetch.name,
-			patronymic:
-				typeof authorFetch.patronymic === "object"
-					? authorFetch.patronymic.value
-					: authorFetch.patronymic,
-			contacts: [],
-			friends: [],
-		};
+		const author = unwrapProfile(authorFetch);
 
 		return {
 			content: newsFetch.content,

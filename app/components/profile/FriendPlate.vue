@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import type { ContactLike } from "~/utils/contactUrl";
+
 const props = defineProps<{
 	id: string;
 	name: string;
 	surname: string;
 	location?: string;
+	contacts?: ContactLike[];
 }>();
 
 const emit = defineEmits<{
@@ -26,6 +29,11 @@ const hideTooltip = () => {
 };
 
 const goToProfile = () => router.push(`/profile/${props.id}`);
+
+const writeContact = () => {
+	const url = getPrimaryContactUrl(props.contacts ?? []);
+	if (url) window.open(url, "_blank");
+};
 </script>
 
 <template>
@@ -54,7 +62,12 @@ const goToProfile = () => router.push(`/profile/${props.id}`);
 				<UiButton :class="$style.tooltipBtn" inset @click="goToProfile">
 					Перейти
 				</UiButton>
-				<UiButton :class="$style.tooltipBtn" inset>
+				<UiButton
+					:class="[$style.tooltipBtn, !getPrimaryContactUrl(contacts ?? []) && $style.tooltipBtnDisabled]"
+					inset
+					:disabled="!getPrimaryContactUrl(contacts ?? [])"
+					@click="writeContact"
+				>
 					Написать
 				</UiButton>
 				<UiButton
@@ -131,12 +144,17 @@ const goToProfile = () => router.push(`/profile/${props.id}`);
 				@include text-m;
 				@include color-black;
 
+				box-sizing: border-box;
 				justify-content: flex-start;
 				padding: 8px 12px;
 				border-radius: 6px;
 				white-space: nowrap;
 				width: 100%;
-				box-sizing: border-box;
+			}
+
+			.tooltipBtnDisabled {
+				opacity: 0.35;
+				cursor: default;
 			}
 
 			.tooltipBtnDelete {
