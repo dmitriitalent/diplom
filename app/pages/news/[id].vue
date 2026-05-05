@@ -11,9 +11,11 @@ import type { byId } from "~~/server/dto/profile/byId";
 import { jwtDecode } from "jwt-decode";
 
 const route = useRoute();
+const router = useRouter();
 const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
 
 const { at } = useAuthStore();
+const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
 
 const { data: news, error } = await useAsyncData<News>(
@@ -100,6 +102,9 @@ const { data: news, error } = await useAsyncData<News>(
 
 const newsVisual = ref(JSON.parse(JSON.stringify(news.value)));
 
+const isAuthor = news.value?.author.id === self?.id;
+const canEdit = isAdmin || isAuthor;
+
 const deleteNews = () => {
 	$fetch("/api/news/delete?id=" + news.value?.id, {
 		method: "DELETE",
@@ -128,9 +133,23 @@ const moderateNews = (status: string) => {
 <template>
 	<div :class="$style.wrapper">
 		<div :class="$style.container" v-if="news">
+			<div v-if="canEdit" :class="$style.authorTools">
+				<UiButton
+					v-if="!isAdmin"
+					:class="$style.edit"
+					@click="router.push('/news/edit/' + news.id)"
+					>Редактировать</UiButton
+				>
+			</div>
+
 			<div v-if="isAdmin" :class="$style.adminTools">
 				<UiButton :class="$style.delete" @click="deleteNews"
 					>Удалить</UiButton
+				>
+				<UiButton
+					:class="$style.edit"
+					@click="router.push('/news/edit/' + news.id)"
+					>Редактировать</UiButton
 				>
 
 				<UiButton
@@ -208,6 +227,16 @@ const moderateNews = (status: string) => {
 	column-gap: 30px;
 	position: relative;
 
+	.authorTools {
+		display: flex;
+		flex-direction: column;
+		row-gap: 10px;
+
+		.edit {
+			@include color-black-bg(0.08);
+		}
+	}
+
 	.adminTools {
 		display: flex;
 		flex-direction: column;
@@ -224,6 +253,10 @@ const moderateNews = (status: string) => {
 
 		.decline {
 			@include color-warn-bg;
+		}
+
+		.edit {
+			@include color-black-bg(0.08);
 		}
 	}
 

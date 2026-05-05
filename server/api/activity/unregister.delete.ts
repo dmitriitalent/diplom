@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
 					cookie,
 				},
 				withCredentials: true,
+				data: body,
 			},
 		);
 

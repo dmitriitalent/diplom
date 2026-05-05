@@ -4,6 +4,7 @@ import type { Dormitory } from "~/entities/Dormitory";
 import type { User } from "~/entities/User";
 import type { byId } from "~~/server/dto/profile/byId";
 import type { ActivityDtoList } from "~~/server/dto/activity/list";
+import { useSelfStore } from "~/stores/selfStore";
 
 const { data: activitiesPendingFetch } = await useFetch<ActivityDtoList>(
 	"/api/activity/list?status=pending",

@@ -6,14 +6,16 @@ import type { byId } from "~~/server/dto/profile/byId";
 
 type Tabs = "info" | "tools";
 
-const { self, addFriend } = useSelfStore();
+const { self } = useSelfStore();
 
 const route = useRoute();
+const reqHeaders = useRequestHeaders(["cookie"]);
+
 const userFetch = await $fetch<byId>(
 	"/api/profile/byId?id=" + route.params.id,
 	{
 		credentials: "include",
-		headers: useRequestHeaders(["cookie"]),
+		headers: reqHeaders,
 	},
 );
 
@@ -67,6 +69,70 @@ if (route.params.id === self?.id) {
 }
 
 const tab: Ref<Tabs> = ref("tools");
+
+// ─── Friend status ────────────────────────────────────────────────────────────
+
+const { data: friendIds, refresh: refreshFriendIds } = await useAsyncData(
+	`friend-list-${route.params.id}`,
+	async () => {
+		try {
+			const res = await $fetch<{ friends: string[] }>(
+				"/api/friend/list",
+				{
+					headers: reqHeaders,
+				},
+			);
+			return res.friends ?? [];
+		} catch {
+			return [];
+		}
+	},
+);
+
+const { data: pendingOut, refresh: refreshPendingOut } = await useAsyncData(
+	`friend-pending-out-${route.params.id}`,
+	async () => {
+		try {
+			const res = await $fetch<{ pending_out: string[] }>(
+				"/api/friend/pendingOut",
+				{ headers: reqHeaders },
+			);
+			return res.pending_out ?? [];
+		} catch {
+			return [];
+		}
+	},
+);
+
+const targetId = String(route.params.id);
+const isFriend = computed(() => friendIds.value?.includes(targetId) ?? false);
+const isPending = computed(() => pendingOut.value?.includes(targetId) ?? false);
+
+const friendLoading = ref(false);
+const sendRequest = async () => {
+	friendLoading.value = true;
+	try {
+		await $fetch(`/api/friend/request?friendId=${targetId}`, {
+			method: "POST",
+		});
+		await refreshPendingOut();
+	} finally {
+		friendLoading.value = false;
+	}
+};
+
+const deleteLoading = ref(false);
+const deleteFriend = async () => {
+	deleteLoading.value = true;
+	try {
+		await $fetch(`/api/friend/delete?friendId=${targetId}`, {
+			method: "DELETE",
+		});
+		await refreshFriendIds();
+	} finally {
+		deleteLoading.value = false;
+	}
+};
 </script>
 
 <template>
@@ -82,6 +148,53 @@ const tab: Ref<Tabs> = ref("tools");
 					:class="$style.avatar"
 					:src="`/api/images/byGuid?guid=avatar`"
 				></UiImage>
+
+				<div
+					v-show="tab == 'tools'"
+					:class="[$style.tab, $style.tools]"
+				>
+					<div :class="$style.column">
+						<UiButton
+							v-if="isFriend"
+							:class="$style.tool"
+							size="custom"
+						>
+							<Icon
+								name="mdi:message-outline"
+								:class="$style.icon"
+							/>
+						</UiButton>
+						<UiButton
+							:class="$style.tool"
+							:disabled="deleteLoading"
+							@click="deleteFriend"
+							size="custom"
+							><Icon
+								name="mdi:account-remove"
+								:class="$style.icon"
+						/></UiButton>
+					</div>
+					<div :class="$style.column">
+						<UiButton :class="$style.tool" size="custom"
+							><Icon
+								:class="$style.icon"
+								name="material-symbols:drive-file-rename-outline-outline-rounded"
+							></Icon
+						></UiButton>
+						<UiButton :class="$style.tool" size="custom"
+							><Icon
+								:class="$style.icon"
+								name="material-symbols:drive-file-rename-outline-outline-rounded"
+							></Icon
+						></UiButton>
+						<UiButton :class="$style.tool" size="custom"
+							><Icon
+								:class="$style.icon"
+								name="material-symbols:drive-file-rename-outline-outline-rounded"
+							></Icon
+						></UiButton>
+					</div>
+				</div>
 			</div>
 
 			<div :class="$style.content">
