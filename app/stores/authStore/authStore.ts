@@ -1,6 +1,7 @@
 import type { LoginDto } from "../../dto/login.dto";
 import type { RegistrationDto } from "../../dto/registration.dto";
 import { useSelfStore } from "../selfStore";
+import { type JwtPayload } from "jwt-decode";
 
 export const useAuthStore = defineStore("authStore", () => {
 	const at = useCookie("accessToken");

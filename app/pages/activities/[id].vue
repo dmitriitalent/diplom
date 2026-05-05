@@ -166,6 +166,7 @@ const { data: activity, error } = await useAsyncData<Activity>(
 
 const { self } = useSelfStore();
 const isAuthor = activity.value?.author.id === self?.id;
+const router = useRouter();
 
 const activityVisual = ref<Activity>(
 	JSON.parse(JSON.stringify(activity.value)),
@@ -268,14 +269,9 @@ const joinActivity = () => {
 };
 
 const removeParticipant = () => {
-	const index = activityVisual.value.participants.findIndex((p) => {
-		return p.id == self?.id;
-	});
-
-	activityVisual.value.participants = [
-		...(activityVisual.value?.participants.splice(0, index) as Array<User>),
-		...(activityVisual.value?.participants.splice(index) as Array<User>),
-	];
+	activityVisual.value.participants = activityVisual.value.participants.filter(
+		(p) => p.id !== self?.id,
+	);
 
 	$fetch("/api/activity/unregister", {
 		method: "DELETE",
@@ -283,7 +279,11 @@ const removeParticipant = () => {
 			id: activity.value?.id,
 		},
 		credentials: "include",
-	}).then((res) => {});
+	}).then(() => {
+		if (activity.value?.isPrivate) {
+			router.push("/activities");
+		}
+	});
 };
 </script>
 
@@ -293,6 +293,11 @@ const removeParticipant = () => {
 			<div v-if="isAdmin" :class="$style.adminTools">
 				<UiButton :class="$style.delete" @click="deleteActivity"
 					>Удалить</UiButton
+				>
+				<UiButton
+					:class="$style.edit"
+					@click="router.push('/activities/edit/' + activity.id)"
+					>Редактировать</UiButton
 				>
 
 				<UiButton
@@ -322,12 +327,16 @@ const removeParticipant = () => {
 				></UiTextarea>
 			</div>
 
-			<div v-if="isAuthor" :class="$style.authorTools">
+			<div v-if="isAuthor && !isAdmin" :class="$style.authorTools">
 				<UiButton
-					v-if="!isAdmin"
 					:class="$style.delete"
 					@click="deleteActivity"
 					>Удалить</UiButton
+				>
+				<UiButton
+					:class="$style.edit"
+					@click="router.push('/activities/edit/' + activity.id)"
+					>Редактировать</UiButton
 				>
 
 				<div v-if="activity.isPrivate" :class="$style.row">
@@ -541,6 +550,10 @@ const removeParticipant = () => {
 
 		.decline {
 			@include color-warn-bg;
+		}
+
+		.edit {
+			@include color-black-bg(0.08);
 		}
 
 		.row {

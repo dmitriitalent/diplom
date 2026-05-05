@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		api: "http://localhost:8080",
 		public: {
-			publicRoutes: ["/welcome", "/login", "/registration"],
+			publicRoutes: ["/", "/welcome", "/login", "/registration"],
 			api: "http://localhost:8080",
 		},
 	},
@@ -29,11 +29,5 @@ export default defineNuxtConfig({
 		transpile: ["@vuepic/vue-datepicker"],
 	},
 
-	modules: [
-		"@nuxt/icon",
-		"@nuxt/eslint",
-		"@nuxt/fonts",
-		"@pinia/nuxt",
-		"nuxt-swiper",
-	],
+	modules: ["@nuxt/icon", "@nuxt/eslint", "@pinia/nuxt", "nuxt-swiper"],
 });

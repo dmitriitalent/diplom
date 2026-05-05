@@ -6,9 +6,12 @@ const FILENAME = "self/self.get.ts";
 
 export default defineEventHandler(async (event) => {
 	try {
-		const uid = JSON.parse(
-			atob(parseCookies(event).accessToken.split(".")[1]!),
-		).user_id;
+		const accessToken = parseCookies(event).accessToken;
+		if (!accessToken) {
+			throw createError({ statusCode: 401, message: "No access token" });
+		}
+
+		const uid = JSON.parse(atob(accessToken.split(".")[1]!)).user_id;
 
 		const config = useRuntimeConfig();
 		const cookie = getHeader(event, "cookie");
@@ -16,19 +19,18 @@ export default defineEventHandler(async (event) => {
 		const res = await axios.get<byId>(
 			`${config.api}/profile/` + String(uid),
 			{
-				headers: {
-					cookie,
-				},
+				headers: { cookie },
 				withCredentials: true,
 			},
 		);
 
 		return res.data;
-	} catch (err) {
+	} catch (err: any) {
+		const status = err?.response?.status ?? err?.statusCode ?? 500;
 		console.log("error at " + FILENAME + ": " + String(err));
-		console.log(err);
 		throw createError({
-			statusCode: 500,
+			statusCode: status,
+			message: err?.response?.data?.error ?? err?.message ?? String(err),
 		});
 	}
 });
