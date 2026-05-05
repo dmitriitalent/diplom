@@ -39,121 +39,44 @@ const formVisibility = ref<Array<FormSelectOption>>([
 	},
 ]);
 
-const extractContacts = () => {
-	const fields = form.value.elems
-		.filter(
-			(elem) =>
-				isFormField(elem) ||
-				isFormDate(elem) ||
-				isFormSelect(elem) ||
-				isFormRow(elem),
-		)
-		.map((elem) => {
-			if (isFormRow(elem)) {
-				return elem.elems
-					.filter(
-						(rowElem) =>
-							isFormField(rowElem) ||
-							isFormDate(rowElem) ||
-							isFormSelect(rowElem),
-					)
-					.map((rowElem) => {
-						return {
-							key: rowElem.key,
-							value: rowElem.value,
-						};
-					});
-			} else {
-				return {
-					key: elem.key,
-					value: elem.value,
-				};
-			}
-		})
-		.flat();
+// ─── Contacts (managed outside FormComponent) ─────────────────────────────────
 
-	const filterContacts = fields.filter((c) => c.key.startsWith("contact"));
-	const fieldContacts: {
-		key: string;
-		value: string;
-		visibility: SelfDataVisibility;
-	}[] = [];
-
-	for (let i = 0; i < filterContacts.length; i += 3) {
-		fieldContacts.push({
-			key: filterContacts[i]?.value as string,
-			value: filterContacts[i + 1]?.value as string,
-			visibility: filterContacts[i + 2]?.value as SelfDataVisibility,
-		});
-	}
-
-	return fieldContacts;
+type LocalContact = {
+	key: string;
+	value: string;
+	visibility: SelfDataVisibility;
+	isPrimary: boolean;
 };
 
+const localContacts = ref<LocalContact[]>(
+	(self?.contacts ?? []).map((c) => ({
+		key: c.key ?? "",
+		value: c.value ?? "",
+		visibility: (c.visibility ?? "EVERYONE") as SelfDataVisibility,
+		isPrimary: c.isPrimary ?? false,
+	})),
+);
+
 const addContact = () => {
-	if (!self) {
-		return;
-	}
-
-	self.contacts = extractContacts();
-
-	self.contacts.push({
+	localContacts.value.push({
 		key: "",
 		value: "",
 		visibility: "EVERYONE",
+		isPrimary: false,
 	});
 };
 
 const deleteContact = (index: number) => {
-	return () => {
-		if (self?.contacts) {
-			self.contacts = [
-				...self.contacts.slice(0, index),
-				...self.contacts.slice(index + 1),
-			];
-		}
-	};
+	localContacts.value.splice(index, 1);
 };
 
-const contacts = (): Array<FormRow> => {
-	if (!self?.contacts) {
-		return [];
-	}
-
-	const rows: Array<FormRow> = self.contacts.map((contact, index) => {
-		return {
-			elemType: "row",
-			elems: [
-				{
-					elemType: "field",
-					type: "text",
-					key: "contact" + String(index) + "Key",
-					value: contact.key,
-				},
-				{
-					elemType: "field",
-					type: "text",
-					key: "contact" + String(index) + "Value",
-					value: contact.value,
-				},
-				{
-					elemType: "select",
-					key: "contact" + String(index) + "Visibility",
-					value: contact.visibility,
-					group: contact.key + "Visibility",
-					options: () => formVisibility.value,
-				},
-				{
-					elemType: "button",
-					leftIconName: "material-symbols:delete-outline",
-					action: deleteContact(index),
-				},
-			],
-		};
-	})!;
-
-	return rows;
+const setPrimary = (index: number) => {
+	localContacts.value.forEach((c, i) => {
+		c.isPrimary = i === index;
+	});
 };
+
+// ─── Main form ────────────────────────────────────────────────────────────────
 
 const { data: dormitoriesFetch } = await useFetch<DormitoryDtoGetList>(
 	"/api/dormitory/list",
@@ -335,22 +258,10 @@ const generateForm = (): Form => {
 					},
 				],
 			},
-
-			{ elemType: "separator", name: "Контакты", separator: true },
-			...contacts(),
-			{ elemType: "button", name: "Добавить", action: addContact },
 		],
 	};
 };
 const form = ref<Form>(generateForm());
-
-watch(
-	() => self?.contacts.length,
-	() => {
-		form.value = generateForm();
-		formKey.value++;
-	},
-);
 
 const onClickSave = () => {
 	const fields = form.value.elems
@@ -438,7 +349,7 @@ const onClickSave = () => {
 			status: string;
 		}>,
 
-		contacts: extractContacts(),
+		contacts: localContacts.value,
 	};
 
 	updateSelf(newSelf);
@@ -453,6 +364,12 @@ const onClickLogout = () => {
 const formKey = ref(0);
 const onClickReset = async () => {
 	form.value = generateForm();
+	localContacts.value = (self?.contacts ?? []).map((c) => ({
+		key: c.key ?? "",
+		value: c.value ?? "",
+		visibility: (c.visibility ?? "EVERYONE") as SelfDataVisibility,
+		isPrimary: c.isPrimary ?? false,
+	}));
 	formKey.value++;
 };
 </script>
@@ -473,6 +390,62 @@ const onClickReset = async () => {
 				</div>
 			</UiAppear>
 
+			<!-- Contacts section -->
+			<UiAppear>
+				<div :class="$style.contactsSection">
+					<div :class="$style.contactsSeparator">Контакты</div>
+
+					<div
+						v-for="(contact, i) in localContacts"
+						:key="i"
+						:class="$style.contactRow"
+					>
+						<label :class="$style.radioLabel" :title="contact.isPrimary ? 'Предпочитаемый контакт' : 'Сделать предпочитаемым'">
+							<input
+								type="radio"
+								name="primaryContact"
+								:checked="contact.isPrimary"
+								:class="$style.radio"
+								@change="setPrimary(i)"
+							/>
+							<span :class="[$style.radioCustom, contact.isPrimary && $style.radioCustomActive]">
+								<Icon v-if="contact.isPrimary" name="mdi:star" :class="$style.starIcon" />
+								<Icon v-else name="mdi:star-outline" :class="$style.starIcon" />
+							</span>
+						</label>
+
+						<UiInput
+							v-model="localContacts[i].key"
+							type="text"
+							placeholder="Тип (telegram, phone...)"
+							:class="$style.contactKey"
+						/>
+						<UiInput
+							v-model="localContacts[i].value"
+							type="text"
+							placeholder="Значение"
+							:class="$style.contactValue"
+						/>
+						<UiSelect
+							v-model="localContacts[i].visibility"
+							:options="formVisibility"
+							:class="$style.contactVisibility"
+						/>
+						<UiButton
+							:class="$style.contactDelete"
+							@click="deleteContact(i)"
+						>
+							<Icon name="material-symbols:delete-outline" :class="$style.deleteIcon" />
+						</UiButton>
+					</div>
+
+					<UiButton :class="$style.addContactBtn" inset @click="addContact">
+						<Icon name="material-symbols:add" :class="$style.addIcon" />
+						Добавить контакт
+					</UiButton>
+				</div>
+			</UiAppear>
+
 			<UiAppear>
 				<UiButton :class="$style.logout" @click="onClickLogout"
 					>Выйти</UiButton
@@ -488,6 +461,10 @@ const onClickReset = async () => {
 		@include container;
 		padding-bottom: 30px;
 
+		display: flex;
+		flex-direction: column;
+		row-gap: 20px;
+
 		.forms {
 			.form {
 				display: flex;
@@ -501,6 +478,98 @@ const onClickReset = async () => {
 			width: 140px;
 			margin: auto;
 		}
+	}
+}
+
+// ── Contacts section ──────────────────────────────────────────────────────────
+
+.contactsSection {
+	display: flex;
+	flex-direction: column;
+	row-gap: 8px;
+}
+
+.contactsSeparator {
+	@include title-s;
+	@include color-black;
+
+	padding: 8px 0 4px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	margin-bottom: 4px;
+}
+
+.contactRow {
+	display: flex;
+	align-items: center;
+	column-gap: 8px;
+}
+
+.radioLabel {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	flex-shrink: 0;
+
+	.radio {
+		display: none;
+	}
+
+	.radioCustom {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0.35;
+		transition: opacity $transition-fast;
+
+		&:hover {
+			opacity: 0.7;
+		}
+
+		&.radioCustomActive {
+			opacity: 1;
+		}
+
+		.starIcon {
+			width: 20px;
+			height: 20px;
+			color: #f5a623;
+		}
+	}
+}
+
+.contactKey {
+	width: 180px;
+	flex-shrink: 0;
+}
+
+.contactValue {
+	flex: 1;
+}
+
+.contactVisibility {
+	width: 150px;
+	flex-shrink: 0;
+}
+
+.contactDelete {
+	@include color-error-bg;
+
+	flex-shrink: 0;
+	padding: 6px;
+
+	.deleteIcon {
+		width: 18px;
+		height: 18px;
+	}
+}
+
+.addContactBtn {
+	width: fit-content;
+
+	.addIcon {
+		width: 16px;
+		height: 16px;
+		margin-right: 4px;
 	}
 }
 </style>

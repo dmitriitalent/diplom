@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { Dormitory } from "~/entities/Dormitory";
-import type { User } from "~/entities/User";
 import { useSelfStore } from "~/stores/selfStore";
 import type { byId } from "~~/server/dto/profile/byId";
 
@@ -19,49 +17,7 @@ const userFetch = await $fetch<byId>(
 	},
 );
 
-const user = ref<User>({
-	id: typeof userFetch.id === "object" ? userFetch.id.value : userFetch.id,
-	login:
-		typeof userFetch.login === "object"
-			? userFetch.login.value
-			: userFetch.login,
-	educationEmail:
-		typeof userFetch.educationEmail === "object"
-			? userFetch.educationEmail.value
-			: userFetch.educationEmail,
-	birthdate: new Date(
-		typeof userFetch.birthdate === "object"
-			? userFetch.birthdate.value
-			: userFetch.birthdate,
-	),
-	dormitory: {} as Dormitory,
-	building:
-		typeof userFetch.building === "object"
-			? userFetch.building.value
-			: userFetch.building,
-	floor:
-		typeof userFetch.floor === "object"
-			? userFetch.floor.value
-			: userFetch.floor,
-	room:
-		typeof userFetch.room === "object"
-			? userFetch.room.value
-			: userFetch.room,
-	surname:
-		typeof userFetch.surname === "object"
-			? userFetch.surname.value
-			: userFetch.surname,
-	name:
-		typeof userFetch.name === "object"
-			? userFetch.name.value
-			: userFetch.name,
-	patronymic:
-		typeof userFetch.patronymic === "object"
-			? userFetch.patronymic.value
-			: userFetch.patronymic,
-	contacts: [],
-	friends: [],
-});
+const user = ref(unwrapProfile(userFetch));
 
 if (route.params.id === self?.id) {
 	const router = useRouter();
@@ -133,6 +89,11 @@ const deleteFriend = async () => {
 		deleteLoading.value = false;
 	}
 };
+
+const writeContact = () => {
+	const url = getPrimaryContactUrl(userFetch.contacts ?? []);
+	if (url) window.open(url, "_blank");
+};
 </script>
 
 <template>
@@ -157,10 +118,14 @@ const deleteFriend = async () => {
 						<UiButton
 							v-if="isFriend"
 							:class="$style.tool"
+							:disabled="
+								!getPrimaryContactUrl(userFetch.contacts ?? [])
+							"
 							size="custom"
+							@click="writeContact"
 						>
 							<Icon
-								name="mdi:message-outline"
+								name="material-symbols:android-messages"
 								:class="$style.icon"
 							/>
 						</UiButton>
@@ -174,7 +139,7 @@ const deleteFriend = async () => {
 								:class="$style.icon"
 						/></UiButton>
 					</div>
-					<div :class="$style.column">
+					<!-- <div :class="$style.column">
 						<UiButton :class="$style.tool" size="custom"
 							><Icon
 								:class="$style.icon"
@@ -193,7 +158,7 @@ const deleteFriend = async () => {
 								name="material-symbols:drive-file-rename-outline-outline-rounded"
 							></Icon
 						></UiButton>
-					</div>
+					</div> -->
 				</div>
 			</div>
 
