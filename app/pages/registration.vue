@@ -16,10 +16,13 @@ import type { Dormitory } from "~/entities/Dormitory";
 import { useAuthStore } from "~/stores/authStore";
 import type { RegistrationDto } from "~/dto/registration.dto";
 import type { DormitoryDtoGetList } from "~~/server/dto/dormitory/getList";
+import { useDevice } from "~/composables/device";
 
 definePageMeta({
 	layout: "welcome",
 });
+
+const { deviceClassList } = useDevice();
 
 const router = useRouter();
 
@@ -313,7 +316,7 @@ const residentForm = ref<Form>({
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<div :class="$style.left">
 				<UiAppear :delay="100">
@@ -353,12 +356,37 @@ const residentForm = ref<Form>({
 	left: 50%;
 	transform: translate(-50%, -50%);
 
+	@include respond-to(mobile) {
+		position: relative;
+		top: auto;
+		left: auto;
+		transform: none;
+		width: 100%;
+		padding: 40px 16px;
+		box-sizing: border-box;
+		row-gap: 24px;
+		align-items: stretch;
+	}
+
 	.container {
 		display: flex;
 		justify-content: center;
-		align-items: center;
+		align-items: flex-start;
 		column-gap: 50px;
 		width: 100%;
+
+		@include respond-to(mobile) {
+			flex-direction: column;
+			column-gap: 0;
+			row-gap: 24px;
+		}
+	}
+
+	.left,
+	.right {
+		@include respond-to(mobile) {
+			width: 100%;
+		}
 	}
 
 	.form {
@@ -367,6 +395,10 @@ const residentForm = ref<Form>({
 
 		width: 500px;
 		border-radius: 10px;
+
+		@include respond-to(mobile) {
+			width: 100%;
+		}
 	}
 
 	.login {
@@ -378,6 +410,10 @@ const residentForm = ref<Form>({
 		border-radius: 100px;
 		box-shadow: 0 0 20px 20px $color-white;
 		margin: auto;
+
+		@include respond-to(mobile) {
+			@include text-m;
+		}
 	}
 }
 </style>

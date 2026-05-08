@@ -5,7 +5,9 @@ function defineDevice() {
 
 	const calcDevice = () => {
 		device.value =
-			window.innerWidth > DEVICES.get("desktop")! ? "desktop" : "mobile";
+			document.documentElement.clientWidth > DEVICES.get("desktop")!
+				? "desktop"
+				: "mobile";
 	};
 
 	return function useDevice() {

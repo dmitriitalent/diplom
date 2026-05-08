@@ -36,6 +36,11 @@ if (isAuthenticated) {
 		z-index: 2;
 		max-height: 100vh;
 		min-height: 100vh;
+
+		@include respond-to(mobile) {
+			max-height: none;
+			overflow-y: auto;
+		}
 	}
 }
 </style>
