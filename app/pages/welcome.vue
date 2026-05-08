@@ -1,11 +1,15 @@
 <script lang="ts" setup>
+import { useDevice } from "~/composables/device";
+
 definePageMeta({
 	layout: "welcome",
 });
+
+const { deviceClassList, isDevice } = useDevice();
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<HeaderComponent welcome></HeaderComponent>
 		<div :class="$style.container">
 			<div :class="$style.join">
@@ -21,8 +25,8 @@ definePageMeta({
 		</div>
 
 		<UiGallery
-			:slides-per-view="3"
-			:space-between="64"
+			:slides-per-view="isDevice('mobile') ? 1 : 3"
+			:space-between="isDevice('mobile') ? 16 : 64"
 			:autoplay="5000"
 			:speed="1000"
 			loop
@@ -101,6 +105,10 @@ definePageMeta({
 .wrapper {
 	.container {
 		@include container;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+		}
 	}
 
 	.join {
@@ -111,17 +119,35 @@ definePageMeta({
 		row-gap: 64px;
 		align-items: center;
 
+		@include respond-to(mobile) {
+			height: 340px;
+			row-gap: 36px;
+			padding: 0 12px;
+		}
+
 		.title {
 			@include reset;
 			@include color-black;
 			@include title-l;
 			@include unselectable;
+
+			@include respond-to(mobile) {
+				@include title-m;
+
+				text-align: center;
+			}
 		}
 
 		.button {
 			@include text-l;
 
 			width: 150px;
+
+			@include respond-to(mobile) {
+				@include text-m;
+
+				width: 120px;
+			}
 		}
 	}
 
@@ -130,6 +156,10 @@ definePageMeta({
 
 		padding: 0px 64px;
 		box-sizing: border-box;
+
+		@include respond-to(mobile) {
+			padding: 0 12px;
+		}
 
 		.card {
 			position: relative;
@@ -141,6 +171,11 @@ definePageMeta({
 			overflow: hidden;
 			padding: 48px;
 
+			@include respond-to(mobile) {
+				height: auto;
+				padding: 28px 24px;
+			}
+
 			.title {
 				@include reset;
 				@include color-black;
@@ -148,7 +183,12 @@ definePageMeta({
 
 				display: flex;
 				z-index: 2;
+
+				@include respond-to(mobile) {
+					@include title-xs;
+				}
 			}
+
 			.text {
 				@include reset;
 				@include color-black;
@@ -156,6 +196,10 @@ definePageMeta({
 
 				display: flex;
 				z-index: 2;
+
+				@include respond-to(mobile) {
+					@include text-s;
+				}
 			}
 
 			&:after {

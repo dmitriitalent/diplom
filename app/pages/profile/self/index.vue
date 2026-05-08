@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { useDevice } from "~/composables/device";
 import { useSelfStore } from "~/stores/selfStore";
 
 type Tabs = "info" | "tools";
 
 const { self, addFriend } = useSelfStore();
+const { deviceClassList } = useDevice();
 
 const tab: Ref<Tabs> = ref("tools");
 
@@ -13,7 +15,7 @@ const onAddFriend = () => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<div :class="$style.header">
 				<UiImage
@@ -197,6 +199,12 @@ const onAddFriend = () => {
 
 		border-radius: 10px;
 		padding-bottom: 100px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			padding-bottom: 60px;
+		}
 	}
 
 	.header {
@@ -210,10 +218,15 @@ const onAddFriend = () => {
 			width: 100%;
 			overflow: hidden;
 			border-radius: 10px;
+
+			@include respond-to(mobile) {
+				height: 130px;
+			}
 		}
 
 		.avatar {
 			position: absolute;
+			z-index: 2;
 			left: 200px;
 			bottom: -30px;
 			transform: translate(-50%, 0);
@@ -222,6 +235,15 @@ const onAddFriend = () => {
 			width: 200px;
 			border-radius: 100px;
 			overflow: hidden;
+
+			@include respond-to(mobile) {
+				left: 20px;
+				bottom: -25px;
+				transform: none;
+				height: 90px;
+				width: 90px;
+				border-radius: 45px;
+			}
 		}
 
 		.tab {
@@ -241,9 +263,21 @@ const onAddFriend = () => {
 			display: flex;
 			flex-direction: column;
 			align-items: end;
-			padding: 20px 20px 20px 20px;
+			padding: 20px;
 			box-sizing: border-box;
 			row-gap: 10px;
+
+			@include respond-to(mobile) {
+				width: 100%;
+				padding: 10px 12px;
+				row-gap: 6px;
+
+				background: linear-gradient(
+					0.25turn,
+					rgba($color-white, 0) 0%,
+					rgba($color-white, 0.6) 40%
+				);
+			}
 
 			.field {
 				@include text-m;
@@ -252,6 +286,12 @@ const onAddFriend = () => {
 				width: 60%;
 				display: flex;
 				justify-content: space-between;
+
+				@include respond-to(mobile) {
+					@include text-s;
+
+					width: 60%;
+				}
 			}
 
 			&.tools {
@@ -266,9 +306,9 @@ const onAddFriend = () => {
 					justify-content: start;
 					row-gap: 8px;
 
-					&:first-child {
-						margin-top: 18px;
-					}
+					// &:first-child {
+					// 	margin-top: 18px;
+					// }
 
 					.tool {
 						transform: rotate(45deg);
@@ -287,7 +327,17 @@ const onAddFriend = () => {
 		.showMore {
 			position: absolute;
 			bottom: 10px;
-			right: 10px;
+			right: 28px;
+
+			@include respond-to(mobile) {
+				@include color-white-bg(0.6);
+				border-radius: 10px;
+
+				bottom: unset;
+				right: unset;
+				top: 10px;
+				left: 10px;
+			}
 		}
 	}
 
@@ -296,6 +346,10 @@ const onAddFriend = () => {
 		justify-content: space-between;
 		column-gap: 30px;
 
+		@include respond-to(mobile) {
+			flex-direction: column;
+		}
+
 		.profile {
 			display: flex;
 			flex-direction: column;
@@ -303,16 +357,29 @@ const onAddFriend = () => {
 			margin-top: 40px;
 			width: 100%;
 
+			@include respond-to(mobile) {
+				margin-top: 44px;
+				row-gap: 20px;
+			}
+
 			.name {
 				@include reset;
 				@include title-m;
 				@include color-black;
+
+				@include respond-to(mobile) {
+					@include title-s;
+				}
 			}
 
 			.wall {
 				display: flex;
 				flex-direction: column;
 				row-gap: 40px;
+
+				@include respond-to(mobile) {
+					row-gap: 20px;
+				}
 
 				.createThread {
 					height: fit-content;
@@ -324,6 +391,12 @@ const onAddFriend = () => {
 					.submit {
 						width: 150px;
 						margin-left: auto;
+						box-sizing: border-box;
+
+						@include respond-to(mobile) {
+							width: 100%;
+							margin-left: 0;
+						}
 					}
 				}
 
@@ -351,6 +424,11 @@ const onAddFriend = () => {
 			flex-direction: column;
 			row-gap: 15px;
 			width: $platformWidth;
+
+			@include respond-to(mobile) {
+				width: 100%;
+				margin-top: 0;
+			}
 
 			.links {
 				$linksGap: 10px;
