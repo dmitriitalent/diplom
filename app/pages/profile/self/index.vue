@@ -87,7 +87,7 @@ const onAddFriend = () => {
 							></UiButton>
 						</div> -->
 						<div :class="$style.column">
-							<RouterLink to="self/friends">
+							<RouterLink to="/profile/self/friends">
 								<UiButton :class="$style.tool" size="custom"
 									><Icon
 										:class="$style.icon"
@@ -103,7 +103,7 @@ const onAddFriend = () => {
 									></Icon
 								></UiButton>
 							</RouterLink>
-							<RouterLink to="self/settings">
+							<RouterLink to="/profile/self/settings">
 								<UiButton :class="$style.tool" size="custom"
 									><Icon
 										:class="$style.icon"
