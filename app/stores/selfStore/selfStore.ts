@@ -62,6 +62,21 @@ export const useSelfStore = defineStore("selfStore", () => {
 		});
 	};
 
+	const updateAvatar = async (imageId: string) => {
+		await $fetch("/api/self/avatar", {
+			method: "PUT",
+			body: { imageId },
+		});
+		await refreshSelf();
+	};
+
+	const deleteAvatar = async () => {
+		await $fetch("/api/self/avatar", {
+			method: "DELETE",
+		});
+		await refreshSelf();
+	};
+
 	const fillSelf = async (byIdDto: byId): Promise<Self> => {
 		const dormitory = await $fetch<DormitoryDtoGetById>(
 			"/api/dormitory/byId?id=" + byIdDto.dormitoryId,
@@ -71,6 +86,7 @@ export const useSelfStore = defineStore("selfStore", () => {
 		);
 
 		const newSelf: Self = {
+			avatarId: byIdDto.avatarId,
 			birthdate: {
 				value: new Date(byIdDto.birthdate.value),
 				visibility: byIdDto.birthdate.visibility,
@@ -99,5 +115,7 @@ export const useSelfStore = defineStore("selfStore", () => {
 		refreshSelf,
 		addFriend,
 		updateSelf,
+		updateAvatar,
+		deleteAvatar,
 	};
 });

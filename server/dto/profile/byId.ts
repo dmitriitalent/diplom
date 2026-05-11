@@ -1,4 +1,5 @@
 export type byId = {
+	avatarId?: string;
 	birthdate: string;
 	building: string;
 	contacts: Array<{

@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
 		const query = getQuery(event);
 
 		const params: Record<string, any> = {};
+		if (query.owner_id) params.owner_id = String(query.owner_id);
 		if (query.price_min) params.price_min = Number(query.price_min);
 		if (query.price_max) params.price_max = Number(query.price_max);
 		if (query.limit) params.limit = Number(query.limit);

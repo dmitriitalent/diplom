@@ -4,7 +4,7 @@ import type { Status } from "../types/Status";
 type Variant = "block" | "underline";
 type Size = "small" | "medium" | "large" | "custom";
 
-const emit = defineEmits(["update:modelValue", "input"]);
+const emit = defineEmits(["update:modelValue", "input", "blur"]);
 
 const props = defineProps({
 	modelValue: {
@@ -39,6 +39,16 @@ const props = defineProps({
 	status: {
 		type: String as PropType<Status>,
 	},
+
+	autocomplete: {
+		type: String,
+		default: undefined,
+	},
+
+	disabled: {
+		type: Boolean,
+		default: false,
+	},
 });
 
 const classList = computed(() => {
@@ -70,7 +80,10 @@ const onInput = ($event: Event) => {
 			:value="modelValue"
 			:class="classList"
 			:placeholder="props.placeholder"
+			:autocomplete="props.autocomplete"
+			:disabled="props.disabled"
 			@input="onInput($event)"
+		@blur="emit('blur')"
 		/>
 	</div>
 </template>

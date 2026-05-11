@@ -29,10 +29,5 @@ export default defineNuxtConfig({
 		transpile: ["@vuepic/vue-datepicker"],
 	},
 
-	modules: [
-		"@nuxt/icon",
-		"@nuxt/eslint",
-		"@pinia/nuxt",
-		"nuxt-swiper",
-	],
+	modules: ["@nuxt/icon", "@nuxt/eslint", "@pinia/nuxt", "nuxt-swiper"],
 });

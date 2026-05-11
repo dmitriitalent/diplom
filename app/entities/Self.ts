@@ -4,6 +4,7 @@ import type { User } from "./User";
 
 export type Self = {
 	id: string;
+	avatarId?: string;
 	login: string;
 	educationEmail: string;
 	birthdate: {
