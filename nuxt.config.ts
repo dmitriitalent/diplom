@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		api: "http://localhost:8080",
 		public: {
-			publicRoutes: ["/welcome", "/login", "/registration"],
+			publicRoutes: ["/", "/welcome", "/login", "/registration"],
 			api: "http://localhost:8080",
 		},
 	},

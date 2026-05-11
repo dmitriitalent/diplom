@@ -23,11 +23,12 @@ export default defineEventHandler(async (event) => {
 		console.log(url);
 
 		return res.data;
-	} catch (err) {
+	} catch (err: any) {
+		const status = err?.response?.status ?? err?.statusCode ?? 500;
 		console.log("error at " + FILENAME + ": " + String(err));
-		console.log(err);
 		throw createError({
-			statusCode: 500,
+			statusCode: status,
+			message: err?.response?.data?.error ?? err?.message ?? String(err),
 		});
 	}
 });
