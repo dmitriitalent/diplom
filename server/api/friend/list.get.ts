@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
 	try {
 		const config = useRuntimeConfig();
 		const cookie = getHeader(event, "cookie");
-		const res = await axios.get(`${config.api}/friend`, {
+		const res = await axios.get<{ friends: string[] }>(`${config.api}/friend`, {
 			headers: { cookie },
 			withCredentials: true,
 		});

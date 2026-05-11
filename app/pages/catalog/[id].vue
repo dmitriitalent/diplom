@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { Dormitory } from "~/entities/Dormitory";
 import type { Product } from "~/entities/Product";
+import type { User } from "~/entities/User";
 import { useAuthStore } from "~/stores/authStore";
 import { useCategoryStore } from "~/stores/categoryStore";
 import { useSelfStore } from "~/stores/selfStore";
@@ -31,7 +33,52 @@ const { data: product, error } = await useAsyncData(
 			},
 		);
 
-		const owner = unwrapProfile(ownerFetch);
+		const owner: User = {
+			id:
+				typeof ownerFetch.id === "object"
+					? ownerFetch.id.value
+					: ownerFetch.id,
+			login:
+				typeof ownerFetch.login === "object"
+					? ownerFetch.login.value
+					: ownerFetch.login,
+			educationEmail:
+				typeof ownerFetch.educationEmail === "object"
+					? ownerFetch.educationEmail.value
+					: ownerFetch.educationEmail,
+			birthdate: new Date(
+				typeof ownerFetch.birthdate === "object"
+					? ownerFetch.birthdate.value
+					: ownerFetch.birthdate,
+			),
+			dormitory: {} as Dormitory,
+			building:
+				typeof ownerFetch.building === "object"
+					? ownerFetch.building.value
+					: ownerFetch.building,
+			floor:
+				typeof ownerFetch.floor === "object"
+					? ownerFetch.floor.value
+					: ownerFetch.floor,
+			room:
+				typeof ownerFetch.room === "object"
+					? ownerFetch.room.value
+					: ownerFetch.room,
+			surname:
+				typeof ownerFetch.surname === "object"
+					? ownerFetch.surname.value
+					: ownerFetch.surname,
+			name:
+				typeof ownerFetch.name === "object"
+					? ownerFetch.name.value
+					: ownerFetch.name,
+			patronymic:
+				typeof ownerFetch.patronymic === "object"
+					? ownerFetch.patronymic.value
+					: ownerFetch.patronymic,
+			contacts: [],
+			friends: [],
+		};
 
 		return {
 			category: {},

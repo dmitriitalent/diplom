@@ -4,10 +4,10 @@ export default defineEventHandler(async (event) => {
 	try {
 		const config = useRuntimeConfig();
 		const cookie = getHeader(event, "cookie");
-		const res = await axios.get(`${config.api}/friend/pending/in`, {
-			headers: { cookie },
-			withCredentials: true,
-		});
+		const res = await axios.get<{ pending_in: string[] }>(
+			`${config.api}/friend/pending/in`,
+			{ headers: { cookie }, withCredentials: true },
+		);
 		return res.data;
 	} catch (err: any) {
 		throw createError({
