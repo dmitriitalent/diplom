@@ -166,6 +166,7 @@ const { data: activity, error } = await useAsyncData<Activity>(
 
 const { self } = useSelfStore();
 const isAuthor = activity.value?.author.id === self?.id;
+const router = useRouter();
 
 const activityVisual = ref<Activity>(
 	JSON.parse(JSON.stringify(activity.value)),
@@ -294,6 +295,11 @@ const removeParticipant = () => {
 				<UiButton :class="$style.delete" @click="deleteActivity"
 					>Удалить</UiButton
 				>
+				<UiButton
+					:class="$style.edit"
+					@click="router.push('/activities/edit/' + activity.id)"
+					>Редактировать</UiButton
+				>
 
 				<UiButton
 					v-if="activityVisual.moderationStatus === 'pending'"
@@ -328,6 +334,11 @@ const removeParticipant = () => {
 					:class="$style.delete"
 					@click="deleteActivity"
 					>Удалить</UiButton
+				>
+				<UiButton
+					:class="$style.edit"
+					@click="router.push('/activities/edit/' + activity.id)"
+					>Редактировать</UiButton
 				>
 
 				<div v-if="activity.isPrivate" :class="$style.row">
@@ -541,6 +552,10 @@ const removeParticipant = () => {
 
 		.decline {
 			@include color-warn-bg;
+		}
+
+		.edit {
+			@include color-black-bg(0.08);
 		}
 
 		.row {

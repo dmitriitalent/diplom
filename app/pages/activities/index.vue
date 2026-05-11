@@ -4,10 +4,17 @@ import type { Dormitory } from "~/entities/Dormitory";
 import type { User } from "~/entities/User";
 import type { byId } from "~~/server/dto/profile/byId";
 import type { ActivityDtoList } from "~~/server/dto/activity/list";
+import { useAuthStore } from "~/stores/authStore";
+import { jwtDecode } from "jwt-decode";
 
-const { data: activitiesPendingFetch } = await useFetch<ActivityDtoList>(
-	"/api/activity/list?status=pending",
-);
+const { at } = useAuthStore();
+const isAdmin = at.value
+	? (jwtDecode(at.value) as any).roles?.includes("ADMIN") ?? false
+	: false;
+
+const { data: activitiesPendingFetch } = isAdmin
+	? await useFetch<ActivityDtoList>("/api/activity/list?status=pending")
+	: { data: ref(null) };
 
 const activities = ref<Array<Activity>>([]);
 

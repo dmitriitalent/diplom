@@ -2,13 +2,19 @@
 import type { Dormitory } from "~/entities/Dormitory";
 import type { Product } from "~/entities/Product";
 import type { User } from "~/entities/User";
+import { useAuthStore } from "~/stores/authStore";
 import { useCategoryStore } from "~/stores/categoryStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { byIdProduct } from "~~/server/dto/product/byId";
 import type { byId } from "~~/server/dto/profile/byId";
+import { jwtDecode } from "jwt-decode";
 
 const route = useRoute();
+const router = useRouter();
 const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
+
+const { at } = useAuthStore();
+const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
 
 const { self } = useSelfStore();
 
@@ -103,11 +109,16 @@ const deleteProduct = () => {
 	<div :class="$style.wrapper">
 		<div :class="$style.container" v-if="product">
 			<div
-				v-if="self?.id === product.owner.id"
+				v-if="isAdmin || self?.id === product.owner.id"
 				:class="$style.adminTools"
 			>
-				<UiButton :class="$style.button" @click="deleteProduct"
+				<UiButton :class="$style.delete" @click="deleteProduct"
 					>Удалить</UiButton
+				>
+				<UiButton
+					:class="$style.edit"
+					@click="router.push('/catalog/edit/' + product.id)"
+					>Редактировать</UiButton
 				>
 			</div>
 
@@ -163,8 +174,16 @@ const deleteProduct = () => {
 	position: relative;
 
 	.adminTools {
-		.button {
+		display: flex;
+		flex-direction: column;
+		row-gap: 10px;
+
+		.delete {
 			@include color-error-bg;
+		}
+
+		.edit {
+			@include color-black-bg(0.08);
 		}
 	}
 
