@@ -87,7 +87,10 @@ const uploadNewImages = async (): Promise<string[]> => {
 			const formData = new FormData();
 			formData.append("file", file);
 			formData.append("external_id", guid);
-			await $fetch("/api/images/upload", { method: "POST", body: formData });
+			await $fetch("/api/images/upload", {
+				method: "POST",
+				body: formData,
+			});
 			guids.push(guid);
 		}),
 	);
@@ -141,7 +144,7 @@ const saveActivity = async () => {
 							<template
 								v-for="(url, i) in newImagePreviewUrls"
 								:key="'n' + i"
-								v-slot:[existingImageIds.length + i]
+								v-slot:[existingImageIds.length+i]
 							>
 								<img :class="$style.image" :src="url" />
 							</template>
@@ -189,7 +192,7 @@ const saveActivity = async () => {
 								<template
 									v-for="(url, i) in newImagePreviewUrls"
 									:key="'n' + i"
-									v-slot:[existingImageIds.length + i]
+									v-slot:[existingImageIds.length+i]
 								>
 									<div :class="$style.imageWrapper">
 										<UiButton
@@ -302,7 +305,9 @@ const saveActivity = async () => {
 							:disabled="saving"
 							@click="saveActivity"
 						>
-							{{ saving ? "Сохранение..." : "Сохранить изменения" }}
+							{{
+								saving ? "Сохранение..." : "Сохранить изменения"
+							}}
 						</UiButton>
 					</div>
 				</div>

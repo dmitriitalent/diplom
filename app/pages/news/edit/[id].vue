@@ -13,8 +13,9 @@ const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
 
-const { data: original } = await useAsyncData<NewsDtoById>("news-edit-" + id, () =>
-	$fetch<NewsDtoById>("/api/news/byId?id=" + id),
+const { data: original } = await useAsyncData<NewsDtoById>(
+	"news-edit-" + id,
+	() => $fetch<NewsDtoById>("/api/news/byId?id=" + id),
 );
 
 if (!original.value) {
@@ -79,7 +80,10 @@ const uploadNewImages = async (): Promise<string[]> => {
 			const formData = new FormData();
 			formData.append("file", file);
 			formData.append("external_id", guid);
-			await $fetch("/api/images/upload", { method: "POST", body: formData });
+			await $fetch("/api/images/upload", {
+				method: "POST",
+				body: formData,
+			});
 			guids.push(guid);
 		}),
 	);
@@ -131,7 +135,7 @@ const saveNews = async () => {
 							<template
 								v-for="(url, i) in newImagePreviewUrls"
 								:key="'n' + i"
-								v-slot:[existingImageIds.length + i]
+								v-slot:[existingImageIds.length+i]
 							>
 								<img :class="$style.image" :src="url" />
 							</template>
@@ -179,7 +183,7 @@ const saveNews = async () => {
 								<template
 									v-for="(url, i) in newImagePreviewUrls"
 									:key="'n' + i"
-									v-slot:[existingImageIds.length + i]
+									v-slot:[existingImageIds.length+i]
 								>
 									<div :class="$style.imageWrapper">
 										<UiButton
@@ -250,7 +254,9 @@ const saveNews = async () => {
 							:disabled="saving"
 							@click="saveNews"
 						>
-							{{ saving ? "Сохранение..." : "Сохранить изменения" }}
+							{{
+								saving ? "Сохранение..." : "Сохранить изменения"
+							}}
 						</UiButton>
 					</div>
 				</div>
