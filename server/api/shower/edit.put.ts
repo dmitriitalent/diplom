@@ -9,8 +9,7 @@ export default defineEventHandler(async (event) => {
 		const body = await readBody(event);
 		const { id } = getQuery(event);
 
-		body.id = String(id);
-		const res = await axios.put(`${config.api}/schedule/shower`, body, {
+		const res = await axios.put(`${config.api}/showers/${String(id)}`, body, {
 			headers: { cookie },
 			withCredentials: true,
 		});

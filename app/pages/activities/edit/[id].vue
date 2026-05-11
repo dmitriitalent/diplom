@@ -141,7 +141,7 @@ const saveActivity = async () => {
 							<template
 								v-for="(url, i) in newImagePreviewUrls"
 								:key="'n' + i"
-								v-slot:[existingImageIds.length+i]
+								v-slot:[existingImageIds.length + i]
 							>
 								<img :class="$style.image" :src="url" />
 							</template>
@@ -189,7 +189,7 @@ const saveActivity = async () => {
 								<template
 									v-for="(url, i) in newImagePreviewUrls"
 									:key="'n' + i"
-									v-slot:[existingImageIds.length+i]
+									v-slot:[existingImageIds.length + i]
 								>
 									<div :class="$style.imageWrapper">
 										<UiButton

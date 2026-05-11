@@ -1,24 +1,52 @@
 <script setup lang="ts">
 import type { Activity } from "~/entities/Activity";
+import type { Dormitory } from "~/entities/Dormitory";
+import type { User } from "~/entities/User";
 import type { byId } from "~~/server/dto/profile/byId";
 import type { ActivityDtoList } from "~~/server/dto/activity/list";
 import { useAuthStore } from "~/stores/authStore";
 import { jwtDecode } from "jwt-decode";
-
-const headers = useRequestHeaders(["cookie"]);
 
 const { at } = useAuthStore();
 const isAdmin = at.value
 	? (jwtDecode(at.value) as any).roles?.includes("ADMIN") ?? false
 	: false;
 
-const mapActivity = async (f: ActivityDtoList["activities"][number]): Promise<Activity> => {
+const { data: activitiesPendingFetch } = isAdmin
+	? await useFetch<ActivityDtoList>("/api/activity/list?status=pending")
+	: { data: ref(null) };
+
+const activities = ref<Array<Activity>>([]);
+
+const { data: activitiesFetch } =
+	await useFetch<ActivityDtoList>("/api/activity/list");
+
+activitiesPendingFetch.value?.activities.forEach(async (f) => {
 	const authorFetch = await $fetch<byId>(
 		"/api/profile/byId?id=" + f.createdBy,
-		{ headers },
+		{
+			headers: useRequestHeaders(["cookie"]),
+		},
 	);
-	return {
-		author: unwrapProfile(authorFetch),
+
+	const author: User = {
+		id: authorFetch.id,
+		login: authorFetch.login,
+		educationEmail: authorFetch.educationEmail,
+		birthdate: new Date(authorFetch.birthdate),
+		dormitory: {} as Dormitory,
+		building: authorFetch.building,
+		floor: authorFetch.floor,
+		room: authorFetch.room,
+		surname: authorFetch.surname,
+		name: authorFetch.name,
+		patronymic: authorFetch.patronymic,
+		contacts: [],
+		friends: [],
+	};
+
+	const activity: Activity = {
+		author: author,
 		createdAt: f.createdAt,
 		description: f.description,
 		dormitoryId: f.dormitoryId,
@@ -34,24 +62,56 @@ const mapActivity = async (f: ActivityDtoList["activities"][number]): Promise<Ac
 		title: f.title,
 		updatedAt: f.updatedAt,
 		viewTemplate: f.viewTemplate,
-	} as Activity;
-};
+	};
 
-const activities = ref<Array<Activity>>([]);
+	activities.value.push(activity);
+});
 
-const { data: activitiesPendingFetch } = isAdmin
-	? await useFetch<ActivityDtoList>("/api/activity/list?status=pending")
-	: { data: ref(null) };
+activitiesFetch.value?.activities.forEach(async (f) => {
+	const authorFetch = await $fetch<byId>(
+		"/api/profile/byId?id=" + f.createdBy,
+		{
+			headers: useRequestHeaders(["cookie"]),
+		},
+	);
 
-const { data: activitiesFetch } =
-	await useFetch<ActivityDtoList>("/api/activity/list");
+	const author: User = {
+		id: authorFetch.id,
+		login: authorFetch.login,
+		educationEmail: authorFetch.educationEmail,
+		birthdate: new Date(authorFetch.birthdate),
+		dormitory: {} as Dormitory,
+		building: authorFetch.building,
+		floor: authorFetch.floor,
+		room: authorFetch.room,
+		surname: authorFetch.surname,
+		name: authorFetch.name,
+		patronymic: authorFetch.patronymic,
+		contacts: [],
+		friends: [],
+	};
 
-for (const f of activitiesPendingFetch.value?.activities ?? []) {
-	activities.value.push(await mapActivity(f));
-}
-for (const f of activitiesFetch.value?.activities ?? []) {
-	activities.value.push(await mapActivity(f));
-}
+	const activity: Activity = {
+		author: author,
+		createdAt: f.createdAt,
+		description: f.description,
+		dormitoryId: f.dormitoryId,
+		endTime: f.endTime,
+		id: f.id,
+		imageIds: f.imageIds,
+		isPrivate: f.isPrivate,
+		location: f.location,
+		moderationComment: f.moderationComment,
+		moderationStatus: f.moderationStatus,
+		participants: f.participants,
+		startTime: f.startTime,
+		title: f.title,
+		updatedAt: f.updatedAt,
+		viewTemplate: f.viewTemplate,
+	};
+
+	activities.value.push(activity);
+});
 
 const inviteCode = ref<string>("");
 const joinError = ref(false);

@@ -1,13 +1,6 @@
-export type ShowerSlot = {
-	from: number;
-	till: number;
-	gender: string;
-};
-
 export type ShowerDtoById = {
 	id: string;
-	dormitoryId: string;
+	name: string;
 	location: string;
-	createdAt: string;
-	schedule: ShowerSlot[][];
+	schedule: string; // JSON string: [[{from: number, till: number, gender: string}]]
 };

@@ -1,6 +1,5 @@
 import axios from "axios";
 import { byId } from "~~/server/dto/self/byId";
-import { SelfDto } from "~~/server/dto/self.dto";
 
 const FILENAME = "self/self.get.ts";
 

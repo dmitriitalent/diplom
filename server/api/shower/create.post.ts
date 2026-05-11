@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
 		const cookie = getHeader(event, "cookie");
 		const body = await readBody(event);
 
-		const res = await axios.post(`${config.api}/schedule/shower`, body, {
+		const res = await axios.post(`${config.api}/showers`, body, {
 			headers: { cookie },
 			withCredentials: true,
 		});
