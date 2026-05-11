@@ -11,6 +11,10 @@ const props = defineProps({
 		type: Boolean,
 	},
 
+	disabled: {
+		type: Boolean,
+	},
+
 	accent: {
 		type: Boolean,
 	},
@@ -19,13 +23,25 @@ const props = defineProps({
 		type: String as PropType<Size>,
 		default: "medium",
 	},
+
+	type: {
+		type: String,
+		default: "button",
+	},
+
+	unset: {
+		type: Boolean,
+	},
 });
+
+const isDisabled = computed(() => props.disable || props.disabled);
 
 const classList = computed(() => {
 	return [
 		{ ["--is-inset"]: props.inset },
-		{ ["--is-disable"]: props.disable },
+		{ ["--is-disable"]: isDisabled.value },
 		{ ["--is-accent"]: props.accent },
+		{ ["--is-unset"]: props.unset },
 		[`--size-${props.size}`],
 	];
 });
@@ -33,7 +49,7 @@ const classList = computed(() => {
 
 <template>
 	<div class="uiButton__wrapper" :class="classList">
-		<button class="uiButton__button">
+		<button class="uiButton__button" :type="props.type" :disabled="isDisabled">
 			<slot></slot>
 		</button>
 	</div>
@@ -44,7 +60,7 @@ const classList = computed(() => {
 	@include unselectable;
 
 	&wrapper {
-		@include text-m;
+		@include text-s;
 
 		&.--is-disable {
 			opacity: 0.5;
@@ -64,7 +80,7 @@ const classList = computed(() => {
 			@include shadow;
 
 			transition: box-shadow $transition-fast ease;
-			border-radius: 10px;
+			border-radius: 8px;
 
 			&:hover {
 				@include shadow($set: false);
@@ -72,13 +88,15 @@ const classList = computed(() => {
 		}
 
 		&.--size-small {
-			padding: 6px 12px;
+			padding: 4px 8px;
+			font-size: 11px;
 		}
 		&.--size-medium {
-			padding: 10px 20px;
+			padding: 6px 14px;
 		}
 		&.--size-large {
-			padding: 14px 28px;
+			padding: 10px 20px;
+			font-size: 15px;
 		}
 	}
 
@@ -87,6 +105,8 @@ const classList = computed(() => {
 		@include unselectable;
 		@include color-black;
 
+		width: 100%;
+		height: 100%;
 		display: flex;
 		column-gap: 10px;
 		align-items: center;

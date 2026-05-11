@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useDevice } from "~/composables/device";
 import type { HeiDTO } from "~/dto/hei.dto";
 import type { Dormitory } from "~/entities/Dormitory";
 import type { Self } from "~/entities/Self";
@@ -46,11 +47,13 @@ const dormitoryOptions = computed(
 const form = reactive({
 	// Как вас зовут
 	surname: self?.surname.value ?? "",
-	surnameVisibility: (self?.surname.visibility ?? "EVERYONE") as SelfDataVisibility,
+	surnameVisibility: (self?.surname.visibility ??
+		"EVERYONE") as SelfDataVisibility,
 	name: self?.name.value ?? "",
 	nameVisibility: (self?.name.visibility ?? "EVERYONE") as SelfDataVisibility,
 	patronymic: self?.patronymic.value ?? "",
-	patronymicVisibility: (self?.patronymic.visibility ?? "EVERYONE") as SelfDataVisibility,
+	patronymicVisibility: (self?.patronymic.visibility ??
+		"EVERYONE") as SelfDataVisibility,
 
 	// Учётная запись (readonly)
 	login: self?.login ?? "",
@@ -59,14 +62,17 @@ const form = reactive({
 	// Учёба
 	hei: undefined as string | undefined,
 	birthdate: self?.birthdate.value as Date | undefined,
-	birthdateVisibility: (self?.birthdate.visibility ?? "EVERYONE") as SelfDataVisibility,
+	birthdateVisibility: (self?.birthdate.visibility ??
+		"EVERYONE") as SelfDataVisibility,
 
 	// Где живёте
 	dormitory: self?.dormitory.id as string | undefined,
 	building: self?.building.value ?? "",
-	buildingVisibility: (self?.building.visibility ?? "EVERYONE") as SelfDataVisibility,
+	buildingVisibility: (self?.building.visibility ??
+		"EVERYONE") as SelfDataVisibility,
 	floor: self?.floor.value ?? "",
-	floorVisibility: (self?.floor.visibility ?? "EVERYONE") as SelfDataVisibility,
+	floorVisibility: (self?.floor.visibility ??
+		"EVERYONE") as SelfDataVisibility,
 	room: self?.room.value ?? "",
 	roomVisibility: (self?.room.visibility ?? "EVERYONE") as SelfDataVisibility,
 });
@@ -90,7 +96,12 @@ const localContacts = ref<LocalContact[]>(
 );
 
 const addContact = () => {
-	localContacts.value.push({ key: "", value: "", visibility: "EVERYONE", isPrimary: false });
+	localContacts.value.push({
+		key: "",
+		value: "",
+		visibility: "EVERYONE",
+		isPrimary: false,
+	});
 };
 
 const deleteContact = (index: number) => {
@@ -126,7 +137,10 @@ const onClickSave = async () => {
 		room: { value: form.room, visibility: form.roomVisibility },
 		surname: { value: form.surname, visibility: form.surnameVisibility },
 		name: { value: form.name, visibility: form.nameVisibility },
-		patronymic: { value: form.patronymic, visibility: form.patronymicVisibility },
+		patronymic: {
+			value: form.patronymic,
+			visibility: form.patronymicVisibility,
+		},
 		dormitory: {} as Dormitory,
 		friends: [],
 		contacts: localContacts.value,
@@ -142,7 +156,9 @@ const onClickSave = async () => {
 	} catch (err: any) {
 		saveStatus.value = "error";
 		saveError.value =
-			err?.data?.message ?? err?.message ?? "Произошла ошибка при сохранении";
+			err?.data?.message ??
+			err?.message ??
+			"Произошла ошибка при сохранении";
 		window.scrollTo({ top: 0, behavior: "smooth" });
 	} finally {
 		saving.value = false;
@@ -151,20 +167,27 @@ const onClickSave = async () => {
 
 const onClickReset = () => {
 	form.surname = self?.surname.value ?? "";
-	form.surnameVisibility = (self?.surname.visibility ?? "EVERYONE") as SelfDataVisibility;
+	form.surnameVisibility = (self?.surname.visibility ??
+		"EVERYONE") as SelfDataVisibility;
 	form.name = self?.name.value ?? "";
-	form.nameVisibility = (self?.name.visibility ?? "EVERYONE") as SelfDataVisibility;
+	form.nameVisibility = (self?.name.visibility ??
+		"EVERYONE") as SelfDataVisibility;
 	form.patronymic = self?.patronymic.value ?? "";
-	form.patronymicVisibility = (self?.patronymic.visibility ?? "EVERYONE") as SelfDataVisibility;
+	form.patronymicVisibility = (self?.patronymic.visibility ??
+		"EVERYONE") as SelfDataVisibility;
 	form.birthdate = self?.birthdate.value as Date | undefined;
-	form.birthdateVisibility = (self?.birthdate.visibility ?? "EVERYONE") as SelfDataVisibility;
+	form.birthdateVisibility = (self?.birthdate.visibility ??
+		"EVERYONE") as SelfDataVisibility;
 	form.dormitory = self?.dormitory.id as string | undefined;
 	form.building = self?.building.value ?? "";
-	form.buildingVisibility = (self?.building.visibility ?? "EVERYONE") as SelfDataVisibility;
+	form.buildingVisibility = (self?.building.visibility ??
+		"EVERYONE") as SelfDataVisibility;
 	form.floor = self?.floor.value ?? "";
-	form.floorVisibility = (self?.floor.visibility ?? "EVERYONE") as SelfDataVisibility;
+	form.floorVisibility = (self?.floor.visibility ??
+		"EVERYONE") as SelfDataVisibility;
 	form.room = self?.room.value ?? "";
-	form.roomVisibility = (self?.room.visibility ?? "EVERYONE") as SelfDataVisibility;
+	form.roomVisibility = (self?.room.visibility ??
+		"EVERYONE") as SelfDataVisibility;
 	localContacts.value = (self?.contacts ?? []).map((c) => ({
 		key: c.key ?? "",
 		value: c.value ?? "",
@@ -190,13 +213,23 @@ const onClickLogout = () => {
 				<UiTransition name="fade-top">
 					<div
 						v-if="saveStatus !== null"
-						:class="saveStatus === 'success' ? $style.notifySuccess : $style.notifyError"
+						:class="
+							saveStatus === 'success'
+								? $style.notifySuccess
+								: $style.notifyError
+						"
 					>
 						<Icon
-							:name="saveStatus === 'success' ? 'mdi:check-circle-outline' : 'mdi:alert-circle-outline'"
+							:name="
+								saveStatus === 'success'
+									? 'mdi:check-circle-outline'
+									: 'mdi:alert-circle-outline'
+							"
 							:class="$style.notifyIcon"
 						/>
-						<span v-if="saveStatus === 'success'">Изменения успешно сохранены</span>
+						<span v-if="saveStatus === 'success'"
+							>Изменения успешно сохранены</span
+						>
 						<span v-else>{{ saveError }}</span>
 					</div>
 				</UiTransition>
@@ -354,7 +387,11 @@ const onClickLogout = () => {
 					>
 						<label
 							:class="$style.radioLabel"
-							:title="contact.isPrimary ? 'Предпочитаемый контакт' : 'Сделать предпочитаемым'"
+							:title="
+								contact.isPrimary
+									? 'Предпочитаемый контакт'
+									: 'Сделать предпочитаемым'
+							"
 						>
 							<input
 								type="radio"
@@ -363,7 +400,13 @@ const onClickLogout = () => {
 								:class="$style.radio"
 								@change="setPrimary(i)"
 							/>
-							<span :class="[$style.radioCustom, contact.isPrimary && $style.radioCustomActive]">
+							<span
+								:class="[
+									$style.radioCustom,
+									contact.isPrimary &&
+										$style.radioCustomActive,
+								]"
+							>
 								<Icon
 									v-if="contact.isPrimary"
 									name="mdi:star"
@@ -392,7 +435,10 @@ const onClickLogout = () => {
 							:options="visibilityOptions"
 							:class="$style.contactVisibility"
 						/>
-						<UiButton :class="$style.contactDelete" @click="deleteContact(i)">
+						<UiButton
+							:class="$style.contactDelete"
+							@click="deleteContact(i)"
+						>
 							<Icon
 								name="material-symbols:delete-outline"
 								:class="$style.deleteIcon"
@@ -400,8 +446,15 @@ const onClickLogout = () => {
 						</UiButton>
 					</div>
 
-					<UiButton :class="$style.addContactBtn" inset @click="addContact">
-						<Icon name="material-symbols:add" :class="$style.addIcon" />
+					<UiButton
+						:class="$style.addContactBtn"
+						inset
+						@click="addContact"
+					>
+						<Icon
+							name="material-symbols:add"
+							:class="$style.addIcon"
+						/>
 						Добавить контакт
 					</UiButton>
 				</div>

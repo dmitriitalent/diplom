@@ -147,7 +147,7 @@
 	color: rgba($color-accent, $opacity);
 }
 
-@mixin color-error-bg($opacity: 1) {
+@mixin color-error-bg($opacity: 0.1) {
 	background-color: rgba($color-error, $opacity);
 }
 
@@ -155,7 +155,7 @@
 	color: rgba($color-error, $opacity);
 }
 
-@mixin color-warn-bg($opacity: 1) {
+@mixin color-warn-bg($opacity: 0.1) {
 	background-color: rgba($color-warn, $opacity);
 }
 
@@ -163,7 +163,7 @@
 	color: rgba($color-warn, $opacity);
 }
 
-@mixin color-success-bg($opacity: 1) {
+@mixin color-success-bg($opacity: 0.1) {
 	background-color: rgba($color-success, $opacity);
 }
 

@@ -6,213 +6,594 @@ definePageMeta({
 });
 
 const { deviceClassList, isDevice } = useDevice();
+
+const cards = [
+	{
+		title: "Активности",
+		icon: "mdi:dice-multiple-outline",
+		text: "Настолки, кино-вечера, прогулки. Каждый день собираются соседи, чтобы отдохнуть и весело провести время.",
+		tag: "12 событий на неделе",
+	},
+	{
+		title: "Каталог",
+		icon: "mdi:tag-multiple-outline",
+		text: "Ненужные мелочи, вещи, которые жалко выбросить или что-то, что может пригодиться другим — выкладывайте сюда.",
+		tag: "84 объявления",
+	},
+	{
+		title: "Услуги",
+		icon: "mdi:tools",
+		text: "Умеете печатать, готовить, чинить технику или хорошо объяснять? Разместите услугу и найдите клиентов.",
+		tag: "27 мастеров",
+	},
+	{
+		title: "Чаты",
+		icon: "mdi:forum-outline",
+		text: "Только заселились или никого не знаете? В чатах вы найдёте соседей с вашего этажа и нужные контакты.",
+		tag: "по этажам и темам",
+	},
+	{
+		title: "Расписание",
+		icon: "mdi:clock-time-eight-outline",
+		text: "Графики работы душевых, комендатуры и прачечной — всё собрано в одном месте, всегда под рукой.",
+		tag: "8 служб",
+	},
+	{
+		title: "Уведомления",
+		icon: "mdi:bell-outline",
+		text: "Завершение стирки, обновление документов, обход охраны — мы напомним о каждом важном событии.",
+		tag: "push + e-mail",
+	},
+];
+
+const stats = [
+	{ k: "1", v: "общежитие" },
+	{ k: "300", v: "жителей" },
+	{ k: "1", v: "ВУЗ" },
+	{ k: "24/7", v: "поддержка" },
+];
 </script>
 
 <template>
 	<div :class="[$style.wrapper, ...deviceClassList]">
-		<HeaderComponent welcome></HeaderComponent>
-		<div :class="$style.container">
-			<div :class="$style.join">
-				<h1 :class="$style.title">
-					Вся инфраструктура общежития в одном месте
-				</h1>
-				<RouterLink to="/registration">
-					<UiButton accent size="large" :class="$style.button">
-						Начать
-					</UiButton>
-				</RouterLink>
+		<div :class="$style.inner">
+			<!-- ── HERO ──────────────────────────────────────────────── -->
+			<section :class="$style.hero">
+				<UiAppear :delay="0">
+					<div :class="$style.chip">
+						<span :class="$style.dot"></span>
+						beta · открыто для проживающих Икара
+					</div>
+				</UiAppear>
+
+				<UiAppear :delay="300">
+					<div :class="$style.titleBox">
+						<h1 :class="$style.heroTitle">
+							Вся инфраструктура общежития в одном месте
+						</h1>
+					</div>
+				</UiAppear>
+
+				<UiAppear :delay="700">
+					<p :class="$style.lead">
+						Соседи, расписания, услуги, объявления и чаты —
+						собранные вместе для одного общежития. Без чужих, без
+						рекламы, без лишнего.
+					</p>
+				</UiAppear>
+
+				<UiAppear :delay="1100">
+					<div :class="$style.heroActions">
+						<RouterLink to="/registration">
+							<UiButton accent size="large">
+								Зарегистрироваться
+							</UiButton>
+						</RouterLink>
+						<RouterLink to="/login">
+							<UiButton :class="$style.loginBtn" size="large">
+								У меня уже есть аккаунт
+							</UiButton>
+						</RouterLink>
+					</div>
+				</UiAppear>
+
+				<UiAppear :delay="1500">
+					<div :class="$style.stats">
+						<div v-for="s in stats" :key="s.v" :class="$style.stat">
+							<div :class="$style.statK">{{ s.k }}</div>
+							<div :class="$style.statV">{{ s.v }}</div>
+						</div>
+					</div>
+				</UiAppear>
+			</section>
+
+			<!-- ── Section header ────────────────────────────────────── -->
+			<div :class="$style.sectionHeader">
+				<UiAppear :delay="2000">
+					<div :class="$style.sectionTitleBox">
+						<h2 :class="$style.sectionTitle">Что внутри</h2>
+					</div>
+				</UiAppear>
+				<UiAppear :delay="2300">
+					<div :class="$style.chip">6 разделов · всё бесплатно</div>
+				</UiAppear>
+			</div>
+
+			<!-- ── Cards grid ────────────────────────────────────────── -->
+			<div :class="$style.cardsGrid">
+				<UiAppear
+					v-for="(c, i) in cards"
+					:key="c.title"
+					:delay="2600 + i * 280"
+				>
+					<div :class="$style.card">
+						<div :class="$style.cardHeader">
+							<div :class="$style.cardIconBox">
+								<Icon :name="c.icon" :class="$style.cardIcon" />
+							</div>
+							<h3 :class="$style.cardTitle">{{ c.title }}</h3>
+						</div>
+						<p :class="$style.cardText">{{ c.text }}</p>
+						<div :class="$style.cardFoot">
+							<span :class="$style.cardTag">{{ c.tag }}</span>
+							<Icon
+								name="mdi:arrow-top-right"
+								:class="$style.cardArrow"
+							/>
+						</div>
+					</div>
+				</UiAppear>
+			</div>
+
+			<!-- ── Two-column callout ───────────────────────────────── -->
+			<div :class="$style.callout">
+				<UiAppear :delay="4500">
+					<div :class="[$style.calloutCard, $style.calloutAccent]">
+						<div :class="$style.calloutEyebrow">для коменданта</div>
+						<h3 :class="$style.calloutTitle">
+							Один канал связи со всем общежитием
+						</h3>
+						<p :class="$style.calloutText">
+							Объявления, расписание и обходы — всё попадает в
+							ленту и доходит до каждого. Без бумажек на двери.
+						</p>
+						<UiButton>Узнать больше →</UiButton>
+					</div>
+				</UiAppear>
+
+				<UiAppear :delay="4800">
+					<div :class="$style.calloutCard">
+						<div :class="$style.calloutEyebrow">отзыв</div>
+						<p :class="$style.quote">
+							«Перестали теряться объявления — наконец-то знаю,
+							когда отключат воду.»
+						</p>
+						<div :class="$style.author">
+							<div :class="$style.avatar">
+								<Icon
+									name="material-symbols:account-circle-full"
+									:class="$style.avatarIcon"
+								/>
+							</div>
+							<div>
+								<div :class="$style.authorName">Дмитрий Г.</div>
+								<div :class="$style.authorMeta">
+									ИКАР · ул. Дубосековская 13
+								</div>
+							</div>
+						</div>
+					</div>
+				</UiAppear>
 			</div>
 		</div>
-
-		<UiGallery
-			:slides-per-view="isDevice('mobile') ? 1 : 3"
-			:space-between="isDevice('mobile') ? 16 : 64"
-			:autoplay="5000"
-			:speed="1000"
-			loop
-			:class="$style.cards"
-		>
-			<template #slide1>
-				<div :class="$style.card">
-					<h2 :class="$style.title">Активности</h2>
-					<p :class="$style.text">
-						Если стало скучно — предложите сыграть в настольные
-						игры. Каждый день студенты собираются вместе, чтобы
-						отдохнуть и весело провести время.
-					</p>
-				</div>
-			</template>
-
-			<template #slide2>
-				<div :class="$style.card">
-					<h2 :class="$style.title">Каталог</h2>
-					<p :class="$style.text">
-						Не нужные мелочи, вещи, которые жалко выбросить, или
-						что-то, что может пригодиться другим — выкладывайте в
-						каталог. Здесь можно продать или просто отдать хорошим
-						людям то, что пылится.
-					</p>
-				</div>
-			</template>
-
-			<template #slide3>
-				<div :class="$style.card">
-					<h2 :class="$style.title">Услуги</h2>
-					<p :class="$style.text">
-						Умеете печатать, готовить, чинить технику или хорошо
-						объяснять материал? Разместите свои услуги — мы поможем
-						вам найти клиентов и заработать на своём навыке.
-					</p>
-				</div>
-			</template>
-
-			<template #slide4>
-				<div :class="$style.card">
-					<h2 :class="$style.title">Чаты</h2>
-					<p :class="$style.text">
-						Только заселились или пока никого не знаете? В чатах вы
-						найдёте соседей с вашего этажа, нужные контакты и
-						сможете быстрее освоиться.
-					</p>
-				</div>
-			</template>
-
-			<template #slide5>
-				<div :class="$style.card">
-					<h2 :class="$style.title">Расписание</h2>
-					<p :class="$style.text">
-						Актуальные графики работы душевых, комендатуры и других
-						служб — всё собрано в одном месте, всегда под рукой.
-					</p>
-				</div>
-			</template>
-
-			<template #slide6>
-				<div :class="$style.card">
-					<h2 :class="$style.title">Уведомления</h2>
-					<p :class="$style.text">
-						Мы напомним о завершении стирки, обновлении документов,
-						обходе охраны и других важных событиях, чтобы вы ничего
-						не пропустили.
-					</p>
-				</div>
-			</template>
-		</UiGallery>
 	</div>
 </template>
 
 <style module lang="scss">
 .wrapper {
-	.container {
-		@include container;
+	width: 100%;
+	min-height: calc(100dvh - 50px);
+	overflow-y: auto;
+
+	.inner {
+		max-width: 1080px;
+		width: calc(100% - 24px);
+		margin: 0 auto;
+		padding-bottom: 80px;
 
 		@include respond-to(mobile) {
-			@include container(mobile);
+			padding-bottom: 40px;
 		}
 	}
 
-	.join {
+	// ── Chip & dot ────────────────────────────────────────────────
+
+	.chip {
+		@include text-xs;
+		@include color-black;
+		@include color-white-bg(0.72);
+		@include shadow;
+
+		backdrop-filter: blur(12px);
+
+		display: inline-flex;
+		align-items: center;
+		column-gap: 8px;
+		padding: 5px 12px;
+		border-radius: 100px;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		width: fit-content;
+	}
+
+	.dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: #67a352;
+		display: inline-block;
+	}
+
+	// ── Hero ──────────────────────────────────────────────────────
+
+	.hero {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
-		height: 500px;
-		row-gap: 64px;
 		align-items: center;
+		justify-content: center;
+		row-gap: 28px;
+		padding: 60px 0 40px;
 
 		@include respond-to(mobile) {
-			height: 340px;
-			row-gap: 36px;
-			padding: 0 12px;
+			padding: 40px 0 24px;
+			row-gap: 20px;
 		}
 
-		.title {
+		.titleBox {
+			@include color-white-bg(0.72);
+			@include shadow;
+
+			backdrop-filter: blur(12px);
+
+			padding: 10px 20px;
+			border-radius: 16px;
+		}
+
+		.heroTitle {
 			@include reset;
-			@include color-black;
 			@include title-l;
+			@include color-black;
 			@include unselectable;
+
+			text-align: center;
+			max-width: 820px;
+			text-wrap: balance;
 
 			@include respond-to(mobile) {
 				@include title-m;
-
-				text-align: center;
 			}
 		}
 
-		.button {
-			@include text-l;
+		.lead {
+			@include reset;
+			@include text-s;
+			@include color-black;
+			@include color-white-bg(0.72);
+			@include shadow;
 
-			width: 150px;
+			backdrop-filter: blur(12px);
+
+			max-width: 580px;
+			text-align: center;
+			padding: 10px 18px;
+			border-radius: 12px;
+			line-height: 1.55;
+		}
+
+		.heroActions {
+			display: flex;
+			column-gap: 12px;
+			align-items: center;
+
+			.loginBtn {
+				@include color-white-bg(0.72);
+				@include shadow;
+				backdrop-filter: blur(12px);
+			}
 
 			@include respond-to(mobile) {
-				@include text-m;
+				flex-direction: column;
+				row-gap: 10px;
+				width: 100%;
+			}
+		}
 
-				width: 120px;
+		.stats {
+			@include color-white-bg(0.72);
+			@include shadow;
+
+			backdrop-filter: blur(12px);
+
+			display: flex;
+			column-gap: 36px;
+			margin-top: 14px;
+			padding: 14px 28px;
+			border-radius: 100px;
+
+			@include respond-to(mobile) {
+				column-gap: 18px;
+				padding: 12px 20px;
+				border-radius: 16px;
+				flex-wrap: wrap;
+				row-gap: 12px;
+				justify-content: center;
+			}
+
+			.stat {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				min-width: 72px;
+			}
+
+			.statK {
+				@include reset;
+				@include color-black;
+
+				font-family: "Poiret One";
+				font-weight: 600;
+				font-size: 26px;
+				line-height: 1;
+			}
+
+			.statV {
+				@include text-xs;
+				@include color-black(0.6);
+
+				margin-top: 4px;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
 			}
 		}
 	}
 
-	.cards {
-		@include unselectable;
+	// ── Section header "Что внутри" ───────────────────────────────
 
-		padding: 0px 64px;
-		box-sizing: border-box;
+	.sectionHeader {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20px 0 16px;
+		column-gap: 12px;
 
 		@include respond-to(mobile) {
-			padding: 0 12px;
+			flex-direction: column;
+			align-items: flex-start;
+			row-gap: 8px;
+		}
+
+		.sectionTitleBox {
+			@include color-white-bg(0.72);
+			@include shadow;
+
+			backdrop-filter: blur(12px);
+
+			padding: 6px 14px;
+			border-radius: 10px;
+		}
+
+		.sectionTitle {
+			@include reset;
+			@include title-s;
+			@include color-black;
+		}
+	}
+
+	// ── Cards grid ────────────────────────────────────────────────
+
+	.cardsGrid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		column-gap: 20px;
+		row-gap: 20px;
+		padding-bottom: 60px;
+
+		@include respond-to(mobile) {
+			grid-template-columns: 1fr;
+			column-gap: 0;
+			row-gap: 12px;
+			padding-bottom: 30px;
 		}
 
 		.card {
+			@include color-white-bg(0.72);
+			@include shadow;
+
+			backdrop-filter: blur(12px);
+
 			position: relative;
-			height: 120px;
+			min-height: 200px;
+			padding: 22px;
+			border-radius: 12px;
 			display: flex;
 			flex-direction: column;
-			row-gap: 16px;
-			border-radius: 10px;
-			overflow: hidden;
-			padding: 48px;
+			box-sizing: border-box;
+			height: 100%;
+
+			.cardHeader {
+				display: flex;
+				align-items: center;
+				column-gap: 12px;
+				margin-bottom: 12px;
+			}
+
+			.cardIconBox {
+				@include color-accent-bg;
+
+				width: 36px;
+				height: 36px;
+				border-radius: 8px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+			}
+
+			.cardIcon {
+				@include color-black;
+
+				width: 20px;
+				height: 20px;
+			}
+
+			.cardTitle {
+				@include reset;
+				@include title-s;
+				@include color-black;
+			}
+
+			.cardText {
+				@include reset;
+				@include text-s;
+				@include color-black(0.78);
+
+				line-height: 1.55;
+			}
+
+			.cardFoot {
+				margin-top: auto;
+				padding-top: 14px;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+
+			.cardTag {
+				@include text-xs;
+				@include color-black(0.65);
+				@include color-black-bg(0.06);
+
+				padding: 2px 8px;
+				border-radius: 100px;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+			}
+
+			.cardArrow {
+				@include color-black(0.5);
+
+				width: 16px;
+				height: 16px;
+				flex-shrink: 0;
+			}
+		}
+	}
+
+	// ── Two-column callout ────────────────────────────────────────
+
+	.callout {
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		column-gap: 20px;
+
+		@include respond-to(mobile) {
+			grid-template-columns: 1fr;
+			row-gap: 12px;
+		}
+
+		.calloutCard {
+			@include color-white-bg(0.72);
+			@include shadow;
+
+			backdrop-filter: blur(12px);
+
+			position: relative;
+			padding: 28px;
+			border-radius: 12px;
+			box-sizing: border-box;
 
 			@include respond-to(mobile) {
-				height: auto;
-				padding: 28px 24px;
+				padding: 22px;
 			}
+		}
 
-			.title {
-				@include reset;
-				@include color-black;
-				@include title-s;
+		.calloutAccent {
+			@include color-accent-bg(0.72);
 
+			backdrop-filter: blur(12px);
+		}
+
+		.calloutEyebrow {
+			@include text-xs;
+			@include color-black(0.6);
+
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+			margin-bottom: 10px;
+		}
+
+		.calloutTitle {
+			@include reset;
+			@include title-s;
+			@include color-black;
+
+			margin-bottom: 10px;
+		}
+
+		.calloutText {
+			@include reset;
+			@include text-s;
+			@include color-black(0.78);
+
+			line-height: 1.55;
+			margin-bottom: 16px;
+		}
+
+		.quote {
+			@include reset;
+			@include color-black;
+
+			font-family: "Poiret One";
+			font-weight: 600;
+			font-size: 20px;
+			line-height: 1.35;
+			margin-bottom: 14px;
+		}
+
+		.author {
+			display: flex;
+			align-items: center;
+			column-gap: 10px;
+
+			.avatar {
+				@include color-accent-bg;
+
+				width: 32px;
+				height: 32px;
+				border-radius: 50%;
 				display: flex;
-				z-index: 2;
-
-				@include respond-to(mobile) {
-					@include title-xs;
-				}
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
 			}
 
-			.text {
-				@include reset;
+			.avatarIcon {
 				@include color-black;
-				@include text-m;
 
-				display: flex;
-				z-index: 2;
-
-				@include respond-to(mobile) {
-					@include text-s;
-				}
+				width: 24px;
+				height: 24px;
 			}
 
-			&:after {
-				@include color-white-bg(0.5);
+			.authorName {
+				@include text-s;
+				@include color-black;
 
-				content: "";
-				position: absolute;
-				left: 0;
-				top: 0;
-				z-index: 1;
-				height: 100%;
-				width: 100%;
-				filter: blur(10px);
+				font-weight: 500;
+			}
+
+			.authorMeta {
+				@include text-xs;
+				@include color-black(0.55);
 			}
 		}
 	}
