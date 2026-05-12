@@ -13,9 +13,7 @@ if (isAuthenticated) {
 
 <template>
 	<div :class="[$style.wrapper, ...deviceClassList]">
-		<ClientOnly>
-			<ShaderComponent />
-		</ClientOnly>
+		<ShaderComponent />
 		<div :class="$style.container">
 			<slot></slot>
 		</div>

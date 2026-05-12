@@ -5,9 +5,7 @@ const { deviceClassList } = useDevice();
 </script>
 
 <template>
-	<ClientOnly>
-		<ShaderComponent />
-	</ClientOnly>
+	<ShaderComponent />
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<headerComponent :class="$style.header"></headerComponent>
 		<slot></slot>
