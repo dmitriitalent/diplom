@@ -5,7 +5,6 @@ import { useCategoryStore } from "~/stores/categoryStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { ProductDtoCreate } from "~~/server/dto/product/create";
 import type { byIdProduct } from "~~/server/dto/product/byId";
-import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
 import { useCacheStore } from "~/stores/cacheStore";
 import { PRODUCT_TEMPLATES } from "~/constants/templates";
@@ -14,9 +13,9 @@ const route = useRoute();
 const router = useRouter();
 const id = route.params.id as string;
 
-const { at } = useAuthStore();
+const auth = useAuthStore();
 const { self } = useSelfStore();
-const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const isAdmin = auth.isAdmin;
 const { deviceClassList, isDevice } = useDevice();
 const cacheStore = useCacheStore();
 

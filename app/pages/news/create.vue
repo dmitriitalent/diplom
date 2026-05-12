@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ middleware: "verified" });
+
 import type { NewsDtoCreate } from "~~/server/dto/news/create";
 import { useDevice } from "~/composables/device";
 import { NEWS_TEMPLATES } from "~/constants/templates";

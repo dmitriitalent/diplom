@@ -4,13 +4,14 @@ import type { Dormitory } from "~/entities/Dormitory";
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import { useCacheStore } from "~/stores/cacheStore";
-import { jwtDecode } from "jwt-decode";
+import ActivityTemplate0 from "~/components/templates/activity/ActivityTemplate0.vue";
+import ActivityTemplate1 from "~/components/templates/activity/ActivityTemplate1.vue";
 
 const route = useRoute();
 const router = useRouter();
 
-const { at } = useAuthStore();
-const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const auth = useAuthStore();
+const isAdmin = auth.isAdmin;
 const cacheStore = useCacheStore();
 const { self } = useSelfStore();
 
@@ -24,12 +25,11 @@ if (import.meta.server && !activity._loaded) {
 const isAuthor = computed(() => activity.author?.id === self?.id);
 const isParticipant = computed(() => !!activity.participants?.find((p: any) => p.id == self?.id));
 
-const templateMap: Record<number, ReturnType<typeof defineAsyncComponent>> = {
-	0: defineAsyncComponent(() => import("~/components/templates/activity/ActivityTemplate0.vue")),
-	1: defineAsyncComponent(() => import("~/components/templates/activity/ActivityTemplate1.vue")),
-};
+const templateMap = { 0: ActivityTemplate0, 1: ActivityTemplate1 } as const;
 
-const templateComponent = computed(() => templateMap[(activity as any).viewTemplate ?? 0] ?? templateMap[0]);
+const templateComponent = computed(
+	() => templateMap[(activity as any).viewTemplate as 0 | 1] ?? templateMap[0],
+);
 
 const moderateForm = ref({ comment: "", status: "" });
 const inviteCode = ref<string | null>(null);

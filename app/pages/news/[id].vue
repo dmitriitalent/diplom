@@ -1,15 +1,18 @@
 <script setup lang="ts">
+definePageMeta({ middleware: "verified" });
+
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import { useCacheStore } from "~/stores/cacheStore";
-import { jwtDecode } from "jwt-decode";
+import NewsTemplate0 from "~/components/templates/news/NewsTemplate0.vue";
+import NewsTemplate1 from "~/components/templates/news/NewsTemplate1.vue";
 
 const route = useRoute();
 const router = useRouter();
 
-const { at } = useAuthStore();
+const auth = useAuthStore();
 const { self } = useSelfStore();
-const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const isAdmin = auth.isAdmin;
 const cacheStore = useCacheStore();
 
 const id = route.params.id as string;
@@ -23,12 +26,11 @@ const moderationStatus = ref(news.moderationStatus ?? "approved");
 
 const isAuthor = computed(() => news.author?.id === self?.id);
 
-const templateMap: Record<number, ReturnType<typeof defineAsyncComponent>> = {
-	0: defineAsyncComponent(() => import("~/components/templates/news/NewsTemplate0.vue")),
-	1: defineAsyncComponent(() => import("~/components/templates/news/NewsTemplate1.vue")),
-};
+const templateMap = { 0: NewsTemplate0, 1: NewsTemplate1 } as const;
 
-const templateComponent = computed(() => templateMap[(news as any).viewTemplate ?? 0] ?? templateMap[0]);
+const templateComponent = computed(
+	() => templateMap[(news as any).viewTemplate as 0 | 1] ?? templateMap[0],
+);
 
 const moderateForm = ref({ comment: "", status: "" });
 

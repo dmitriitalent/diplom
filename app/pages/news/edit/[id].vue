@@ -1,9 +1,10 @@
 <script setup lang="ts">
+definePageMeta({ middleware: "verified" });
+
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { NewsDtoCreate } from "~~/server/dto/news/create";
 import type { NewsDtoById } from "~~/server/dto/news/byId";
-import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
 import { useCacheStore } from "~/stores/cacheStore";
 import { NEWS_TEMPLATES } from "~/constants/templates";
@@ -12,9 +13,9 @@ const route = useRoute();
 const router = useRouter();
 const id = route.params.id as string;
 
-const { at } = useAuthStore();
+const auth = useAuthStore();
 const { self } = useSelfStore();
-const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const isAdmin = auth.isAdmin;
 const { deviceClassList, isDevice } = useDevice();
 const cacheStore = useCacheStore();
 

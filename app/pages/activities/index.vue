@@ -5,16 +5,12 @@ import type { User } from "~/entities/User";
 import type { byId } from "~~/server/dto/profile/byId";
 import type { ActivityDtoList } from "~~/server/dto/activity/list";
 import { useAuthStore } from "~/stores/authStore";
-import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
 
 const { deviceClassList } = useDevice();
 
-const { at } = useAuthStore();
-
-let isAdmin = at
-	? ((jwtDecode(at) as any).roles?.includes("ADMIN") ?? false)
-	: false;
+const auth = useAuthStore();
+const isAdmin = auth.isAdmin;
 
 const { data: activitiesPendingFetch } = isAdmin
 	? await useFetch<ActivityDtoList>("/api/activity/list?status=pending")

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useDevice } from "~/composables/device";
+import { useAuthStore } from "~/stores/authStore";
+import { storeToRefs } from "pinia";
 
 defineProps({
 	welcome: {
@@ -10,6 +12,9 @@ defineProps({
 
 const { deviceClassList, isDevice } = useDevice();
 const sidebarOpen = ref(false);
+
+const auth = useAuthStore();
+const { isAdmin, isVerified } = storeToRefs(auth);
 
 const close = () => {
 	sidebarOpen.value = false;
@@ -26,7 +31,7 @@ const close = () => {
 					v-if="!welcome && !isDevice('mobile')"
 					:class="$style.links"
 				>
-					<RouterLink to="/schedule">
+					<RouterLink v-if="isVerified" to="/schedule">
 						<UiButton :class="$style.link" inset>
 							Расписание
 						</UiButton>
@@ -40,11 +45,14 @@ const close = () => {
 					<RouterLink to="/catalog">
 						<UiButton :class="$style.link" inset>Каталог</UiButton>
 					</RouterLink>
-					<RouterLink to="/news">
+					<RouterLink v-if="isVerified" to="/news">
 						<UiButton :class="$style.link" inset>Новости</UiButton>
 					</RouterLink>
 					<RouterLink to="/chats">
 						<UiButton :class="$style.link" inset>Чаты</UiButton>
+					</RouterLink>
+					<RouterLink v-if="isAdmin" to="/admin">
+						<UiButton :class="$style.link" inset>Админ</UiButton>
 					</RouterLink>
 				</div>
 
@@ -107,7 +115,7 @@ const close = () => {
 					</div>
 
 					<nav v-if="!welcome" :class="$style.sidebarLinks">
-						<RouterLink to="/schedule" @click="close">
+						<RouterLink v-if="isVerified" to="/schedule" @click="close">
 							<UiButton :class="$style.sidebarLink" inset>
 								Расписание
 							</UiButton>
@@ -127,7 +135,7 @@ const close = () => {
 								Каталог
 							</UiButton>
 						</RouterLink>
-						<RouterLink to="/news" @click="close">
+						<RouterLink v-if="isVerified" to="/news" @click="close">
 							<UiButton :class="$style.sidebarLink" inset>
 								Новости
 							</UiButton>
@@ -135,6 +143,11 @@ const close = () => {
 						<RouterLink to="/chats" @click="close">
 							<UiButton :class="$style.sidebarLink" inset>
 								Чаты
+							</UiButton>
+						</RouterLink>
+						<RouterLink v-if="isAdmin" to="/admin" @click="close">
+							<UiButton :class="$style.sidebarLink" inset>
+								Админ-панель
 							</UiButton>
 						</RouterLink>
 					</nav>

@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { useAuthStore } from "~/stores/authStore";
-import { jwtDecode } from "jwt-decode";
 
-const { at } = useAuthStore();
-const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const auth = useAuthStore();
 
-if (!isAdmin) {
+if (!auth.isAdmin) {
 	await navigateTo("/");
 }
 </script>
@@ -14,6 +12,10 @@ if (!isAdmin) {
 	<div :class="$style.wrapper">
 		<div :class="$style.container">
 			<h1 :class="$style.pageTitle">Панель администратора</h1>
+
+			<section :class="$style.section">
+				<AdminVerifications />
+			</section>
 
 			<section :class="$style.section">
 				<AdminTemplatePreviews />
