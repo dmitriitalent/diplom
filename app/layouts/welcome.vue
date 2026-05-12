@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
 import { useDevice } from "~/composables/device";
 import { useAuthStore } from "~/stores/authStore";
 
 const { deviceClassList } = useDevice();
 
-const { isAuthenticated } = useAuthStore();
-if (isAuthenticated) {
-	const router = useRouter();
-	router.push("profile/self");
+const { isAuthenticated } = storeToRefs(useAuthStore());
+if (isAuthenticated.value) {
+	await navigateTo("/profile/self", { replace: true });
 }
 </script>
 
