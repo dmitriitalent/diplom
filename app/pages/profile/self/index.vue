@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { useSelfStore } from "~/stores/selfStore";
+import { useAuthStore } from "~/stores/authStore";
 
-const selfStore = useSelfStore();
-const { self } = storeToRefs(selfStore);
+const { userId } = storeToRefs(useAuthStore());
 
-if (self.value?.id) {
-	await navigateTo(`/profile/${self.value.id}`, { replace: true });
-} else {
-	await navigateTo("/welcome", { replace: true });
-}
+onMounted(() => {
+	navigateTo(
+		userId.value ? `/profile/${userId.value}` : "/welcome",
+		{ replace: true },
+	);
+});
 </script>
 
 <template>

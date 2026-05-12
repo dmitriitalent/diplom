@@ -55,8 +55,9 @@ export const useAuthStore = defineStore("authStore", () => {
 		return $fetch("/api/auth/login", {
 			method: "POST",
 			body: loginData,
-		}).then((res) => {
-			console.log(res);
+		}).then(() => {
+			refreshCookie("accessToken");
+			refreshCookie("refreshToken");
 		});
 	};
 
