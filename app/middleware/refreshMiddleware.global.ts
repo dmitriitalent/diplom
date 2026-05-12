@@ -14,7 +14,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	// 1. Access token: рефрешим ТОЛЬКО если он скоро протухнет (или его нет)
 	const exp = auth.payload?.exp as number | undefined;
 	const now = Math.floor(Date.now() / 1000);
-	const tokenFresh = typeof exp === "number" && exp - now > REFRESH_LEEWAY_SEC;
+	const tokenFresh =
+		typeof exp === "number" && exp - now > REFRESH_LEEWAY_SEC;
 
 	if (!tokenFresh) {
 		try {
@@ -27,6 +28,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
 	// 2. Self: грузим ОДИН РАЗ и держим в памяти. Не блокируем навигацию —
 	//    подтянется фоном, страницы реактивно отрисуются, когда придёт.
 	if (!self.self) {
-		self.refreshSelf().catch(() => { /* ignore — не критично для навигации */ });
+		self.refreshSelf().catch(() => {
+			/* ignore — не критично для навигации */
+		});
 	}
 });
