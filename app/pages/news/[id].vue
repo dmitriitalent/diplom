@@ -7,6 +7,7 @@ import type { NewsDtoById } from "~~/server/dto/news/byId";
 import type { NewsListDtoList } from "~~/server/dto/news/newsList";
 import type { byId } from "~~/server/dto/profile/byId";
 import { jwtDecode } from "jwt-decode";
+import { useDevice } from "~/composables/device";
 
 const route = useRoute();
 const router = useRouter();
@@ -15,6 +16,7 @@ const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
 const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const { deviceClassList } = useDevice();
 
 const { data: news, error } = await useAsyncData<News>(
 	"news-full",
@@ -84,7 +86,7 @@ const moderateNews = (status: string) => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container" v-if="news">
 			<div v-if="canEdit" :class="$style.authorTools">
 				<UiButton
@@ -174,6 +176,12 @@ const moderateNews = (status: string) => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 30px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 20px;
+		}
 	}
 
 	display: flex;
@@ -217,6 +225,10 @@ const moderateNews = (status: string) => {
 		width: 100%;
 		height: 600px;
 
+		@include respond-to(mobile) {
+			height: 280px;
+		}
+
 		.gallery {
 			@include color-black-bg(0.1);
 
@@ -243,6 +255,10 @@ const moderateNews = (status: string) => {
 			align-items: center;
 			column-gap: 20px;
 
+			@include respond-to(mobile) {
+				margin-left: 0;
+			}
+
 			.image {
 				width: 50px;
 				height: 50px;
@@ -258,6 +274,10 @@ const moderateNews = (status: string) => {
 			@include reset;
 			@include title-l;
 			@include color-black;
+
+			@include respond-to(mobile) {
+				@include title-m;
+			}
 		}
 
 		.description {

@@ -1,17 +1,45 @@
 <script setup lang="ts">
 import type { ActivityDtoCreate } from "~~/server/dto/activity/create";
+import { useDevice } from "~/composables/device";
+
+const { deviceClassList, isDevice } = useDevice();
 
 const imagePreviewUrls = ref<Array<string>>([]);
+const imageThumbnailUrls = ref<Array<string>>([]);
 const imageFiles = ref<Array<File>>([]);
 const previewChange = ref<number>(0);
+
+const createThumbnail = (file: File, size = 120): Promise<string> =>
+	new Promise((resolve) => {
+		const img = new Image();
+		const url = URL.createObjectURL(file);
+		img.onload = () => {
+			const canvas = document.createElement("canvas");
+			canvas.width = size;
+			canvas.height = size;
+			const ctx = canvas.getContext("2d")!;
+			const min = Math.min(img.width, img.height);
+			const sx = (img.width - min) / 2;
+			const sy = (img.height - min) / 2;
+			ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+			canvas.toBlob(
+				(blob) => {
+					URL.revokeObjectURL(url);
+					resolve(URL.createObjectURL(blob!));
+				},
+				"image/jpeg",
+				0.8,
+			);
+		};
+		img.src = url;
+	});
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const openFile = () => {
 	fileInput.value?.click();
 };
 
-const onFileChangeImages = (e: Event) => {
-	previewChange.value += 1;
+const onFileChangeImages = async (e: Event) => {
 	const target = e.target as HTMLInputElement;
 	const files = target.files;
 
@@ -20,20 +48,23 @@ const onFileChangeImages = (e: Event) => {
 	for (const file of Array.from(files)) {
 		const url = URL.createObjectURL(file);
 		imagePreviewUrls.value.push(url);
+		imageThumbnailUrls.value.push(await createThumbnail(file));
 		imageFiles.value.push(file);
 	}
 
 	target.value = "";
+	previewChange.value += 1;
 };
 
 const removeImage = (url: string) => {
 	const i = imagePreviewUrls.value.findIndex((u) => u === url);
 	if (i === -1) return;
 
-	imagePreviewUrls.value.splice(i, 1);
-	imageFiles.value.splice(i, 1);
-
 	URL.revokeObjectURL(url);
+	URL.revokeObjectURL(imageThumbnailUrls.value[i]);
+	imagePreviewUrls.value.splice(i, 1);
+	imageThumbnailUrls.value.splice(i, 1);
+	imageFiles.value.splice(i, 1);
 
 	previewChange.value += 1;
 };
@@ -91,7 +122,7 @@ const createActivity = async () => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<div :class="$style.form">
 				<div :class="$style.left">
@@ -125,7 +156,7 @@ const createActivity = async () => {
 							<UiGallery
 								:class="$style.gallery"
 								:key="previewChange"
-								:slides-per-view="6"
+								:slides-per-view="isDevice('mobile') ? 5 : 6"
 								:autoplay="3000"
 							>
 								<template
@@ -144,7 +175,7 @@ const createActivity = async () => {
 												:class="$style.icon"
 											></Icon>
 										</UiButton>
-										<img :class="$style.image" :src="url" />
+										<img :class="$style.image" :src="imageThumbnailUrls[index]" />
 									</div>
 								</template>
 							</UiGallery>
@@ -247,11 +278,22 @@ const createActivity = async () => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 30px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 20px;
+		}
 	}
 
 	.form {
 		display: flex;
 		column-gap: 30px;
+
+		@include respond-to(mobile) {
+			flex-direction: column;
+			row-gap: 20px;
+		}
 
 		.left {
 			min-width: 500px;
@@ -260,10 +302,20 @@ const createActivity = async () => {
 			flex-direction: column;
 			row-gap: 10px;
 
+			@include respond-to(mobile) {
+				min-width: 0;
+				max-width: none;
+				width: 100%;
+			}
+
 			.gallery {
 				height: 400px;
 				width: 100%;
 				border-radius: 10px;
+
+				@include respond-to(mobile) {
+					height: 260px;
+				}
 
 				.image {
 					width: 100%;
@@ -282,6 +334,12 @@ const createActivity = async () => {
 				cursor: pointer;
 				background-color: rgba($color-black, 0.1);
 				border-radius: 10px;
+
+				@include respond-to(mobile) {
+					height: 260px;
+					aspect-ratio: unset;
+					width: 100%;
+				}
 
 				.icon {
 					height: 50%;
@@ -341,7 +399,7 @@ const createActivity = async () => {
 					justify-content: center;
 					align-items: center;
 					height: 100%;
-					aspect-ratio: 1;
+					width: 70px;
 					cursor: pointer;
 					background-color: rgba($color-black, 0.1);
 					border-radius: 10px;

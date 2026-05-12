@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { jwtDecode } from "jwt-decode";
 import { useAuthStore } from "~/stores/authStore";
+import { useDevice } from "~/composables/device";
 import type { TimelineSession } from "~/components/ui/types/TimelineSession";
 import type { ShowerDtoById } from "~~/server/dto/shower/byId";
 import type { ShowerDtoList } from "~~/server/dto/shower/list";
@@ -8,6 +9,8 @@ import type {
 	WashingMachineBooking,
 	WashingMachineDto,
 } from "~~/server/dto/washingmachine/index";
+
+const { deviceClassList } = useDevice();
 
 const { at } = useAuthStore();
 const decoded = jwtDecode(at as string) as any;
@@ -560,7 +563,7 @@ const deleteShower = async (id: string) => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<!-- ── Day selector (shared) ──────────────────────────────────── -->
 
@@ -1068,6 +1071,10 @@ const deleteShower = async (id: string) => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 24px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+		}
 	}
 
 	.sectionHeader {
@@ -1079,6 +1086,10 @@ const deleteShower = async (id: string) => {
 			@include reset;
 			@include title-l;
 			@include color-black;
+
+			@include respond-to(mobile) {
+				@include title-m;
+			}
 		}
 	}
 
@@ -1139,10 +1150,20 @@ const deleteShower = async (id: string) => {
 
 		@include color-black-bg(0.04);
 
+		@include respond-to(mobile) {
+			padding: 12px;
+		}
+
 		.machineHeader {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
+
+			@include respond-to(mobile) {
+				flex-direction: column;
+				align-items: flex-start;
+				row-gap: 10px;
+			}
 
 			.machineLocation {
 				@include title-s;
@@ -1152,6 +1173,8 @@ const deleteShower = async (id: string) => {
 			.machineActions {
 				display: flex;
 				column-gap: 8px;
+				flex-wrap: wrap;
+				row-gap: 6px;
 
 				.deleteBtn {
 					@include color-error-bg;

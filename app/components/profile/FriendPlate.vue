@@ -5,6 +5,7 @@ const props = defineProps<{
 	id: string;
 	name: string;
 	surname: string;
+	avatarId: string;
 	location?: string;
 	contacts?: ContactLike[];
 }>();
@@ -38,6 +39,10 @@ const writeContact = () => {
 
 <template>
 	<div :class="$style.plate" @click="goToProfile">
+		<UiImage
+			:class="$style.avatar"
+			:src="`/api/images/byGuid?guid=${avatarId}`"
+		></UiImage>
 		<div :class="$style.info">
 			<span :class="$style.name">{{ name }} {{ surname }}</span>
 			<span v-if="location" :class="$style.location">{{ location }}</span>
@@ -63,7 +68,11 @@ const writeContact = () => {
 					Перейти
 				</UiButton>
 				<UiButton
-					:class="[$style.tooltipBtn, !getPrimaryContactUrl(contacts ?? []) && $style.tooltipBtnDisabled]"
+					:class="[
+						$style.tooltipBtn,
+						!getPrimaryContactUrl(contacts ?? []) &&
+							$style.tooltipBtnDisabled,
+					]"
 					inset
 					:disabled="!getPrimaryContactUrl(contacts ?? [])"
 					@click="writeContact"
@@ -85,7 +94,7 @@ const writeContact = () => {
 .plate {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	column-gap: 10px;
 	padding: 14px 16px;
 	border-radius: 10px;
 	cursor: pointer;
@@ -93,6 +102,14 @@ const writeContact = () => {
 
 	&:hover {
 		@include color-black-bg(0.06);
+	}
+
+	.avatar {
+		height: 50px;
+		width: 50px;
+		aspect-ratio: 1;
+		border-radius: 10px;
+		overflow: hidden;
 	}
 
 	.info {
@@ -116,6 +133,7 @@ const writeContact = () => {
 	.dotsWrapper {
 		position: relative;
 		flex-shrink: 0;
+		margin-left: auto;
 
 		.dotsBtn {
 			padding: 4px;

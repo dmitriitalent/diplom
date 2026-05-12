@@ -12,7 +12,13 @@ export type Activity = {
 	location: string;
 	moderationComment: string;
 	moderationStatus: string;
-	participants: Array<User>;
+	participants: Array<{
+		activityId: string;
+		createdAt: string;
+		id: string;
+		status: string;
+		userId: string;
+	}>;
 	startTime: string;
 	title: string;
 	updatedAt: string;

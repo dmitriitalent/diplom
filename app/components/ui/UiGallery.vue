@@ -50,10 +50,12 @@ const classList = computed(() => {
 		<Swiper
 			:speed="speed"
 			:modules="[Autoplay]"
-			:loop="props.loop"
+			:loop="props.loop && slots.length > 1"
 			:autoplay="autoplaySettigs"
 			:slides-per-view="props.slidesPerView"
 			:space-between="props.spaceBetween"
+			:touch-start-prevent-default="false"
+			:preload-images="true"
 			:class="[...classList, $style.wrapper]"
 		>
 			<SwiperSlide
@@ -90,6 +92,11 @@ const classList = computed(() => {
 		max-width: 100%;
 		display: flex;
 		justify-content: center;
+
+		img {
+			-webkit-user-drag: none;
+			pointer-events: none;
+		}
 	}
 }
 </style>

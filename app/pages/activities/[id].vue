@@ -7,12 +7,14 @@ import type { ActivityDtoById } from "~~/server/dto/activity/byId";
 import type { ActivityDtoParticipants } from "~~/server/dto/activity/participants";
 import type { byId } from "~~/server/dto/profile/byId";
 import { jwtDecode } from "jwt-decode";
+import { useDevice } from "~/composables/device";
 
 const route = useRoute();
 const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
 
 const { at } = useAuthStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const { deviceClassList } = useDevice();
 
 const { data: activity, error } = await useAsyncData<Activity>(
 	"activity-full",
@@ -177,9 +179,8 @@ const joinActivity = () => {
 };
 
 const removeParticipant = () => {
-	activityVisual.value.participants = activityVisual.value.participants.filter(
-		(p) => p.id !== self?.id,
-	);
+	activityVisual.value.participants =
+		activityVisual.value.participants.filter((p) => p.id !== self?.id);
 
 	$fetch("/api/activity/unregister", {
 		method: "DELETE",
@@ -196,7 +197,7 @@ const removeParticipant = () => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container" v-if="activity">
 			<div v-if="isAdmin" :class="$style.adminTools">
 				<UiButton :class="$style.delete" @click="deleteActivity"
@@ -236,9 +237,7 @@ const removeParticipant = () => {
 			</div>
 
 			<div v-if="isAuthor && !isAdmin" :class="$style.authorTools">
-				<UiButton
-					:class="$style.delete"
-					@click="deleteActivity"
+				<UiButton :class="$style.delete" @click="deleteActivity"
 					>Удалить</UiButton
 				>
 				<UiButton
@@ -435,6 +434,12 @@ const removeParticipant = () => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 30px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 20px;
+		}
 	}
 
 	display: flex;
@@ -469,12 +474,26 @@ const removeParticipant = () => {
 			align-items: center;
 			justify-content: space-between;
 
+			@include respond-to(mobile) {
+				flex-direction: column;
+				align-items: stretch;
+				row-gap: 10px;
+			}
+
 			.expiresAt {
 				width: 400px;
+
+				@include respond-to(mobile) {
+					width: 100%;
+				}
 			}
 
 			.maxUses {
 				width: 400px;
+
+				@include respond-to(mobile) {
+					width: 100%;
+				}
 			}
 		}
 
@@ -491,6 +510,10 @@ const removeParticipant = () => {
 	.top {
 		width: 100%;
 		height: 600px;
+
+		@include respond-to(mobile) {
+			height: 280px;
+		}
 
 		.gallery {
 			@include color-black-bg(0.1);
@@ -518,6 +541,10 @@ const removeParticipant = () => {
 			align-items: center;
 			column-gap: 20px;
 
+			@include respond-to(mobile) {
+				margin-left: 0;
+			}
+
 			.image {
 				width: 50px;
 				height: 50px;
@@ -533,6 +560,10 @@ const removeParticipant = () => {
 			@include reset;
 			@include title-l;
 			@include color-black;
+
+			@include respond-to(mobile) {
+				@include title-m;
+			}
 		}
 
 		.description {
@@ -549,6 +580,10 @@ const removeParticipant = () => {
 			@include color-black;
 
 			margin-left: auto;
+
+			@include respond-to(mobile) {
+				margin-left: 0;
+			}
 		}
 	}
 
