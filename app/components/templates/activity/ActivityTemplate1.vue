@@ -563,6 +563,7 @@ const moderationLabel = computed(() => {
 .wrapper {
 	position: relative;
 	min-height: 100dvh;
+	overflow-x: clip;
 
 	.shader {
 		position: absolute;
@@ -969,7 +970,7 @@ const moderationLabel = computed(() => {
 		@include shadow;
 
 		@include respond-to(mobile) {
-			width: 100px;
+			width: 100%;
 			height: 260px;
 		}
 
@@ -1103,6 +1104,7 @@ const moderationLabel = computed(() => {
 		row-gap: 14px;
 		padding: 24px;
 		border-radius: 12px;
+		min-width: 0;
 
 		@include color-white-bg;
 		@include shadow;

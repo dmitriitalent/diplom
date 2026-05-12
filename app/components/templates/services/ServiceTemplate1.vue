@@ -36,20 +36,44 @@ const submitComment = async () => {
 };
 
 const statusBadge = computed(() => {
-	const map: Record<string, { bg: string; color: string; label: string; icon: string }> = {
-		active: { bg: "#efffde", color: "#1c5b1c", label: "Доступна", icon: "mdi:check-circle-outline" },
-		paused: { bg: "rgba(38,28,7,0.08)", color: "rgba(38,28,7,0.65)", label: "Приостановлена", icon: "mdi:pause-circle-outline" },
-		pending: { bg: "#fff3c8", color: "#7a5a00", label: "На проверке", icon: "mdi:clock-outline" },
+	const map: Record<
+		string,
+		{ bg: string; color: string; label: string; icon: string }
+	> = {
+		active: {
+			bg: "#efffde",
+			color: "#1c5b1c",
+			label: "Доступна",
+			icon: "mdi:check-circle-outline",
+		},
+		paused: {
+			bg: "rgba(38,28,7,0.08)",
+			color: "rgba(38,28,7,0.65)",
+			label: "Приостановлена",
+			icon: "mdi:pause-circle-outline",
+		},
+		pending: {
+			bg: "#fff3c8",
+			color: "#7a5a00",
+			label: "На проверке",
+			icon: "mdi:clock-outline",
+		},
 	};
 	return map[(props.service as any).status ?? "active"] ?? map.active;
 });
 
-const categoryLabel = computed(() => (props.service as any).category ?? "Услуга");
+const categoryLabel = computed(
+	() => (props.service as any).category ?? "Услуга",
+);
 
 const priceLabel = computed(() => {
 	if (props.service.price == null) return "";
 	if (props.service.price === 0) return "Бесплатно";
-	return "от " + new Intl.NumberFormat("ru-RU").format(props.service.price) + " ₽";
+	return (
+		"от " +
+		new Intl.NumberFormat("ru-RU").format(props.service.price) +
+		" ₽"
+	);
 });
 
 const isFree = computed(() => props.service.price === 0);
@@ -57,14 +81,21 @@ const isFree = computed(() => props.service.price === 0);
 const publishedAt = computed(() => {
 	const ts = (props.service as any).publishedAt ?? props.service.createdAt;
 	if (!ts) return "";
-	return new Date(ts).toLocaleString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
+	return new Date(ts).toLocaleString("ru-RU", {
+		day: "2-digit",
+		month: "long",
+		year: "numeric",
+	});
 });
 
 const updatedAt = computed(() => {
 	const ts = (props.service as any).updatedAt;
 	const pub = (props.service as any).publishedAt ?? props.service.createdAt;
 	if (!ts || ts === pub) return "";
-	return new Date(ts).toLocaleString("ru-RU", { day: "2-digit", month: "long" });
+	return new Date(ts).toLocaleString("ru-RU", {
+		day: "2-digit",
+		month: "long",
+	});
 });
 
 const ownerRoom = computed(() => {
@@ -87,7 +118,9 @@ const isMyComment = (comment: ServiceComment) => {
 		<div :class="$style.container">
 			<!-- Breadcrumbs -->
 			<div :class="$style.crumbs">
-				<RouterLink to="/services" :class="$style.crumbLink">Услуги</RouterLink>
+				<RouterLink to="/services" :class="$style.crumbLink"
+					>Услуги</RouterLink
+				>
 				<Icon name="mdi:chevron-right" :class="$style.crumbSep" />
 				<span :class="$style.crumbCurrent">{{ service.name }}</span>
 			</div>
@@ -114,13 +147,18 @@ const isMyComment = (comment: ServiceComment) => {
 						</template>
 					</UiGallery>
 					<div v-else :class="$style.galleryEmpty">
-						<Icon name="mdi:image-outline" :class="$style.galleryEmptyIcon" />
+						<Icon
+							name="mdi:image-outline"
+							:class="$style.galleryEmptyIcon"
+						/>
 					</div>
 
 					<!-- Description -->
 					<article :class="$style.article">
 						<h2 :class="$style.articleTitle">Описание услуги</h2>
-						<p :class="$style.articleText">{{ service.description }}</p>
+						<p :class="$style.articleText">
+							{{ service.description }}
+						</p>
 					</article>
 
 					<!-- Comments -->
@@ -143,11 +181,14 @@ const isMyComment = (comment: ServiceComment) => {
 									/>
 									<div :class="$style.commentAuthorInfo">
 										<span :class="$style.commentAuthorName">
-											{{ comment.author?.name }} {{ comment.author?.surname }}
+											{{ comment.author?.name }}
+											{{ comment.author?.surname }}
 										</span>
 										<span :class="$style.commentDate">
 											{{
-												new Date(comment.publishedAt).toLocaleString("ru-RU", {
+												new Date(
+													comment.publishedAt,
+												).toLocaleString("ru-RU", {
 													day: "2-digit",
 													month: "long",
 													year: "numeric",
@@ -156,17 +197,37 @@ const isMyComment = (comment: ServiceComment) => {
 										</span>
 									</div>
 								</RouterLink>
-								<span v-if="isMyComment(comment)" :class="$style.myBadge">Мой отзыв</span>
-								<span v-else-if="comment.authorId === service.owner?.id" :class="$style.ownerBadge">
-									<Icon name="mdi:tools" :class="$style.ownerBadgeIcon" />
+								<span
+									v-if="isMyComment(comment)"
+									:class="$style.myBadge"
+									>Мой отзыв</span
+								>
+								<span
+									v-else-if="
+										comment.authorId === service.owner?.id
+									"
+									:class="$style.ownerBadge"
+								>
+									<Icon
+										name="mdi:tools"
+										:class="$style.ownerBadgeIcon"
+									/>
 									Исполнитель
 								</span>
 							</div>
-							<p :class="$style.commentBody">{{ comment.body }}</p>
+							<p :class="$style.commentBody">
+								{{ comment.body }}
+							</p>
 						</div>
 
-						<div v-if="comments.length === 0" :class="$style.noComments">
-							<Icon name="mdi:comment-outline" :class="$style.noCommentsIcon" />
+						<div
+							v-if="comments.length === 0"
+							:class="$style.noComments"
+						>
+							<Icon
+								name="mdi:comment-outline"
+								:class="$style.noCommentsIcon"
+							/>
 							Вопросов и отзывов пока нет
 						</div>
 
@@ -179,10 +240,16 @@ const isMyComment = (comment: ServiceComment) => {
 							/>
 							<UiButton
 								accent
-								:disabled="submittingComment || !commentBody.trim()"
+								:disabled="
+									submittingComment || !commentBody.trim()
+								"
 								@click="submitComment"
 							>
-								{{ submittingComment ? "Отправка..." : "Отправить" }}
+								{{
+									submittingComment
+										? "Отправка..."
+										: "Отправить"
+								}}
 							</UiButton>
 						</div>
 					</section>
@@ -192,25 +259,43 @@ const isMyComment = (comment: ServiceComment) => {
 				<aside :class="$style.sidebar">
 					<div :class="$style.sideTop">
 						<span :class="$style.categoryBadge">
-							<Icon name="mdi:tools" :class="$style.categoryIcon" />
+							<Icon
+								name="mdi:tools"
+								:class="$style.categoryIcon"
+							/>
 							{{ categoryLabel }}
 						</span>
 						<span
 							:class="$style.statusBadge"
-							:style="{ background: statusBadge.bg, color: statusBadge.color }"
+							:style="{
+								background: statusBadge.bg,
+								color: statusBadge.color,
+							}"
 						>
-							<Icon :name="statusBadge.icon" :class="$style.badgeIcon" />
+							<Icon
+								:name="statusBadge.icon"
+								:class="$style.badgeIcon"
+							/>
 							{{ statusBadge.label }}
 						</span>
 					</div>
 
 					<div v-if="isAdmin || isOwner" :class="$style.ownerBtns">
 						<button :class="$style.chipBtn" @click="emit('edit')">
-							<Icon name="mdi:pencil-outline" :class="$style.chipIcon" />
+							<Icon
+								name="mdi:pencil-outline"
+								:class="$style.chipIcon"
+							/>
 							Редактировать
 						</button>
-						<button :class="[$style.chipBtn, $style.chipBtnDanger]" @click="emit('delete')">
-							<Icon name="mdi:trash-can-outline" :class="$style.chipIcon" />
+						<button
+							:class="[$style.chipBtn, $style.chipBtnDanger]"
+							@click="emit('delete')"
+						>
+							<Icon
+								name="mdi:trash-can-outline"
+								:class="$style.chipIcon"
+							/>
 							Удалить
 						</button>
 					</div>
@@ -219,9 +304,15 @@ const isMyComment = (comment: ServiceComment) => {
 
 					<!-- Price -->
 					<div :class="$style.priceBlock">
-						<span :class="[$style.price, isFree && $style.priceFree]">{{ priceLabel }}</span>
+						<span
+							:class="[$style.price, isFree && $style.priceFree]"
+							>{{ priceLabel }}</span
+						>
 						<span v-if="isFree" :class="$style.freeTag">
-							<Icon name="mdi:gift-outline" :class="$style.freeTagIcon" />
+							<Icon
+								name="mdi:gift-outline"
+								:class="$style.freeTagIcon"
+							/>
 							Бесплатно
 						</span>
 					</div>
@@ -229,26 +320,44 @@ const isMyComment = (comment: ServiceComment) => {
 					<!-- Location -->
 					<div :class="$style.sideRow">
 						<div :class="$style.sideIconBox">
-							<Icon name="mdi:map-marker-outline" :class="$style.sideIcon" />
+							<Icon
+								name="mdi:map-marker-outline"
+								:class="$style.sideIcon"
+							/>
 						</div>
 						<div :class="$style.sideInfo">
-							<span :class="$style.sideInfoMain">Встреча в общежитии</span>
+							<span :class="$style.sideInfoMain"
+								>Встреча в общежитии</span
+							>
 						</div>
 					</div>
 
 					<!-- Owner -->
-					<div v-if="service.owner" :class="[$style.sideRow, $style.sideRowBorder]">
-						<RouterLink :to="`/profile/${service.owner.id}`" :class="$style.authorLink">
+					<div
+						v-if="service.owner"
+						:class="[$style.sideRow, $style.sideRowBorder]"
+					>
+						<RouterLink
+							:to="`/profile/${service.owner.id}`"
+							:class="$style.authorLink"
+						>
 							<img
 								:src="`/api/images/byGuid?guid=avatar`"
 								:class="$style.authorAvatar"
 							/>
 							<div :class="$style.authorInfo">
 								<span :class="$style.authorName">
-									{{ service.owner.name }} {{ service.owner.surname }}
+									{{ service.owner.name }}
+									{{ service.owner.surname }}
 								</span>
-								<span v-if="ownerRoom" :class="$style.authorSub">{{ ownerRoom }}</span>
-								<span :class="$style.authorRole">Исполнитель</span>
+								<span
+									v-if="ownerRoom"
+									:class="$style.authorSub"
+									>{{ ownerRoom }}</span
+								>
+								<span :class="$style.authorRole"
+									>Исполнитель</span
+								>
 							</div>
 						</RouterLink>
 					</div>
@@ -256,11 +365,17 @@ const isMyComment = (comment: ServiceComment) => {
 					<!-- CTA -->
 					<div :class="[$style.cta, $style.sideRowBorder]">
 						<UiButton accent>
-							<Icon name="mdi:message-text-outline" :class="$style.btnIcon" />
+							<Icon
+								name="mdi:message-text-outline"
+								:class="$style.btnIcon"
+							/>
 							Написать исполнителю
 						</UiButton>
 						<UiButton>
-							<Icon name="mdi:bookmark-outline" :class="$style.btnIcon" />
+							<Icon
+								name="mdi:bookmark-outline"
+								:class="$style.btnIcon"
+							/>
 							Сохранить
 						</UiButton>
 					</div>
@@ -268,11 +383,17 @@ const isMyComment = (comment: ServiceComment) => {
 					<!-- Meta -->
 					<div :class="[$style.metaBlock, $style.sideRowBorder]">
 						<span v-if="publishedAt" :class="$style.metaItem">
-							<Icon name="mdi:calendar-outline" :class="$style.metaIcon" />
+							<Icon
+								name="mdi:calendar-outline"
+								:class="$style.metaIcon"
+							/>
 							опубликовано {{ publishedAt }}
 						</span>
 						<span v-if="updatedAt" :class="$style.metaItem">
-							<Icon name="mdi:pencil-outline" :class="$style.metaIcon" />
+							<Icon
+								name="mdi:pencil-outline"
+								:class="$style.metaIcon"
+							/>
 							обновлено {{ updatedAt }}
 						</span>
 					</div>
@@ -286,560 +407,562 @@ const isMyComment = (comment: ServiceComment) => {
 .wrapper {
 	position: relative;
 	min-height: 100dvh;
-}
+	overflow-x: clip;
 
-.shader {
-	position: absolute;
-	inset: 0;
-	z-index: 1;
-}
-
-.container {
-	position: relative;
-	z-index: 2;
-
-	@include container;
-
-	padding: 30px 0 100px;
-	display: flex;
-	flex-direction: column;
-	row-gap: 24px;
-
-	@include respond-to(mobile) {
-		@include container(mobile);
-
-		padding: 20px 0 60px;
-		row-gap: 16px;
+	.shader {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
 	}
-}
 
-// Breadcrumbs
-.crumbs {
-	display: flex;
-	align-items: center;
-	column-gap: 8px;
+	.container {
+		position: relative;
+		z-index: 2;
 
-	@include text-s;
-	@include color-black(0.55);
-}
+		@include container;
 
-.crumbLink {
-	@include color-black(0.55);
+		padding: 30px 0 100px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 24px;
 
-	text-decoration: none;
+		@include respond-to(mobile) {
+			@include container(mobile);
 
-	&:hover {
+			padding: 20px 0 60px;
+			row-gap: 16px;
+		}
+	}
+
+	// Breadcrumbs
+	.crumbs {
+		display: flex;
+		align-items: center;
+		column-gap: 8px;
+
+		@include text-s;
+		@include color-black(0.55);
+	}
+
+	.crumbLink {
+		@include color-black(0.55);
+
+		text-decoration: none;
+
+		&:hover {
+			@include color-black;
+		}
+	}
+
+	.crumbSep {
+		width: 12px;
+		height: 12px;
+	}
+
+	.crumbCurrent {
 		@include color-black;
 	}
-}
 
-.crumbSep {
-	width: 12px;
-	height: 12px;
-}
+	// Grid
+	.grid {
+		display: grid;
+		grid-template-columns: 1.4fr 1fr;
+		gap: 28px;
+		align-items: flex-start;
 
-.crumbCurrent {
-	@include color-black;
-}
-
-// Grid
-.grid {
-	display: grid;
-	grid-template-columns: 1.4fr 1fr;
-	gap: 28px;
-	align-items: flex-start;
-
-	@include respond-to(mobile) {
-		grid-template-columns: 1fr;
-		gap: 20px;
-	}
-}
-
-.left {
-	display: flex;
-	flex-direction: column;
-	row-gap: 24px;
-	min-width: 0;
-}
-
-// Gallery
-.gallery {
-	height: 440px;
-	border-radius: 12px;
-	overflow: hidden;
-
-	@include color-black-bg(0.1);
-	@include shadow;
-
-	@include respond-to(mobile) {
-		height: 260px;
+		@include respond-to(mobile) {
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
 	}
 
-	.galleryImg {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
+	.left {
+		display: flex;
+		flex-direction: column;
+		row-gap: 24px;
+		min-width: 0;
 	}
-}
 
-.galleryEmpty {
-	height: 440px;
-	border-radius: 12px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
+	// Gallery
+	.gallery {
+		height: 440px;
+		border-radius: 12px;
+		overflow: hidden;
 
-	@include color-black-bg(0.06);
+		@include color-black-bg(0.1);
+		@include shadow;
 
-	@include respond-to(mobile) {
-		height: 200px;
+		@include respond-to(mobile) {
+			height: 260px;
+		}
+
+		.galleryImg {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		}
 	}
-}
 
-.galleryEmptyIcon {
-	@include color-black(0.3);
+	.galleryEmpty {
+		height: 440px;
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
-	width: 80px;
-	height: 80px;
-}
-
-// Article
-.article {
-	padding: 28px;
-	border-radius: 12px;
-	display: flex;
-	flex-direction: column;
-	row-gap: 16px;
-
-	@include color-white-bg;
-	@include shadow;
-
-	@include respond-to(mobile) {
-		padding: 16px;
-	}
-}
-
-.articleTitle {
-	@include reset;
-	@include title-s;
-	@include color-black;
-}
-
-.articleText {
-	@include reset;
-	@include text-m;
-	@include color-black;
-
-	line-height: 1.65;
-	white-space: pre-wrap;
-}
-
-// Comments
-.comments {
-	padding: 28px;
-	border-radius: 12px;
-	display: flex;
-	flex-direction: column;
-	row-gap: 20px;
-
-	@include color-white-bg;
-	@include shadow;
-
-	@include respond-to(mobile) {
-		padding: 16px;
-		row-gap: 16px;
-	}
-}
-
-.commentsTitle {
-	@include reset;
-	@include title-s;
-	@include color-black;
-}
-
-.comment {
-	display: flex;
-	flex-direction: column;
-	row-gap: 10px;
-	padding: 16px;
-	border-radius: 10px;
-
-	@include color-black-bg(0.03);
-}
-
-.commentHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	column-gap: 10px;
-	flex-wrap: wrap;
-	row-gap: 8px;
-}
-
-.commentAuthorLink {
-	display: flex;
-	align-items: center;
-	column-gap: 10px;
-	text-decoration: none;
-}
-
-.commentAvatar {
-	width: 36px;
-	height: 36px;
-	border-radius: 50%;
-	flex-shrink: 0;
-	background: #fff1bf;
-}
-
-.commentAuthorInfo {
-	display: flex;
-	flex-direction: column;
-}
-
-.commentAuthorName {
-	@include text-m;
-	@include color-black;
-
-	font-weight: 600;
-}
-
-.commentDate {
-	@include text-s;
-	@include color-black(0.45);
-}
-
-.myBadge {
-	display: inline-flex;
-	align-items: center;
-	padding: 3px 10px;
-	border-radius: 100px;
-	background: rgba(38, 28, 7, 0.07);
-
-	@include text-xs;
-	@include color-black(0.55);
-
-	font-weight: 600;
-}
-
-.ownerBadge {
-	display: inline-flex;
-	align-items: center;
-	column-gap: 5px;
-	padding: 3px 10px;
-	border-radius: 100px;
-	background: #fff3c8;
-	color: #7a5a00;
-
-	@include text-xs;
-
-	font-weight: 600;
-}
-
-.ownerBadgeIcon {
-	width: 12px;
-	height: 12px;
-}
-
-.commentBody {
-	@include reset;
-	@include text-m;
-	@include color-black;
-
-	line-height: 1.6;
-}
-
-.noComments {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	row-gap: 10px;
-	padding: 32px 0;
-
-	@include text-m;
-	@include color-black(0.4);
-}
-
-.noCommentsIcon {
-	width: 40px;
-	height: 40px;
-	opacity: 0.35;
-}
-
-.addComment {
-	display: flex;
-	flex-direction: column;
-	row-gap: 10px;
-	padding-top: 8px;
-	border-top: 1px solid rgba($color-black, 0.08);
-}
-
-// Sidebar
-.sidebar {
-	position: sticky;
-	top: 70px;
-	display: flex;
-	flex-direction: column;
-	row-gap: 14px;
-	padding: 24px;
-	border-radius: 12px;
-
-	@include color-white-bg;
-	@include shadow;
-
-	@include respond-to(mobile) {
-		position: static;
-		padding: 16px;
-	}
-}
-
-.sideTop {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 8px;
-}
-
-.categoryBadge {
-	display: inline-flex;
-	align-items: center;
-	column-gap: 5px;
-	padding: 4px 12px;
-	border-radius: 100px;
-	background: rgba(38, 28, 7, 0.07);
-
-	@include text-xs;
-	@include color-black(0.65);
-
-	font-weight: 600;
-	letter-spacing: 0.03em;
-}
-
-.categoryIcon {
-	width: 12px;
-	height: 12px;
-}
-
-.statusBadge {
-	display: inline-flex;
-	align-items: center;
-	column-gap: 6px;
-	padding: 4px 12px;
-	border-radius: 100px;
-
-	@include text-xs;
-
-	font-weight: 600;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-}
-
-.badgeIcon {
-	width: 14px;
-	height: 14px;
-}
-
-.ownerBtns {
-	display: flex;
-	column-gap: 8px;
-	flex-wrap: wrap;
-	row-gap: 6px;
-}
-
-.chipBtn {
-	display: inline-flex;
-	align-items: center;
-	column-gap: 6px;
-	padding: 6px 10px;
-	border-radius: 8px;
-	background: transparent;
-	border: 1px solid rgba($color-black, 0.15);
-	cursor: pointer;
-
-	@include text-xs;
-	@include color-black;
-
-	font-weight: 600;
-
-	&:hover {
 		@include color-black-bg(0.06);
+
+		@include respond-to(mobile) {
+			height: 200px;
+		}
 	}
-}
 
-.chipBtnDanger {
-	color: rgba(122, 28, 28, 1);
-	border-color: rgba(122, 28, 28, 0.25);
-}
+	.galleryEmptyIcon {
+		@include color-black(0.3);
 
-.chipIcon {
-	width: 13px;
-	height: 13px;
-}
+		width: 80px;
+		height: 80px;
+	}
 
-// Name
-.name {
-	@include reset;
-	@include title-m;
-	@include color-black;
+	// Article
+	.article {
+		padding: 28px;
+		border-radius: 12px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 16px;
 
-	line-height: 1.2;
-}
+		@include color-white-bg;
+		@include shadow;
 
-// Price
-.priceBlock {
-	display: flex;
-	align-items: baseline;
-	column-gap: 10px;
-	padding: 12px 0;
-	border-top: 1px solid rgba($color-black, 0.08);
-	border-bottom: 1px solid rgba($color-black, 0.08);
-}
+		@include respond-to(mobile) {
+			padding: 16px;
+		}
+	}
 
-.price {
-	@include title-l;
-	@include color-black;
+	.articleTitle {
+		@include reset;
+		@include title-s;
+		@include color-black;
+	}
 
-	line-height: 1;
-}
+	.articleText {
+		@include reset;
+		@include text-m;
+		@include color-black;
 
-.priceFree {
-	color: #1c5b1c;
-}
+		line-height: 1.65;
+		white-space: pre-wrap;
+	}
 
-.freeTag {
-	display: inline-flex;
-	align-items: center;
-	column-gap: 4px;
-	padding: 3px 10px;
-	border-radius: 100px;
-	background: #efffde;
-	color: #1c5b1c;
+	// Comments
+	.comments {
+		padding: 28px;
+		border-radius: 12px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 20px;
 
-	@include text-xs;
+		@include color-white-bg;
+		@include shadow;
 
-	font-weight: 600;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-}
+		@include respond-to(mobile) {
+			padding: 16px;
+			row-gap: 16px;
+		}
+	}
 
-.freeTagIcon {
-	width: 12px;
-	height: 12px;
-}
+	.commentsTitle {
+		@include reset;
+		@include title-s;
+		@include color-black;
+	}
 
-// Side rows
-.sideRow {
-	display: flex;
-	align-items: center;
-	column-gap: 12px;
-}
+	.comment {
+		display: flex;
+		flex-direction: column;
+		row-gap: 10px;
+		padding: 16px;
+		border-radius: 10px;
 
-.sideRowBorder {
-	padding-top: 12px;
-	border-top: 1px solid rgba($color-black, 0.08);
-}
+		@include color-black-bg(0.03);
+	}
 
-.sideIconBox {
-	width: 36px;
-	height: 36px;
-	border-radius: 10px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
+	.commentHeader {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		column-gap: 10px;
+		flex-wrap: wrap;
+		row-gap: 8px;
+	}
 
-	@include color-black-bg(0.05);
-}
+	.commentAuthorLink {
+		display: flex;
+		align-items: center;
+		column-gap: 10px;
+		text-decoration: none;
+	}
 
-.sideIcon {
-	@include color-black;
+	.commentAvatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		flex-shrink: 0;
+		background: #fff1bf;
+	}
 
-	width: 20px;
-	height: 20px;
-}
+	.commentAuthorInfo {
+		display: flex;
+		flex-direction: column;
+	}
 
-.sideInfo {
-	display: flex;
-	flex-direction: column;
-}
+	.commentAuthorName {
+		@include text-m;
+		@include color-black;
 
-.sideInfoMain {
-	@include text-m;
-	@include color-black;
+		font-weight: 600;
+	}
 
-	font-weight: 600;
-}
+	.commentDate {
+		@include text-s;
+		@include color-black(0.45);
+	}
 
-// Author
-.authorLink {
-	display: flex;
-	align-items: center;
-	column-gap: 12px;
-	text-decoration: none;
-	width: 100%;
-}
+	.myBadge {
+		display: inline-flex;
+		align-items: center;
+		padding: 3px 10px;
+		border-radius: 100px;
+		background: rgba(38, 28, 7, 0.07);
 
-.authorAvatar {
-	width: 44px;
-	height: 44px;
-	border-radius: 50%;
-	background: #fff1bf;
-	flex-shrink: 0;
-}
+		@include text-xs;
+		@include color-black(0.55);
 
-.authorInfo {
-	display: flex;
-	flex-direction: column;
-}
+		font-weight: 600;
+	}
 
-.authorName {
-	@include text-m;
-	@include color-black;
+	.ownerBadge {
+		display: inline-flex;
+		align-items: center;
+		column-gap: 5px;
+		padding: 3px 10px;
+		border-radius: 100px;
+		background: #fff3c8;
+		color: #7a5a00;
 
-	font-weight: 600;
-}
+		@include text-xs;
 
-.authorSub {
-	@include text-s;
-	@include color-black(0.55);
-}
+		font-weight: 600;
+	}
 
-.authorRole {
-	@include text-xs;
+	.ownerBadgeIcon {
+		width: 12px;
+		height: 12px;
+	}
 
-	color: #7a5a00;
-	font-weight: 600;
-}
+	.commentBody {
+		@include reset;
+		@include text-m;
+		@include color-black;
 
-// CTA
-.cta {
-	display: flex;
-	flex-direction: column;
-	row-gap: 8px;
-}
+		line-height: 1.6;
+	}
 
-.btnIcon {
-	width: 16px;
-	height: 16px;
-}
+	.noComments {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		row-gap: 10px;
+		padding: 32px 0;
 
-// Meta
-.metaBlock {
-	display: flex;
-	flex-direction: column;
-	row-gap: 6px;
-}
+		@include text-m;
+		@include color-black(0.4);
+	}
 
-.metaItem {
-	display: inline-flex;
-	align-items: center;
-	column-gap: 6px;
+	.noCommentsIcon {
+		width: 40px;
+		height: 40px;
+		opacity: 0.35;
+	}
 
-	@include text-s;
-	@include color-black(0.55);
-}
+	.addComment {
+		display: flex;
+		flex-direction: column;
+		row-gap: 10px;
+		padding-top: 8px;
+		border-top: 1px solid rgba($color-black, 0.08);
+	}
 
-.metaIcon {
-	width: 13px;
-	height: 13px;
+	// Sidebar
+	.sidebar {
+		position: sticky;
+		top: 70px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 14px;
+		padding: 24px;
+		border-radius: 12px;
+		min-width: 0;
+
+		@include color-white-bg;
+		@include shadow;
+
+		@include respond-to(mobile) {
+			position: static;
+			padding: 16px;
+		}
+	}
+
+	.sideTop {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.categoryBadge {
+		display: inline-flex;
+		align-items: center;
+		column-gap: 5px;
+		padding: 4px 12px;
+		border-radius: 100px;
+		background: rgba(38, 28, 7, 0.07);
+
+		@include text-xs;
+		@include color-black(0.65);
+
+		font-weight: 600;
+		letter-spacing: 0.03em;
+	}
+
+	.categoryIcon {
+		width: 12px;
+		height: 12px;
+	}
+
+	.statusBadge {
+		display: inline-flex;
+		align-items: center;
+		column-gap: 6px;
+		padding: 4px 12px;
+		border-radius: 100px;
+
+		@include text-xs;
+
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.badgeIcon {
+		width: 14px;
+		height: 14px;
+	}
+
+	.ownerBtns {
+		display: flex;
+		column-gap: 8px;
+		flex-wrap: wrap;
+		row-gap: 6px;
+	}
+
+	.chipBtn {
+		display: inline-flex;
+		align-items: center;
+		column-gap: 6px;
+		padding: 6px 10px;
+		border-radius: 8px;
+		background: transparent;
+		border: 1px solid rgba($color-black, 0.15);
+		cursor: pointer;
+
+		@include text-xs;
+		@include color-black;
+
+		font-weight: 600;
+
+		&:hover {
+			@include color-black-bg(0.06);
+		}
+	}
+
+	.chipBtnDanger {
+		color: rgba(122, 28, 28, 1);
+		border-color: rgba(122, 28, 28, 0.25);
+	}
+
+	.chipIcon {
+		width: 13px;
+		height: 13px;
+	}
+
+	// Name
+	.name {
+		@include reset;
+		@include title-m;
+		@include color-black;
+
+		line-height: 1.2;
+	}
+
+	// Price
+	.priceBlock {
+		display: flex;
+		align-items: baseline;
+		column-gap: 10px;
+		padding: 12px 0;
+		border-top: 1px solid rgba($color-black, 0.08);
+		border-bottom: 1px solid rgba($color-black, 0.08);
+	}
+
+	.price {
+		@include title-l;
+		@include color-black;
+
+		line-height: 1;
+	}
+
+	.priceFree {
+		color: #1c5b1c;
+	}
+
+	.freeTag {
+		display: inline-flex;
+		align-items: center;
+		column-gap: 4px;
+		padding: 3px 10px;
+		border-radius: 100px;
+		background: #efffde;
+		color: #1c5b1c;
+
+		@include text-xs;
+
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	.freeTagIcon {
+		width: 12px;
+		height: 12px;
+	}
+
+	// Side rows
+	.sideRow {
+		display: flex;
+		align-items: center;
+		column-gap: 12px;
+	}
+
+	.sideRowBorder {
+		padding-top: 12px;
+		border-top: 1px solid rgba($color-black, 0.08);
+	}
+
+	.sideIconBox {
+		width: 36px;
+		height: 36px;
+		border-radius: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+
+		@include color-black-bg(0.05);
+	}
+
+	.sideIcon {
+		@include color-black;
+
+		width: 20px;
+		height: 20px;
+	}
+
+	.sideInfo {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.sideInfoMain {
+		@include text-m;
+		@include color-black;
+
+		font-weight: 600;
+	}
+
+	// Author
+	.authorLink {
+		display: flex;
+		align-items: center;
+		column-gap: 12px;
+		text-decoration: none;
+		width: 100%;
+	}
+
+	.authorAvatar {
+		width: 44px;
+		height: 44px;
+		border-radius: 50%;
+		background: #fff1bf;
+		flex-shrink: 0;
+	}
+
+	.authorInfo {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.authorName {
+		@include text-m;
+		@include color-black;
+
+		font-weight: 600;
+	}
+
+	.authorSub {
+		@include text-s;
+		@include color-black(0.55);
+	}
+
+	.authorRole {
+		@include text-xs;
+
+		color: #7a5a00;
+		font-weight: 600;
+	}
+
+	// CTA
+	.cta {
+		display: flex;
+		flex-direction: column;
+		row-gap: 8px;
+	}
+
+	.btnIcon {
+		width: 16px;
+		height: 16px;
+	}
+
+	// Meta
+	.metaBlock {
+		display: flex;
+		flex-direction: column;
+		row-gap: 6px;
+	}
+
+	.metaItem {
+		display: inline-flex;
+		align-items: center;
+		column-gap: 6px;
+
+		@include text-s;
+		@include color-black(0.55);
+	}
+
+	.metaIcon {
+		width: 13px;
+		height: 13px;
+	}
 }
 </style>
