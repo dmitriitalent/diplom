@@ -128,7 +128,6 @@ const moderationLabel = computed(() => {
 
 <template>
 	<div :class="[$style.wrapper, ...deviceClassList]">
-		<ShaderComponent :class="$style.shader" />
 		<div :class="$style.container">
 			<!-- Breadcrumbs -->
 			<div :class="$style.crumbs">
@@ -564,12 +563,6 @@ const moderationLabel = computed(() => {
 	position: relative;
 	min-height: 100dvh;
 	overflow-x: clip;
-
-	.shader {
-		position: absolute;
-		inset: 0;
-		z-index: 1;
-	}
 
 	.container {
 		position: relative;
