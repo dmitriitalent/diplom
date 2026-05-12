@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PropType } from "vue";
 import type { Service } from "~/entities/Service";
+import { useDevice } from "~/composables/device";
 
 defineProps({
 	service: {
@@ -8,10 +9,12 @@ defineProps({
 		required: true,
 	},
 });
+
+const { deviceClassList } = useDevice();
 </script>
 
 <template>
-	<div :class="[$style.wrapper, 'ServicePlateComponent']">
+	<div :class="[$style.wrapper, 'ServicePlateComponent', ...deviceClassList]">
 		<div :class="$style.left">
 			<UiGallery :class="$style.gallery" :autoplay="3000" loop>
 				<template
@@ -61,10 +64,23 @@ defineProps({
 		@include color-black-bg(0.08);
 	}
 
+	@include respond-to(mobile) {
+		height: auto;
+		flex-direction: column;
+		column-gap: 0;
+	}
+
 	.left {
 		min-width: 300px;
 		max-width: 300px;
 		height: 100%;
+
+		@include respond-to(mobile) {
+			min-width: 0;
+			max-width: none;
+			width: 100%;
+			height: 200px;
+		}
 
 		.gallery {
 			height: 100%;
@@ -85,6 +101,10 @@ defineProps({
 		padding: 20px 20px 20px 0;
 		row-gap: 10px;
 		overflow: hidden;
+
+		@include respond-to(mobile) {
+			padding: 14px 16px 16px;
+		}
 
 		.name {
 			@include reset;

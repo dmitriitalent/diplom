@@ -4,8 +4,11 @@ import type { byId } from "~~/server/dto/profile/byId";
 import type { NewsListDtoList } from "~~/server/dto/news/newsList";
 import { useAuthStore } from "~/stores/authStore";
 import { jwtDecode } from "jwt-decode";
+import { useDevice } from "~/composables/device";
 
 const headers = useRequestHeaders(["cookie"]);
+
+const { deviceClassList } = useDevice();
 
 const { at } = useAuthStore();
 const isAdmin = at.value
@@ -50,7 +53,7 @@ for (const f of newsFetch.value?.items ?? []) {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<RouterLink to="/news/create">
 				<UiButton accent> Создать новость </UiButton>
@@ -71,6 +74,12 @@ for (const f of newsFetch.value?.items ?? []) {
 		display: flex;
 		flex-direction: column;
 		row-gap: 50px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 24px;
+		}
 	}
 }
 </style>

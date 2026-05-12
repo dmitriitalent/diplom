@@ -4,10 +4,10 @@ export default defineNuxtConfig({
 	devtools: { enabled: true },
 
 	runtimeConfig: {
-		api: "http://api-gateway:8080",
+		api: "http://localhost:8080",
 		public: {
 			publicRoutes: ["/", "/welcome", "/login", "/registration"],
-			api: "http://api-gateway:8080",
+			api: "http://localhost:8080",
 		},
 	},
 

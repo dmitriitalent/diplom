@@ -6,6 +6,7 @@ import type { ServiceDtoById } from "~~/server/dto/service/byId";
 import type { ServiceCommentsListDto } from "~~/server/dto/service/comment";
 import type { byId } from "~~/server/dto/profile/byId";
 import { jwtDecode } from "jwt-decode";
+import { useDevice } from "~/composables/device";
 
 const route = useRoute();
 const router = useRouter();
@@ -15,7 +16,7 @@ const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
 const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
-
+const { deviceClassList } = useDevice();
 
 const { data: service } = await useAsyncData<Service>(
 	"service-" + id,
@@ -129,7 +130,7 @@ const addComment = async () => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container" v-if="service">
 			<div v-if="canEdit" :class="$style.ownerTools">
 				<UiButton :class="$style.delete" @click="deleteService"
@@ -245,6 +246,12 @@ const addComment = async () => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 30px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 20px;
+		}
 	}
 
 	.ownerTools {
@@ -264,6 +271,10 @@ const addComment = async () => {
 	.top {
 		width: 100%;
 		height: 600px;
+
+		@include respond-to(mobile) {
+			height: 280px;
+		}
 
 		.gallery {
 			@include color-black-bg(0.1);
@@ -291,6 +302,10 @@ const addComment = async () => {
 			align-items: center;
 			column-gap: 20px;
 
+			@include respond-to(mobile) {
+				margin-left: 0;
+			}
+
 			.avatar {
 				width: 50px;
 				height: 50px;
@@ -307,6 +322,10 @@ const addComment = async () => {
 			@include reset;
 			@include title-l;
 			@include color-black;
+
+			@include respond-to(mobile) {
+				@include title-m;
+			}
 		}
 
 		.description {
@@ -323,6 +342,10 @@ const addComment = async () => {
 			@include color-black;
 
 			margin-left: auto;
+
+			@include respond-to(mobile) {
+				margin-left: 0;
+			}
 		}
 	}
 

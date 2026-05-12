@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { byId } from "~~/server/dto/profile/byId";
+import { useDevice } from "~/composables/device";
 
 type Tab = "friends" | "requests";
 const tab = ref<Tab>("friends");
+const { deviceClassList } = useDevice();
 
 const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
 
@@ -82,13 +84,16 @@ const profileLocation = (p: byId) => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<div :class="$style.header">
 				<h1 :class="$style.title">Друзья</h1>
 				<div :class="$style.tabs">
 					<UiButton
-						:class="[$style.tabBtn, tab === 'friends' && $style.tabBtnActive]"
+						:class="[
+							$style.tabBtn,
+							tab === 'friends' && $style.tabBtnActive,
+						]"
 						inset
 						@click="tab = 'friends'"
 					>
@@ -96,10 +101,14 @@ const profileLocation = (p: byId) => {
 						<span
 							v-if="friendProfiles?.length"
 							:class="$style.badge"
-						>{{ friendProfiles.length }}</span>
+							>{{ friendProfiles.length }}</span
+						>
 					</UiButton>
 					<UiButton
-						:class="[$style.tabBtn, tab === 'requests' && $style.tabBtnActive]"
+						:class="[
+							$style.tabBtn,
+							tab === 'requests' && $style.tabBtnActive,
+						]"
 						inset
 						@click="tab = 'requests'"
 					>
@@ -107,7 +116,8 @@ const profileLocation = (p: byId) => {
 						<span
 							v-if="pendingInProfiles?.length"
 							:class="$style.badge"
-						>{{ pendingInProfiles.length }}</span>
+							>{{ pendingInProfiles.length }}</span
+						>
 					</UiButton>
 				</div>
 			</div>
@@ -124,6 +134,7 @@ const profileLocation = (p: byId) => {
 						:id="unwrapField(p.id)"
 						:name="unwrapField(p.name)"
 						:surname="unwrapField(p.surname)"
+						:avatarId="unwrapField(p.avatarId)"
 						:location="profileLocation(p)"
 						:contacts="p.contacts ?? []"
 						@delete="deleteFriend"
@@ -145,7 +156,8 @@ const profileLocation = (p: byId) => {
 					>
 						<div :class="$style.requestInfo">
 							<span :class="$style.requestName">
-								{{ unwrapField(p.name) }} {{ unwrapField(p.surname) }}
+								{{ unwrapField(p.name) }}
+								{{ unwrapField(p.surname) }}
 							</span>
 							<span
 								v-if="profileLocation(p)"
@@ -181,6 +193,10 @@ const profileLocation = (p: byId) => {
 		flex-direction: column;
 		row-gap: 20px;
 		padding-bottom: 60px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+		}
 	}
 
 	.header {
@@ -194,6 +210,10 @@ const profileLocation = (p: byId) => {
 			@include reset;
 			@include title-l;
 			@include color-black;
+
+			@include respond-to(mobile) {
+				@include title-m;
+			}
 		}
 
 		.tabs {
@@ -255,14 +275,26 @@ const profileLocation = (p: byId) => {
 			@include color-black-bg(0.06);
 		}
 
+		@include respond-to(mobile) {
+			flex-direction: column;
+			align-items: flex-start;
+			row-gap: 12px;
+		}
+
 		.requestInfo {
 			display: flex;
 			flex-direction: column;
 			row-gap: 4px;
+			min-width: 0;
+			flex: 1;
 
 			.requestName {
 				@include title-s;
 				@include color-black;
+
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 
 			.requestLocation {
@@ -276,6 +308,14 @@ const profileLocation = (p: byId) => {
 		.requestActions {
 			display: flex;
 			column-gap: 8px;
+
+			@include respond-to(mobile) {
+				width: 100%;
+
+				> * {
+					flex: 1;
+				}
+			}
 
 			.declineBtn {
 				@include color-error-bg;

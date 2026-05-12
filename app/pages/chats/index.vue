@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { byId } from "~~/server/dto/profile/byId";
+import { useDevice } from "~/composables/device";
 
 const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
+const { deviceClassList } = useDevice();
 
 const { data: friendIds } = await useAsyncData("chats-friend-list", async () => {
 	const res = await $fetch<{ friends: string[] }>("/api/friend/list", { headers });
@@ -25,7 +27,7 @@ const onClickProfile = (p: byId) => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<h1 :class="$style.title">Связаться</h1>
 
@@ -76,12 +78,20 @@ const onClickProfile = (p: byId) => {
 		flex-direction: column;
 		row-gap: 20px;
 		padding-bottom: 60px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+		}
 	}
 
 	.title {
 		@include reset;
 		@include title-l;
 		@include color-black;
+
+		@include respond-to(mobile) {
+			@include title-m;
+		}
 	}
 
 	.empty {
@@ -125,10 +135,16 @@ const onClickProfile = (p: byId) => {
 			display: flex;
 			flex-direction: column;
 			row-gap: 4px;
+			min-width: 0;
+			flex: 1;
 
 			.name {
 				@include title-s;
 				@include color-black;
+
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
 			}
 
 			.contact {
@@ -160,6 +176,7 @@ const onClickProfile = (p: byId) => {
 			height: 18px;
 			opacity: 0.4;
 			flex-shrink: 0;
+			margin-left: 12px;
 		}
 	}
 }

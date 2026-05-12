@@ -4,6 +4,7 @@ import { useSelfStore } from "~/stores/selfStore";
 import type { ActivityDtoCreate } from "~~/server/dto/activity/create";
 import type { ActivityDtoById } from "~~/server/dto/activity/byId";
 import { jwtDecode } from "jwt-decode";
+import { useDevice } from "~/composables/device";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,6 +13,7 @@ const id = route.params.id as string;
 const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const { deviceClassList, isDevice } = useDevice();
 
 const { data: original } = await useAsyncData<ActivityDtoById>(
 	"activity-edit-" + id,
@@ -44,17 +46,44 @@ const endTime = ref<Date>(new Date(original.value.endTime));
 const existingImageIds = ref<string[]>([...original.value.imageIds]);
 const newImageFiles = ref<File[]>([]);
 const newImagePreviewUrls = ref<string[]>([]);
+const newImageThumbnailUrls = ref<string[]>([]);
 const previewChange = ref(0);
+
+const createThumbnail = (file: File, size = 120): Promise<string> =>
+	new Promise((resolve) => {
+		const img = new Image();
+		const url = URL.createObjectURL(file);
+		img.onload = () => {
+			const canvas = document.createElement("canvas");
+			canvas.width = size;
+			canvas.height = size;
+			const ctx = canvas.getContext("2d")!;
+			const min = Math.min(img.width, img.height);
+			const sx = (img.width - min) / 2;
+			const sy = (img.height - min) / 2;
+			ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+			canvas.toBlob(
+				(blob) => {
+					URL.revokeObjectURL(url);
+					resolve(URL.createObjectURL(blob!));
+				},
+				"image/jpeg",
+				0.8,
+			);
+		};
+		img.src = url;
+	});
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const openFile = () => fileInput.value?.click();
 
-const onFileChangeImages = (e: Event) => {
+const onFileChangeImages = async (e: Event) => {
 	const target = e.target as HTMLInputElement;
 	if (!target.files) return;
 
 	for (const file of Array.from(target.files)) {
 		newImagePreviewUrls.value.push(URL.createObjectURL(file));
+		newImageThumbnailUrls.value.push(await createThumbnail(file));
 		newImageFiles.value.push(file);
 	}
 	target.value = "";
@@ -69,9 +98,11 @@ const removeExistingImage = (guid: string) => {
 const removeNewImage = (url: string) => {
 	const i = newImagePreviewUrls.value.indexOf(url);
 	if (i === -1) return;
-	newImagePreviewUrls.value.splice(i, 1);
-	newImageFiles.value.splice(i, 1);
 	URL.revokeObjectURL(url);
+	URL.revokeObjectURL(newImageThumbnailUrls.value[i]);
+	newImagePreviewUrls.value.splice(i, 1);
+	newImageThumbnailUrls.value.splice(i, 1);
+	newImageFiles.value.splice(i, 1);
 	previewChange.value++;
 };
 
@@ -120,7 +151,7 @@ const saveActivity = async () => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<div :class="$style.form">
 				<div :class="$style.left">
@@ -164,7 +195,7 @@ const saveActivity = async () => {
 							<UiGallery
 								:class="$style.gallery"
 								:key="previewChange"
-								:slides-per-view="6"
+								:slides-per-view="isDevice('mobile') ? 5 : 6"
 								:autoplay="3000"
 							>
 								<template
@@ -205,7 +236,10 @@ const saveActivity = async () => {
 												:class="$style.icon"
 											/>
 										</UiButton>
-										<img :class="$style.image" :src="url" />
+										<img
+											:class="$style.image"
+											:src="newImageThumbnailUrls[i]"
+										/>
 									</div>
 								</template>
 							</UiGallery>
@@ -324,11 +358,22 @@ const saveActivity = async () => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 30px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 20px;
+		}
 	}
 
 	.form {
 		display: flex;
 		column-gap: 30px;
+
+		@include respond-to(mobile) {
+			flex-direction: column;
+			row-gap: 20px;
+		}
 
 		.left {
 			min-width: 500px;
@@ -337,10 +382,20 @@ const saveActivity = async () => {
 			flex-direction: column;
 			row-gap: 10px;
 
+			@include respond-to(mobile) {
+				min-width: 0;
+				max-width: none;
+				width: 100%;
+			}
+
 			.gallery {
 				height: 400px;
 				width: 100%;
 				border-radius: 10px;
+
+				@include respond-to(mobile) {
+					height: 260px;
+				}
 
 				.image {
 					width: 100%;
@@ -358,6 +413,12 @@ const saveActivity = async () => {
 				cursor: pointer;
 				background-color: rgba($color-black, 0.1);
 				border-radius: 10px;
+
+				@include respond-to(mobile) {
+					height: 260px;
+					aspect-ratio: unset;
+					width: 100%;
+				}
 
 				.icon {
 					height: 50%;
@@ -417,7 +478,7 @@ const saveActivity = async () => {
 					justify-content: center;
 					align-items: center;
 					height: 100%;
-					aspect-ratio: 1;
+					width: 70px;
 					cursor: pointer;
 					background-color: rgba($color-black, 0.1);
 					border-radius: 10px;

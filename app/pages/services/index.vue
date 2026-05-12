@@ -2,8 +2,10 @@
 import type { Service } from "~/entities/Service";
 import type { ServiceDtoList } from "~~/server/dto/service/list";
 import type { byId } from "~~/server/dto/profile/byId";
+import { useDevice } from "~/composables/device";
 
 const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
+const { deviceClassList } = useDevice();
 
 const priceMin = ref<number | undefined>(undefined);
 const priceMax = ref<number | undefined>(undefined);
@@ -55,7 +57,7 @@ const loadServices = async () => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<div :class="$style.toolbar">
 				<RouterLink to="/services/create">
@@ -111,6 +113,10 @@ const loadServices = async () => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 20px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+		}
 	}
 
 	.toolbar {
@@ -121,10 +127,20 @@ const loadServices = async () => {
 		row-gap: 10px;
 		column-gap: 20px;
 
+		@include respond-to(mobile) {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
 		.filters {
 			display: flex;
 			align-items: center;
 			column-gap: 15px;
+
+			@include respond-to(mobile) {
+				flex-wrap: wrap;
+				row-gap: 10px;
+			}
 
 			.filterField {
 				display: flex;

@@ -6,6 +6,7 @@ import { useSelfStore } from "~/stores/selfStore";
 import type { ProductDtoCreate } from "~~/server/dto/product/create";
 import type { byIdProduct } from "~~/server/dto/product/byId";
 import { jwtDecode } from "jwt-decode";
+import { useDevice } from "~/composables/device";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,6 +15,7 @@ const id = route.params.id as string;
 const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const { deviceClassList, isDevice } = useDevice();
 
 const { data: original } = await useAsyncData<byIdProduct>(
 	"product-edit-" + id,
@@ -52,17 +54,44 @@ const existingImages = ref(
 );
 const newImageFiles = ref<File[]>([]);
 const newImagePreviewUrls = ref<string[]>([]);
+const newImageThumbnailUrls = ref<string[]>([]);
 const previewChange = ref(0);
+
+const createThumbnail = (file: File, size = 120): Promise<string> =>
+	new Promise((resolve) => {
+		const img = new Image();
+		const url = URL.createObjectURL(file);
+		img.onload = () => {
+			const canvas = document.createElement("canvas");
+			canvas.width = size;
+			canvas.height = size;
+			const ctx = canvas.getContext("2d")!;
+			const min = Math.min(img.width, img.height);
+			const sx = (img.width - min) / 2;
+			const sy = (img.height - min) / 2;
+			ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+			canvas.toBlob(
+				(blob) => {
+					URL.revokeObjectURL(url);
+					resolve(URL.createObjectURL(blob!));
+				},
+				"image/jpeg",
+				0.8,
+			);
+		};
+		img.src = url;
+	});
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const openFile = () => fileInput.value?.click();
 
-const onFileChangeImages = (e: Event) => {
+const onFileChangeImages = async (e: Event) => {
 	const target = e.target as HTMLInputElement;
 	if (!target.files) return;
 
 	for (const file of Array.from(target.files)) {
 		newImagePreviewUrls.value.push(URL.createObjectURL(file));
+		newImageThumbnailUrls.value.push(await createThumbnail(file));
 		newImageFiles.value.push(file);
 	}
 	target.value = "";
@@ -79,9 +108,11 @@ const removeExistingImage = (guid: string) => {
 const removeNewImage = (url: string) => {
 	const i = newImagePreviewUrls.value.indexOf(url);
 	if (i === -1) return;
-	newImagePreviewUrls.value.splice(i, 1);
-	newImageFiles.value.splice(i, 1);
 	URL.revokeObjectURL(url);
+	URL.revokeObjectURL(newImageThumbnailUrls.value[i]);
+	newImagePreviewUrls.value.splice(i, 1);
+	newImageThumbnailUrls.value.splice(i, 1);
+	newImageFiles.value.splice(i, 1);
 	previewChange.value++;
 };
 
@@ -93,7 +124,9 @@ const onCategoryChange = (category: Category) => {
 	form.value.categoryId = category.id;
 };
 
-const uploadNewImages = async (): Promise<Array<{ fileGuid: string; sortOrder: number }>> => {
+const uploadNewImages = async (): Promise<
+	Array<{ fileGuid: string; sortOrder: number }>
+> => {
 	const results: Array<{ fileGuid: string; sortOrder: number }> = [];
 	const baseOrder = existingImages.value.length;
 
@@ -103,7 +136,10 @@ const uploadNewImages = async (): Promise<Array<{ fileGuid: string; sortOrder: n
 			const formData = new FormData();
 			formData.append("file", file);
 			formData.append("external_id", guid);
-			await $fetch("/api/images/upload", { method: "POST", body: formData });
+			await $fetch("/api/images/upload", {
+				method: "POST",
+				body: formData,
+			});
 			results.push({ fileGuid: guid, sortOrder: baseOrder + index });
 		}),
 	);
@@ -134,7 +170,7 @@ const saveProduct = async () => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<ClientOnly>
 				<CategoryComponent
@@ -188,7 +224,7 @@ const saveProduct = async () => {
 							<UiGallery
 								:class="$style.gallery"
 								:key="previewChange"
-								:slides-per-view="6"
+								:slides-per-view="isDevice('mobile') ? 5 : 6"
 								:autoplay="3000"
 							>
 								<template
@@ -200,7 +236,11 @@ const saveProduct = async () => {
 										<UiButton
 											unset
 											:class="$style.button"
-											@click="removeExistingImage(img.fileGuid)"
+											@click="
+												removeExistingImage(
+													img.fileGuid,
+												)
+											"
 										>
 											<Icon
 												name="material-symbols:delete-outline"
@@ -229,7 +269,7 @@ const saveProduct = async () => {
 												:class="$style.icon"
 											/>
 										</UiButton>
-										<img :class="$style.image" :src="url" />
+										<img :class="$style.image" :src="newImageThumbnailUrls[i]" />
 									</div>
 								</template>
 							</UiGallery>
@@ -297,7 +337,9 @@ const saveProduct = async () => {
 							:disabled="saving"
 							@click="saveProduct"
 						>
-							{{ saving ? "Сохранение..." : "Сохранить изменения" }}
+							{{
+								saving ? "Сохранение..." : "Сохранить изменения"
+							}}
 						</UiButton>
 					</div>
 				</div>
@@ -314,11 +356,22 @@ const saveProduct = async () => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 30px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 20px;
+		}
 	}
 
 	.form {
 		display: flex;
 		column-gap: 30px;
+
+		@include respond-to(mobile) {
+			flex-direction: column;
+			row-gap: 20px;
+		}
 
 		.left {
 			min-width: 500px;
@@ -327,10 +380,20 @@ const saveProduct = async () => {
 			flex-direction: column;
 			row-gap: 10px;
 
+			@include respond-to(mobile) {
+				min-width: 0;
+				max-width: none;
+				width: 100%;
+			}
+
 			.gallery {
 				height: 400px;
 				width: 100%;
 				border-radius: 10px;
+
+				@include respond-to(mobile) {
+					height: 260px;
+				}
 
 				.image {
 					width: 100%;
@@ -348,6 +411,12 @@ const saveProduct = async () => {
 				cursor: pointer;
 				background-color: rgba($color-black, 0.1);
 				border-radius: 10px;
+
+				@include respond-to(mobile) {
+					height: 260px;
+					aspect-ratio: unset;
+					width: 100%;
+				}
 
 				.icon {
 					height: 50%;
@@ -407,7 +476,7 @@ const saveProduct = async () => {
 					justify-content: center;
 					align-items: center;
 					height: 100%;
-					aspect-ratio: 1;
+					width: 70px;
 					cursor: pointer;
 					background-color: rgba($color-black, 0.1);
 					border-radius: 10px;

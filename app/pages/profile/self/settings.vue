@@ -21,7 +21,7 @@ let notifyTimer: ReturnType<typeof setTimeout> | null = null;
 const visibilityOptions = [
 	{ value: "EVERYONE", name: "Все" },
 	{ value: "FRIEND", name: "Друзья" },
-	{ value: "ADMIN", name: "Администрация" },
+	{ value: "ADMIN", name: "Админ" },
 ];
 
 // ─── Remote data ──────────────────────────────────────────────────────────────
@@ -710,12 +710,15 @@ const onClickLogout = () => {
 			}
 
 			.resetBtn {
+				box-sizing: border-box;
+
 				@include respond-to(mobile) {
 					width: 100%;
 				}
 			}
 
 			.saveBtn {
+				box-sizing: border-box;
 				min-width: 150px;
 
 				@include respond-to(mobile) {
@@ -727,6 +730,7 @@ const onClickLogout = () => {
 		.logout {
 			@include color-error-bg;
 
+			box-sizing: border-box;
 			width: 140px;
 			margin: 0 auto;
 

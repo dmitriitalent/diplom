@@ -6,10 +6,14 @@ import type { byId } from "~~/server/dto/profile/byId";
 import type { ActivityDtoList } from "~~/server/dto/activity/list";
 import { useAuthStore } from "~/stores/authStore";
 import { jwtDecode } from "jwt-decode";
+import { useDevice } from "~/composables/device";
+
+const { deviceClassList } = useDevice();
 
 const { at } = useAuthStore();
-const isAdmin = at.value
-	? (jwtDecode(at.value) as any).roles?.includes("ADMIN") ?? false
+
+let isAdmin = at.value
+	? ((jwtDecode(at.value) as any).roles?.includes("ADMIN") ?? false)
 	: false;
 
 const { data: activitiesPendingFetch } = isAdmin
@@ -29,21 +33,7 @@ activitiesPendingFetch.value?.activities.forEach(async (f) => {
 		},
 	);
 
-	const author: User = {
-		id: authorFetch.id,
-		login: authorFetch.login,
-		educationEmail: authorFetch.educationEmail,
-		birthdate: new Date(authorFetch.birthdate),
-		dormitory: {} as Dormitory,
-		building: authorFetch.building,
-		floor: authorFetch.floor,
-		room: authorFetch.room,
-		surname: authorFetch.surname,
-		name: authorFetch.name,
-		patronymic: authorFetch.patronymic,
-		contacts: [],
-		friends: [],
-	};
+	const author = unwrapProfile(authorFetch);
 
 	const activity: Activity = {
 		author: author,
@@ -75,21 +65,7 @@ activitiesFetch.value?.activities.forEach(async (f) => {
 		},
 	);
 
-	const author: User = {
-		id: authorFetch.id,
-		login: authorFetch.login,
-		educationEmail: authorFetch.educationEmail,
-		birthdate: new Date(authorFetch.birthdate),
-		dormitory: {} as Dormitory,
-		building: authorFetch.building,
-		floor: authorFetch.floor,
-		room: authorFetch.room,
-		surname: authorFetch.surname,
-		name: authorFetch.name,
-		patronymic: authorFetch.patronymic,
-		contacts: [],
-		friends: [],
-	};
+	const author = unwrapProfile(authorFetch);
 
 	const activity: Activity = {
 		author: author,
@@ -133,7 +109,7 @@ const joinByCode = () => {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<RouterLink to="/activities/create">
 				<UiButton accent>Создать мероприятие</UiButton>
@@ -173,6 +149,12 @@ const joinByCode = () => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 50px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 24px;
+		}
 	}
 
 	.row {
@@ -180,6 +162,12 @@ const joinByCode = () => {
 		justify-content: space-between;
 		column-gap: 20px;
 		align-items: center;
+
+		@include respond-to(mobile) {
+			flex-direction: column;
+			align-items: stretch;
+			row-gap: 10px;
+		}
 
 		.join {
 			&:global(.--is-error) {

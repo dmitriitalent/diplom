@@ -4,8 +4,10 @@ import type { Category } from "~/entities/Category";
 import type { Product } from "~/entities/Product";
 import { useCategoryStore } from "~/stores/categoryStore";
 import type { byId } from "~~/server/dto/profile/byId";
+import { useDevice } from "~/composables/device";
 
 const headers = useRequestHeaders(["cookie"]);
+const { deviceClassList } = useDevice();
 
 const { data: productsFetch } = await useFetch("/api/product/list");
 
@@ -38,7 +40,7 @@ for (const f of productsFetch.value?.products ?? []) {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<RouterLink to="/catalog/create">
 				<UiButton accent> Создать объявление </UiButton>
@@ -64,6 +66,12 @@ for (const f of productsFetch.value?.products ?? []) {
 		display: flex;
 		flex-direction: column;
 		row-gap: 50px;
+
+		@include respond-to(mobile) {
+			@include container(mobile);
+
+			row-gap: 24px;
+		}
 	}
 }
 </style>
