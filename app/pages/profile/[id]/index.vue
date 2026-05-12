@@ -501,29 +501,7 @@ const formatActivityWhen = (iso?: string) => {
 							:to="`/activities/${a.id}`"
 							:class="$style.gallerySlide"
 						>
-							<div :class="$style.eventCard">
-								<div :class="$style.eventCover">
-									<span :class="$style.eventWhen">
-										{{ formatActivityWhen(a.startTime) }}
-									</span>
-								</div>
-								<h4 :class="$style.eventTitle">{{ a.title }}</h4>
-								<div
-									v-if="a.location"
-									:class="$style.eventLocation"
-								>
-									<Icon
-										name="mdi:map-marker-outline"
-										:class="$style.metaIcon"
-									/>
-									<span>{{ a.location }}</span>
-								</div>
-								<div :class="$style.eventFoot">
-									<span :class="$style.tagPill">
-										{{ a.participants?.length ?? 0 }} идут
-									</span>
-								</div>
-							</div>
+							<ActivityCardComponent :activity="a" />
 						</RouterLink>
 					</template>
 				</UiGallery>
@@ -556,26 +534,7 @@ const formatActivityWhen = (iso?: string) => {
 							:to="`/catalog/${p.id}`"
 							:class="$style.gallerySlide"
 						>
-							<div :class="$style.productCard">
-								<div :class="$style.productImage">
-									<UiImage
-										v-if="p.images?.[0]?.fileGuid"
-										:src="`/api/images/byGuid?guid=${p.images[0].fileGuid}`"
-										:class="$style.productImg"
-									/>
-									<Icon
-										v-else
-										name="mdi:image-outline"
-										:class="$style.productImageFallback"
-									/>
-								</div>
-								<h4 :class="$style.productName">{{ p.name }}</h4>
-								<div :class="$style.productFoot">
-									<span :class="$style.productPrice">
-										{{ formatPrice(p.price) }}
-									</span>
-								</div>
-							</div>
+							<ProductCardComponent :product="p" />
 						</RouterLink>
 					</template>
 				</UiGallery>
@@ -608,25 +567,7 @@ const formatActivityWhen = (iso?: string) => {
 							:to="`/services/${(s as any).id}`"
 							:class="$style.gallerySlide"
 						>
-							<div :class="$style.serviceCard">
-								<div :class="$style.serviceHead">
-									<div :class="$style.serviceIconBox">
-										<Icon
-											name="mdi:tools"
-											:class="$style.serviceHeadIcon"
-										/>
-									</div>
-									<h4 :class="$style.serviceTitle">
-										{{ (s as any).name }}
-									</h4>
-								</div>
-								<p :class="$style.serviceText">
-									{{ (s as any).description }}
-								</p>
-								<div :class="$style.servicePrice">
-									{{ formatPrice((s as any).price) }}
-								</div>
-							</div>
+							<ServiceCardComponent :service="s as any" />
 						</RouterLink>
 					</template>
 				</UiGallery>

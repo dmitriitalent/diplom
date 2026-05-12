@@ -94,13 +94,11 @@ const loadServices = async () => {
 				Услуг не найдено
 			</div>
 
-			<RouterLink
+			<ServicePlateComponent
 				v-for="service in services"
 				:key="service.id"
-				:to="`/services/${service.id}`"
-			>
-				<ServicePlateComponent :service="service" />
-			</RouterLink>
+				:service="service"
+			/>
 		</div>
 	</div>
 </template>

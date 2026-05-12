@@ -5,6 +5,9 @@ const { deviceClassList } = useDevice();
 </script>
 
 <template>
+	<ClientOnly>
+		<ShaderComponent />
+	</ClientOnly>
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<headerComponent :class="$style.header"></headerComponent>
 		<slot></slot>
@@ -15,6 +18,7 @@ const { deviceClassList } = useDevice();
 <style module lang="scss">
 .wrapper {
 	display: flex;
+	position: relative;
 	flex-direction: column;
 	row-gap: 30px;
 

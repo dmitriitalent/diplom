@@ -5,6 +5,8 @@ import type { NewsDtoCreate } from "~~/server/dto/news/create";
 import type { NewsDtoById } from "~~/server/dto/news/byId";
 import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
+import { useCacheStore } from "~/stores/cacheStore";
+import { NEWS_TEMPLATES } from "~/constants/templates";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,6 +16,7 @@ const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
 const { deviceClassList, isDevice } = useDevice();
+const cacheStore = useCacheStore();
 
 const { data: original } = await useAsyncData<NewsDtoById>(
 	"news-edit-" + id,
@@ -134,6 +137,7 @@ const saveNews = async () => {
 			body: form.value,
 		});
 
+		cacheStore.news.invalidate(id);
 		router.push("/news/" + id);
 	} finally {
 		saving.value = false;
@@ -269,6 +273,14 @@ const saveNews = async () => {
 							:class="$style.textarea"
 							:rows="10"
 							placeholder="Текст новости"
+						/>
+					</div>
+
+					<div :class="$style.field">
+						<h3 :class="$style.label">Шаблон оформления</h3>
+						<UiTemplatePicker
+							:templates="NEWS_TEMPLATES"
+							v-model="form.viewTemplate"
 						/>
 					</div>
 

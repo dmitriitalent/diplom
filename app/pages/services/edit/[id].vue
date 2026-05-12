@@ -4,6 +4,8 @@ import { useSelfStore } from "~/stores/selfStore";
 import type { ServiceDtoById } from "~~/server/dto/service/byId";
 import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
+import { useCacheStore } from "~/stores/cacheStore";
+import { SERVICE_TEMPLATES } from "~/constants/templates";
 
 const route = useRoute();
 const router = useRouter();
@@ -13,6 +15,7 @@ const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
 const { deviceClassList, isDevice } = useDevice();
+const cacheStore = useCacheStore();
 
 const { data: original } = await useAsyncData<ServiceDtoById>(
 	"service-edit-" + id,
@@ -153,6 +156,7 @@ const saveService = async () => {
 			body: form.value,
 		});
 
+		cacheStore.services.invalidate(id);
 		router.push("/services/" + id);
 	} finally {
 		saving.value = false;
@@ -322,6 +326,14 @@ const saveService = async () => {
 								{{ opt.label }}
 							</UiButton>
 						</div>
+					</div>
+
+					<div :class="$style.field">
+						<h3 :class="$style.label">Шаблон оформления</h3>
+						<UiTemplatePicker
+							:templates="SERVICE_TEMPLATES"
+							v-model="form.viewTemplate"
+						/>
 					</div>
 
 					<div :class="$style.actions">

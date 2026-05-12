@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NewsDtoCreate } from "~~/server/dto/news/create";
 import { useDevice } from "~/composables/device";
+import { NEWS_TEMPLATES } from "~/constants/templates";
 
 const { deviceClassList, isDevice } = useDevice();
 
@@ -207,6 +208,14 @@ const createNews = async () => {
 							:rows="10"
 							placeholder="Ожидается сдача отчетов по преддипломной практике"
 						></UiTextarea>
+					</div>
+
+					<div :class="$style.field">
+						<h3 :class="$style.label">Шаблон оформления</h3>
+						<UiTemplatePicker
+							:templates="NEWS_TEMPLATES"
+							v-model="form.viewTemplate"
+						/>
 					</div>
 
 					<UiButton :class="$style.submit" accent @click="createNews">

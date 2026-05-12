@@ -12,31 +12,32 @@ const { deviceClassList } = useDevice();
 
 const { at } = useAuthStore();
 
-let isAdmin = at.value
-	? ((jwtDecode(at.value) as any).roles?.includes("ADMIN") ?? false)
+let isAdmin = at
+	? ((jwtDecode(at) as any).roles?.includes("ADMIN") ?? false)
 	: false;
 
 const { data: activitiesPendingFetch } = isAdmin
 	? await useFetch<ActivityDtoList>("/api/activity/list?status=pending")
 	: { data: ref(null) };
 
+const activitiesPending = ref<Array<Activity>>([]);
 const activities = ref<Array<Activity>>([]);
 
 const { data: activitiesFetch } =
 	await useFetch<ActivityDtoList>("/api/activity/list");
 
-activitiesPendingFetch.value?.activities.forEach(async (f) => {
+const mapActivity = async (
+	f: ActivityDtoList["activities"][number],
+): Promise<Activity> => {
 	const authorFetch = await $fetch<byId>(
 		"/api/profile/byId?id=" + f.createdBy,
 		{
 			headers: useRequestHeaders(["cookie"]),
 		},
 	);
-
 	const author = unwrapProfile(authorFetch);
-
-	const activity: Activity = {
-		author: author,
+	return {
+		author,
 		createdAt: f.createdAt,
 		description: f.description,
 		dormitoryId: f.dormitoryId,
@@ -53,41 +54,15 @@ activitiesPendingFetch.value?.activities.forEach(async (f) => {
 		updatedAt: f.updatedAt,
 		viewTemplate: f.viewTemplate,
 	};
+};
 
-	activities.value.push(activity);
-});
+for (const f of activitiesPendingFetch.value?.activities ?? []) {
+	activitiesPending.value.push(await mapActivity(f));
+}
 
-activitiesFetch.value?.activities.forEach(async (f) => {
-	const authorFetch = await $fetch<byId>(
-		"/api/profile/byId?id=" + f.createdBy,
-		{
-			headers: useRequestHeaders(["cookie"]),
-		},
-	);
-
-	const author = unwrapProfile(authorFetch);
-
-	const activity: Activity = {
-		author: author,
-		createdAt: f.createdAt,
-		description: f.description,
-		dormitoryId: f.dormitoryId,
-		endTime: f.endTime,
-		id: f.id,
-		imageIds: f.imageIds,
-		isPrivate: f.isPrivate,
-		location: f.location,
-		moderationComment: f.moderationComment,
-		moderationStatus: f.moderationStatus,
-		participants: f.participants,
-		startTime: f.startTime,
-		title: f.title,
-		updatedAt: f.updatedAt,
-		viewTemplate: f.viewTemplate,
-	};
-
-	activities.value.push(activity);
-});
+for (const f of activitiesFetch.value?.activities ?? []) {
+	activities.value.push(await mapActivity(f));
+}
 
 const inviteCode = ref<string>("");
 const joinError = ref(false);
@@ -129,14 +104,21 @@ const joinByCode = () => {
 				></UiInput>
 			</div>
 
-			<RouterLink
-				:to="`/activities/${activity.id}`"
-				v-for="activity in activities"
-			>
+			<template v-if="isAdmin && activitiesPending.length > 0">
+				<h2 :class="$style.sectionTitle">На модерации</h2>
 				<ActivityPlateComponent
+					v-for="activity in activitiesPending"
+					:key="activity.id"
 					:activity="activity"
 				></ActivityPlateComponent>
-			</RouterLink>
+				<h2 :class="$style.sectionTitle">Все мероприятия</h2>
+			</template>
+
+			<ActivityPlateComponent
+				v-for="activity in activities"
+				:key="activity.id"
+				:activity="activity"
+			></ActivityPlateComponent>
 		</div>
 	</div>
 </template>
@@ -155,6 +137,14 @@ const joinByCode = () => {
 
 			row-gap: 24px;
 		}
+	}
+
+	.sectionTitle {
+		@include reset;
+		@include title-m;
+		@include color-black;
+
+		opacity: 0.5;
 	}
 
 	.row {

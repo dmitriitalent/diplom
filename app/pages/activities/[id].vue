@@ -1,632 +1,124 @@
 <script setup lang="ts">
-import type { Activity } from "~/entities/Activity";
+import type { User } from "~/entities/User";
+import type { Dormitory } from "~/entities/Dormitory";
 import { useAuthStore } from "~/stores/authStore";
-import { useCategoryStore } from "~/stores/categoryStore";
 import { useSelfStore } from "~/stores/selfStore";
-import type { ActivityDtoById } from "~~/server/dto/activity/byId";
-import type { ActivityDtoParticipants } from "~~/server/dto/activity/participants";
-import type { byId } from "~~/server/dto/profile/byId";
+import { useCacheStore } from "~/stores/cacheStore";
 import { jwtDecode } from "jwt-decode";
-import { useDevice } from "~/composables/device";
 
 const route = useRoute();
-const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
+const router = useRouter();
 
 const { at } = useAuthStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
-const { deviceClassList } = useDevice();
-
-const { data: activity, error } = await useAsyncData<Activity>(
-	"activity-full",
-	async () => {
-		const activityFetch = await $fetch<ActivityDtoById>(
-			"/api/activity/byId?id=" + route.params.id,
-		);
-
-		const authorFetch = await $fetch<byId>(
-			"/api/profile/byId?id=" + activityFetch.createdBy,
-			{
-				headers,
-				credentials: "include",
-			},
-		);
-
-		const author = unwrapProfile(authorFetch);
-
-		let participants: Array<User> = [];
-		if (
-			activityFetch.participants &&
-			activityFetch.participants.length != 0
-		) {
-			participants = await Promise.all(
-				activityFetch.participants.map(async (p) => {
-					const participantFetch = await $fetch<byId>(
-						"/api/profile/byId?id=" + p.userId,
-						{
-							headers,
-							credentials: "include",
-						},
-					);
-
-					return unwrapProfile(participantFetch);
-				}),
-			);
-		}
-
-		return {
-			author: author,
-			createdAt: activityFetch.createdAt,
-			description: activityFetch.description,
-			dormitoryId: activityFetch.dormitoryId,
-			endTime: activityFetch.endTime,
-			id: activityFetch.id,
-			imageIds: activityFetch.imageIds,
-			isPrivate: activityFetch.isPrivate,
-			location: activityFetch.location,
-			moderationComment: activityFetch.moderationComment,
-			moderationStatus: activityFetch.moderationStatus,
-			participants: participants,
-			startTime: activityFetch.startTime,
-			title: activityFetch.title,
-			updatedAt: activityFetch.updatedAt,
-			viewTemplate: activityFetch.viewTemplate,
-		} as Activity;
-	},
-);
-
+const cacheStore = useCacheStore();
 const { self } = useSelfStore();
-const isAuthor = activity.value?.author.id === self?.id;
-const router = useRouter();
 
-const activityVisual = ref<Activity>(
-	JSON.parse(JSON.stringify(activity.value)),
-);
+const id = route.params.id as string;
+const activity = cacheStore.activities.get(id);
 
-const deleteActivity = () => {
-	$fetch("/api/activity/delete?id=" + activity.value?.id, {
-		method: "DELETE",
-	}).then((res) => {
-		useRouter().push("/activities");
+if (import.meta.server && !activity._loaded) {
+	await cacheStore.activities.waitLoaded(id);
+}
+
+const isAuthor = computed(() => activity.author?.id === self?.id);
+const isParticipant = computed(() => !!activity.participants?.find((p: any) => p.id == self?.id));
+
+const templateMap: Record<number, ReturnType<typeof defineAsyncComponent>> = {
+	0: defineAsyncComponent(() => import("~/components/templates/activity/ActivityTemplate0.vue")),
+	1: defineAsyncComponent(() => import("~/components/templates/activity/ActivityTemplate1.vue")),
+};
+
+const templateComponent = computed(() => templateMap[(activity as any).viewTemplate ?? 0] ?? templateMap[0]);
+
+const moderateForm = ref({ comment: "", status: "" });
+const inviteCode = ref<string | null>(null);
+
+const handleDelete = () => {
+	$fetch("/api/activity/delete?id=" + id, { method: "DELETE" }).then(() => {
+		cacheStore.activities.invalidate(id);
+		router.push("/activities");
 	});
 };
 
-const moderateForm = ref({
-	comment: "",
-	status: "",
-});
+const handleEdit = () => router.push("/activities/edit/" + activity.id);
 
-const moderateActivity = (status: string) => {
+const handleModerate = (status: string) => {
 	moderateForm.value.status = status;
-	$fetch("/api/activity/moderate?id=" + activity.value?.id, {
+	$fetch("/api/activity/moderate?id=" + id, {
 		body: moderateForm.value,
 		method: "PUT",
 		credentials: "include",
-	}).then((res) => {
-		activityVisual.value.moderationStatus = status;
+	}).then(() => {
+		activity.moderationStatus = status;
 	});
 };
 
-const expiresAt = ref<Date>();
-const inviteForm = ref({
-	expiresAt: "",
-	maxUses: 1,
-});
+const buildSelfUser = (): User =>
+	({
+		id: unwrapField(self?.id),
+		login: unwrapField(self?.login),
+		educationEmail: unwrapField(self?.educationEmail),
+		birthdate: new Date(),
+		dormitory: {} as Dormitory,
+		building: unwrapField(self?.building),
+		floor: unwrapField(self?.floor),
+		room: unwrapField(self?.room),
+		surname: unwrapField(self?.surname),
+		name: unwrapField(self?.name),
+		patronymic: unwrapField(self?.patronymic),
+		contacts: [],
+		friends: [],
+	}) as User;
 
-const inviteCode = ref(null);
+const handleJoin = () => {
+	$fetch("/api/activity/register", {
+		method: "POST",
+		body: { id },
+		credentials: "include",
+	}).then(() => {
+		const list = (activity.participants as any[] | undefined) ?? [];
+		(activity as any).participants = [...list, buildSelfUser()];
+	});
+};
 
-const generateInvates = () => {
-	inviteForm.value.expiresAt = expiresAt.value?.toISOString() as string;
+const handleLeave = () => {
+	const list = (activity.participants as any[] | undefined) ?? [];
+	(activity as any).participants = list.filter((p: any) => p.id !== self?.id);
+	$fetch("/api/activity/unregister", {
+		method: "DELETE",
+		body: { id },
+		credentials: "include",
+	}).then(() => {
+		if (activity.isPrivate) router.push("/activities");
+	});
+};
 
-	$fetch("/api/activity/invite?id=" + activity.value?.id, {
-		body: inviteForm.value,
+const handleGenerateInvite = (form: { expiresAt: string; maxUses: number }) => {
+	$fetch("/api/activity/invite?id=" + id, {
+		body: form,
 		method: "POST",
 		credentials: "include",
 	}).then((res: any) => {
 		inviteCode.value = res.code;
 	});
 };
-
-const isParticipant = computed(() => {
-	return !!activityVisual.value?.participants.find((p) => {
-		return p.id == self?.id;
-	});
-});
-
-const joinActivity = () => {
-	$fetch("/api/activity/register", {
-		method: "POST",
-		body: {
-			id: activity.value?.id,
-		},
-		credentials: "include",
-	}).then((res) => {
-		activityVisual.value.participants.push({
-			id: typeof self?.id === "object" ? self?.id.value : self?.id,
-			login:
-				typeof self?.login === "object"
-					? self?.login.value
-					: self?.login,
-			educationEmail:
-				typeof self?.educationEmail === "object"
-					? self?.educationEmail.value
-					: self?.educationEmail,
-			birthdate: new Date(),
-			dormitory: {} as Dormitory,
-			building:
-				typeof self?.building === "object"
-					? self?.building.value
-					: self?.building,
-			floor:
-				typeof self?.floor === "object"
-					? self?.floor.value
-					: self?.floor,
-			room:
-				typeof self?.room === "object" ? self?.room.value : self?.room,
-			surname:
-				typeof self?.surname === "object"
-					? self?.surname.value
-					: self?.surname,
-			name:
-				typeof self?.name === "object" ? self?.name.value : self?.name,
-			patronymic:
-				typeof self?.patronymic === "object"
-					? self?.patronymic.value
-					: self?.patronymic,
-			contacts: [],
-			friends: [],
-		} as User);
-	});
-};
-
-const removeParticipant = () => {
-	activityVisual.value.participants =
-		activityVisual.value.participants.filter((p) => p.id !== self?.id);
-
-	$fetch("/api/activity/unregister", {
-		method: "DELETE",
-		body: {
-			id: activity.value?.id,
-		},
-		credentials: "include",
-	}).then(() => {
-		if (activity.value?.isPrivate) {
-			router.push("/activities");
-		}
-	});
-};
 </script>
 
 <template>
-	<div :class="[$style.wrapper, ...deviceClassList]">
-		<div :class="$style.container" v-if="activity">
-			<div v-if="isAdmin" :class="$style.adminTools">
-				<UiButton :class="$style.delete" @click="deleteActivity"
-					>Удалить</UiButton
-				>
-				<UiButton
-					:class="$style.edit"
-					@click="router.push('/activities/edit/' + activity.id)"
-					>Редактировать</UiButton
-				>
-
-				<UiButton
-					v-if="activityVisual.moderationStatus === 'pending'"
-					:class="$style.approve"
-					@click="moderateActivity('approved')"
-					>Одобрить</UiButton
-				>
-				<UiButton
-					v-if="activityVisual.moderationStatus === 'pending'"
-					:class="$style.decline"
-					@click="moderateActivity('declined')"
-					>Отклонить</UiButton
-				>
-				<UiButton
-					v-if="activityVisual.moderationStatus === 'pending'"
-					:class="$style.block"
-					@click="moderateActivity('blocked')"
-					>Заблокировать пользователя</UiButton
-				>
-
-				<UiTextarea
-					v-if="activityVisual.moderationStatus === 'pending'"
-					v-model="moderateForm.comment"
-					:rows="2"
-					placeholder="Комментарий принятого решения по отклонению/одобрению/блокированию"
-				></UiTextarea>
-			</div>
-
-			<div v-if="isAuthor && !isAdmin" :class="$style.authorTools">
-				<UiButton :class="$style.delete" @click="deleteActivity"
-					>Удалить</UiButton
-				>
-				<UiButton
-					:class="$style.edit"
-					@click="router.push('/activities/edit/' + activity.id)"
-					>Редактировать</UiButton
-				>
-
-				<div v-if="activity.isPrivate" :class="$style.row">
-					<UiButton :class="$style.invite" @click="generateInvates"
-						>Создать приглашения</UiButton
-					>
-
-					<ClientOnly>
-						<UiDatePicker
-							:class="$style.expiresAt"
-							enable-time
-							left-icon-name=""
-							placeholder="Активен до"
-							v-model="expiresAt"
-						></UiDatePicker>
-					</ClientOnly>
-
-					<UiInput
-						type="number"
-						placeholder="Количество"
-						:class="$style.maxUses"
-					></UiInput>
-				</div>
-				<div v-if="inviteCode" :class="$style.inviteCode">
-					Код приглашения: {{ inviteCode }}
-				</div>
-			</div>
-
-			<UiButton
-				v-if="!isParticipant"
-				:class="$style.join"
-				@click="joinActivity"
-				accent
-			>
-				Участвовать
-			</UiButton>
-
-			<UiButton
-				v-if="isParticipant"
-				:class="$style.remove"
-				accent
-				@click="removeParticipant"
-			>
-				Выйти из участия
-			</UiButton>
-
-			<div :class="$style.top">
-				<UiGallery :class="$style.gallery" :autoplay="3000" loop>
-					<template
-						v-for="(image, index) in activity.imageIds"
-						:key="index"
-						v-slot:[index]
-					>
-						<img
-							:class="$style.image"
-							:src="`/api/images/byGuid?guid=${image}`"
-						/>
-					</template>
-				</UiGallery>
-			</div>
-
-			<div :class="$style.bottom">
-				<RouterLink :to="`/profile/${activity.author.id}`">
-					<div :class="$style.author">
-						<img
-							:src="`/api/images/byGuid?guid=avatar`"
-							:class="$style.image"
-						/>
-						<div :class="$style.name">
-							{{
-								activity.author.name +
-								" " +
-								activity.author.surname
-							}}
-						</div>
-					</div>
-				</RouterLink>
-				<h3 :class="$style.name">{{ activity.title }}</h3>
-				<p :class="$style.description">{{ activity.description }}</p>
-				<p :class="$style.place">{{ activity.location }}</p>
-				<p :class="$style.place">
-					Начало:
-					{{
-						(String(new Date(activity.startTime).getDay()).length ==
-						1
-							? "0" +
-								String(new Date(activity.startTime).getDay())
-							: String(new Date(activity.startTime).getDay())) +
-						"." +
-						(String(new Date(activity.startTime).getMonth())
-							.length == 1
-							? "0" +
-								String(
-									new Date(activity.startTime).getMonth() + 1,
-								)
-							: String(new Date(activity.startTime).getMonth()) +
-								1) +
-						"." +
-						String(new Date(activity.startTime).getFullYear())
-					}}
-					-
-					{{
-						(String(new Date(activity.startTime).getHours())
-							.length == 1
-							? "0" +
-								String(new Date(activity.startTime).getHours())
-							: String(new Date(activity.startTime).getHours())) +
-						":" +
-						(String(new Date(activity.startTime).getMinutes())
-							.length == 1
-							? "0" +
-								String(
-									new Date(activity.startTime).getMinutes(),
-								)
-							: String(
-									new Date(activity.startTime).getMinutes(),
-								)) +
-						":00"
-					}}
-				</p>
-				<p :class="$style.place">
-					Конец:
-					{{
-						(String(new Date(activity.endTime).getDay()).length == 1
-							? "0" + String(new Date(activity.endTime).getDay())
-							: String(new Date(activity.endTime).getDay())) +
-						"." +
-						(String(new Date(activity.endTime).getMonth()).length ==
-						1
-							? "0" +
-								String(
-									new Date(activity.endTime).getMonth() + 1,
-								)
-							: String(new Date(activity.endTime).getMonth()) +
-								1) +
-						"." +
-						String(new Date(activity.endTime).getFullYear())
-					}}
-					-
-					{{
-						(String(new Date(activity.endTime).getHours()).length ==
-						1
-							? "0" +
-								String(new Date(activity.endTime).getHours())
-							: String(new Date(activity.endTime).getHours())) +
-						":" +
-						(String(new Date(activity.endTime).getMinutes())
-							.length == 1
-							? "0" +
-								String(new Date(activity.endTime).getMinutes())
-							: String(new Date(activity.endTime).getMinutes())) +
-						":00"
-					}}
-				</p>
-			</div>
-
-			<div
-				v-if="activityVisual.participants.length != 0"
-				:class="$style.participants"
-			>
-				<h2 :class="$style.title">Участники</h2>
-				<div
-					:class="$style.participant"
-					v-for="participant in activityVisual.participants"
-				>
-					<RouterLink
-						:to="`/profile/${participant.id}`"
-						:class="$style.link"
-					>
-						<img
-							:class="$style.avatar"
-							:src="`/api/images/byGuid?guid=avatar`"
-						/>
-						<div :class="$style.name">
-							{{ participant.name + " " + participant.surname }}
-						</div>
-					</RouterLink>
-				</div>
-			</div>
-		</div>
-	</div>
+	<component
+		:is="templateComponent"
+		:activity="activity"
+		:isAdmin="isAdmin"
+		:isAuthor="isAuthor"
+		:isParticipant="isParticipant"
+		:moderateForm="moderateForm"
+		:inviteCode="inviteCode"
+		@delete="handleDelete"
+		@edit="handleEdit"
+		@moderate="handleModerate"
+		@join="handleJoin"
+		@leave="handleLeave"
+		@generate-invite="handleGenerateInvite"
+	/>
 </template>
-<style module lang="scss">
-.wrapper {
-	.container {
-		@include container;
-
-		display: flex;
-		flex-direction: column;
-		row-gap: 30px;
-
-		@include respond-to(mobile) {
-			@include container(mobile);
-
-			row-gap: 20px;
-		}
-	}
-
-	display: flex;
-	column-gap: 30px;
-	position: relative;
-
-	.adminTools,
-	.authorTools {
-		display: flex;
-		flex-direction: column;
-		row-gap: 10px;
-
-		.delete,
-		.block {
-			@include color-error-bg;
-		}
-
-		.approve {
-			@include color-success-bg;
-		}
-
-		.decline {
-			@include color-warn-bg;
-		}
-
-		.edit {
-			@include color-black-bg(0.08);
-		}
-
-		.row {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-
-			@include respond-to(mobile) {
-				flex-direction: column;
-				align-items: stretch;
-				row-gap: 10px;
-			}
-
-			.expiresAt {
-				width: 400px;
-
-				@include respond-to(mobile) {
-					width: 100%;
-				}
-			}
-
-			.maxUses {
-				width: 400px;
-
-				@include respond-to(mobile) {
-					width: 100%;
-				}
-			}
-		}
-
-		.inviteCode {
-			@include text-m;
-			@include color-black;
-			@include color-success-bg;
-
-			width: 100%;
-			padding: 10px;
-		}
-	}
-
-	.top {
-		width: 100%;
-		height: 600px;
-
-		@include respond-to(mobile) {
-			height: 280px;
-		}
-
-		.gallery {
-			@include color-black-bg(0.1);
-
-			height: 100%;
-			border-radius: 10px;
-
-			.image {
-				width: 100%;
-				height: 100%;
-				object-fit: contain;
-			}
-		}
-	}
-
-	.bottom {
-		display: flex;
-		flex-direction: column;
-		row-gap: 30px;
-
-		.author {
-			width: fit-content;
-			margin-left: auto;
-			display: flex;
-			align-items: center;
-			column-gap: 20px;
-
-			@include respond-to(mobile) {
-				margin-left: 0;
-			}
-
-			.image {
-				width: 50px;
-				height: 50px;
-				border-radius: 100%;
-			}
-
-			.name {
-				@include title-m;
-			}
-		}
-
-		.name {
-			@include reset;
-			@include title-l;
-			@include color-black;
-
-			@include respond-to(mobile) {
-				@include title-m;
-			}
-		}
-
-		.description {
-			@include reset;
-			@include text-l;
-			@include color-black;
-
-			text-indent: 1em;
-		}
-
-		.place {
-			@include reset;
-			@include text-l;
-			@include color-black;
-
-			margin-left: auto;
-
-			@include respond-to(mobile) {
-				margin-left: 0;
-			}
-		}
-	}
-
-	.participants {
-		display: flex;
-		flex-direction: column;
-		row-gap: 10px;
-
-		.title {
-			@include reset;
-			@include title-m;
-			@include color-black;
-		}
-
-		.participant {
-			display: flex;
-			align-items: center;
-			justify-content: space-between;
-			transition: $transition-fast;
-			padding: 5px;
-			border-radius: 10px;
-
-			&:hover {
-				@include color-black-bg(0.1);
-			}
-
-			.link {
-				display: flex;
-				column-gap: 20px;
-				align-items: center;
-
-				.avatar {
-					height: 50px;
-					width: 50px;
-					border-radius: 100%;
-				}
-
-				.name {
-					@include text-m;
-					@include color-black;
-				}
-			}
-		}
-	}
-}
-</style>
