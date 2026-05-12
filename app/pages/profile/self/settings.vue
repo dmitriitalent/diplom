@@ -459,6 +459,11 @@ const onClickLogout = () => {
 					</UiButton>
 				</div>
 
+				<!-- ── Верификация ─────────────────────────────────────── -->
+				<div :class="$style.section">
+					<ProfileVerificationSection />
+				</div>
+
 				<!-- ── Кнопки ──────────────────────────────────────────── -->
 				<div :class="$style.actions">
 					<UiButton :class="$style.resetBtn" @click="onClickReset">

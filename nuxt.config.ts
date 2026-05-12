@@ -23,6 +23,15 @@ export default defineNuxtConfig({
 				},
 			},
 		},
+		optimizeDeps: {
+			include: [
+				"@vuepic/vue-datepicker",
+				"date-fns",
+				"date-fns/locale",
+				"jwt-decode",
+				"axios",
+			],
+		},
 	},
 
 	build: {

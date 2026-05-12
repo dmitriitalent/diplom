@@ -20,7 +20,7 @@ const onClick = () => {
 </script>
 
 <template>
-	<RouterLink
+	<NuxtLink
 		:to="`/services/${service.id}`"
 		:class="$style.link"
 		@click="onClick"
@@ -61,7 +61,7 @@ const onClick = () => {
 				</div>
 			</div>
 		</div>
-	</RouterLink>
+	</NuxtLink>
 </template>
 
 <style module lang="scss">

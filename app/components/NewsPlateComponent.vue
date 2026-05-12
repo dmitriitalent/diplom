@@ -35,7 +35,7 @@ const reactionIcon: Record<string, string> = {
 </script>
 
 <template>
-	<RouterLink :to="`/news/${news.id}`" :class="$style.link" @click="onClick">
+	<NuxtLink :to="`/news/${news.id}`" :class="$style.link" @click="onClick">
 		<div
 			:class="[
 				$style.wrapper,
@@ -130,7 +130,7 @@ const reactionIcon: Record<string, string> = {
 				</div>
 			</div>
 		</div>
-	</RouterLink>
+	</NuxtLink>
 </template>
 
 <style module lang="scss">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { jwtDecode } from "jwt-decode";
+definePageMeta({ middleware: "verified" });
+
 import { useAuthStore } from "~/stores/authStore";
 import { useDevice } from "~/composables/device";
 import type { TimelineSession } from "~/components/ui/types/TimelineSession";
@@ -12,10 +13,9 @@ import type {
 
 const { deviceClassList } = useDevice();
 
-const { at } = useAuthStore();
-const decoded = jwtDecode(at as string) as any;
-const isAdmin = decoded.roles.includes("ADMIN");
-const currentUserId = decoded.sub as string;
+const auth = useAuthStore();
+const isAdmin = auth.isAdmin;
+const currentUserId = auth.userId as string;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

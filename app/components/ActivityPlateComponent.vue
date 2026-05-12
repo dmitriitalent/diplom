@@ -36,7 +36,7 @@ const statusLabel: Record<string, string> = {
 </script>
 
 <template>
-	<RouterLink
+	<NuxtLink
 		:to="`/activities/${activity.id}`"
 		:class="$style.link"
 		@click="onClick"
@@ -129,7 +129,7 @@ const statusLabel: Record<string, string> = {
 				</div>
 			</div>
 		</div>
-	</RouterLink>
+	</NuxtLink>
 </template>
 
 <style module lang="scss">

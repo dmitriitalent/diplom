@@ -1,19 +1,18 @@
 <script setup lang="ts">
+definePageMeta({ middleware: "verified" });
+
 import type { News } from "~/entities/News";
 import type { byId } from "~~/server/dto/profile/byId";
 import type { NewsListDtoList } from "~~/server/dto/news/newsList";
 import { useAuthStore } from "~/stores/authStore";
-import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
 
 const headers = useRequestHeaders(["cookie"]);
 
 const { deviceClassList } = useDevice();
 
-const { at } = useAuthStore();
-const isAdmin = at
-	? ((jwtDecode(at) as any).roles?.includes("ADMIN") ?? false)
-	: false;
+const auth = useAuthStore();
+const isAdmin = auth.isAdmin;
 
 const { data: newsPendingFetch } = isAdmin
 	? await useFetch<NewsListDtoList>("/api/news/list?status=pending")

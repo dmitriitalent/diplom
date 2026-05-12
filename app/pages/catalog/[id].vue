@@ -2,13 +2,14 @@
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import { useCacheStore } from "~/stores/cacheStore";
-import { jwtDecode } from "jwt-decode";
+import CatalogTemplate0 from "~/components/templates/catalog/CatalogTemplate0.vue";
+import CatalogTemplate1 from "~/components/templates/catalog/CatalogTemplate1.vue";
 
 const route = useRoute();
 const router = useRouter();
 
-const { at } = useAuthStore();
-const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const auth = useAuthStore();
+const isAdmin = auth.isAdmin;
 const cacheStore = useCacheStore();
 const { self } = useSelfStore();
 
@@ -21,12 +22,11 @@ if (import.meta.server && !product._loaded) {
 
 const isOwner = computed(() => product.owner?.id === self?.id);
 
-const templateMap: Record<number, ReturnType<typeof defineAsyncComponent>> = {
-	0: defineAsyncComponent(() => import("~/components/templates/catalog/CatalogTemplate0.vue")),
-	1: defineAsyncComponent(() => import("~/components/templates/catalog/CatalogTemplate1.vue")),
-};
+const templateMap = { 0: CatalogTemplate0, 1: CatalogTemplate1 } as const;
 
-const templateComponent = computed(() => templateMap[(product as any).viewTemplate ?? 0] ?? templateMap[0]);
+const templateComponent = computed(
+	() => templateMap[(product as any).viewTemplate as 0 | 1] ?? templateMap[0],
+);
 
 const handleDelete = () => {
 	$fetch("/api/product/delete?id=" + id, { method: "DELETE" }).then(() => {

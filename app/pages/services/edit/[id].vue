@@ -2,7 +2,6 @@
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { ServiceDtoById } from "~~/server/dto/service/byId";
-import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
 import { useCacheStore } from "~/stores/cacheStore";
 import { SERVICE_TEMPLATES } from "~/constants/templates";
@@ -11,9 +10,9 @@ const route = useRoute();
 const router = useRouter();
 const id = route.params.id as string;
 
-const { at } = useAuthStore();
+const auth = useAuthStore();
 const { self } = useSelfStore();
-const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
+const isAdmin = auth.isAdmin;
 const { deviceClassList, isDevice } = useDevice();
 const cacheStore = useCacheStore();
 
