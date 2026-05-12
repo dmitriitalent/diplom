@@ -46,14 +46,11 @@ for (const f of productsFetch.value?.products ?? []) {
 				<UiButton accent> Создать объявление </UiButton>
 			</RouterLink>
 
-			<RouterLink
-				:to="`/catalog/${product.id}`"
+			<ProductPlateComponent
 				v-for="product in products"
-			>
-				<ProductPlateComponent
-					:product="product"
-				></ProductPlateComponent>
-			</RouterLink>
+				:key="product.id"
+				:product="product"
+			></ProductPlateComponent>
 		</div>
 	</div>
 </template>

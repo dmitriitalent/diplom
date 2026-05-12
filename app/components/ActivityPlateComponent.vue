@@ -2,6 +2,7 @@
 import type { PropType } from "vue";
 import type { Activity } from "~/entities/Activity";
 import { useDevice } from "~/composables/device";
+import { useCacheStore } from "~/stores/cacheStore";
 
 const props = defineProps({
 	activity: {
@@ -11,6 +12,11 @@ const props = defineProps({
 });
 
 const { deviceClassList } = useDevice();
+const cacheStore = useCacheStore();
+
+const onClick = () => {
+	cacheStore.activities.set({ ...props.activity });
+};
 
 const formatDate = (iso: string) => {
 	const d = new Date(iso);
@@ -30,86 +36,113 @@ const statusLabel: Record<string, string> = {
 </script>
 
 <template>
-	<div
-		:class="[
-			$style.wrapper,
-			activity.moderationStatus === 'pending' && $style.pending,
-			...deviceClassList,
-		]"
+	<RouterLink
+		:to="`/activities/${activity.id}`"
+		:class="$style.link"
+		@click="onClick"
 	>
-		<div v-if="activity.imageIds?.length" :class="$style.thumb">
-			<img
-				:class="$style.thumbImg"
-				:src="`/api/images/byGuid?guid=${activity.imageIds[0]}`"
-			/>
-		</div>
-		<div v-else :class="[$style.thumb, $style.thumbEmpty]">
-			<Icon name="mdi:calendar-blank-outline" :class="$style.thumbIcon" />
-		</div>
-
-		<div :class="$style.body">
-			<div :class="$style.top">
-				<h3 :class="$style.title">{{ activity.title }}</h3>
-				<span
-					v-if="
-						activity.moderationStatus &&
-						activity.moderationStatus !== 'approved'
-					"
-					:class="[
-						$style.badge,
-						$style['badge_' + activity.moderationStatus],
-					]"
-				>
-					{{
-						statusLabel[activity.moderationStatus] ??
-						activity.moderationStatus
-					}}
-				</span>
+		<div
+			:class="[
+				$style.wrapper,
+				activity.moderationStatus === 'pending' && $style.pending,
+				...deviceClassList,
+			]"
+		>
+			<div v-if="activity.imageIds?.length" :class="$style.thumb">
+				<img
+					:class="$style.thumbImg"
+					:src="`/api/images/byGuid?guid=${activity.imageIds[0]}`"
+				/>
+			</div>
+			<div v-else :class="[$style.thumb, $style.thumbEmpty]">
+				<Icon
+					name="mdi:calendar-blank-outline"
+					:class="$style.thumbIcon"
+				/>
 			</div>
 
-			<p :class="$style.description">{{ activity.description }}</p>
-
-			<div :class="$style.meta">
-				<span v-if="activity.location" :class="$style.metaItem">
-					<Icon
-						name="mdi:map-marker-outline"
-						:class="$style.metaIcon"
-					/>
-					{{ activity.location }}
-				</span>
-				<span v-if="activity.startTime" :class="$style.metaItem">
-					<Icon name="mdi:clock-outline" :class="$style.metaIcon" />
-					{{ formatDate(activity.startTime) }}
-					<span v-if="activity.endTime">
-						— {{ formatDate(activity.endTime) }}</span
+			<div :class="$style.body">
+				<div :class="$style.top">
+					<h3 :class="$style.title">{{ activity.title }}</h3>
+					<span
+						v-if="
+							activity.moderationStatus &&
+							activity.moderationStatus !== 'approved'
+						"
+						:class="[
+							$style.badge,
+							$style['badge_' + activity.moderationStatus],
+						]"
 					>
-				</span>
-				<span
-					v-if="activity.participants?.length"
-					:class="$style.metaItem"
-				>
-					<Icon
-						name="mdi:account-group-outline"
-						:class="$style.metaIcon"
-					/>
-					{{ activity.participants.length }}
-				</span>
-				<span v-if="activity.isPrivate" :class="$style.metaItem">
-					<Icon name="mdi:lock-outline" :class="$style.metaIcon" />
-					Закрытое
-				</span>
-			</div>
+						{{
+							statusLabel[activity.moderationStatus] ??
+							activity.moderationStatus
+						}}
+					</span>
+				</div>
 
-			<div :class="$style.author">
-				<Icon name="mdi:account-outline" :class="$style.authorIcon" />
-				{{ activity.author?.name }} {{ activity.author?.surname }}
+				<p :class="$style.description">{{ activity.description }}</p>
+
+				<div :class="$style.meta">
+					<span v-if="activity.location" :class="$style.metaItem">
+						<Icon
+							name="mdi:map-marker-outline"
+							:class="$style.metaIcon"
+						/>
+						{{ activity.location }}
+					</span>
+					<span v-if="activity.startTime" :class="$style.metaItem">
+						<Icon
+							name="mdi:clock-outline"
+							:class="$style.metaIcon"
+						/>
+						{{ formatDate(activity.startTime) }}
+						<span v-if="activity.endTime">
+							— {{ formatDate(activity.endTime) }}</span
+						>
+					</span>
+					<span
+						v-if="activity.participants?.length"
+						:class="$style.metaItem"
+					>
+						<Icon
+							name="mdi:account-group-outline"
+							:class="$style.metaIcon"
+						/>
+						{{ activity.participants.length }}
+					</span>
+					<span v-if="activity.isPrivate" :class="$style.metaItem">
+						<Icon
+							name="mdi:lock-outline"
+							:class="$style.metaIcon"
+						/>
+						Закрытое
+					</span>
+				</div>
+
+				<div :class="$style.author">
+					<Icon
+						name="mdi:account-outline"
+						:class="$style.authorIcon"
+					/>
+					{{ activity.author?.name }} {{ activity.author?.surname }}
+				</div>
 			</div>
 		</div>
-	</div>
+	</RouterLink>
 </template>
 
 <style module lang="scss">
+.link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+}
+
 .wrapper {
+	@include shadow;
+	@include color-white-bg(0.72);
+
 	width: 100%;
 	display: flex;
 	column-gap: 16px;
@@ -117,10 +150,8 @@ const statusLabel: Record<string, string> = {
 	overflow: hidden;
 	transition: background-color $transition-fast;
 
-	@include shadow;
-
 	&:hover {
-		@include color-black-bg(0.03);
+		@include color-white-bg;
 	}
 
 	&.pending {

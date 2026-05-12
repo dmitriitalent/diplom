@@ -6,7 +6,7 @@ import { onMounted, onBeforeUnmount, ref } from "vue";
 // ════════════════════════════════════════════════════════════════════
 
 // Количество частиц (100..500)
-const PARTICLE_COUNT = 1000;
+const PARTICLE_COUNT = 3000;
 
 // Размер точки (радиус в пикселях)
 const PARTICLE_SIZE = 4;
@@ -31,7 +31,7 @@ const BOUNCE_DAMPING = 1;
 const VELOCITY_DAMPING = 0.99;
 
 // Минимальная скорость — частицы не могут полностью остановиться
-const MIN_SPEED = 2;
+const MIN_SPEED = 0.5;
 
 // Длительность постепенного появления частиц из центра (секунд)
 const EMISSION_DURATION = 5;
@@ -273,5 +273,6 @@ onBeforeUnmount(() => {
 	pointer-events: none;
 	width: 100vw;
 	height: 100vh;
+	filter: blur(12px);
 }
 </style>

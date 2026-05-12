@@ -2,6 +2,7 @@
 import type { PropType } from "vue";
 import type { News } from "~/entities/News";
 import { useDevice } from "~/composables/device";
+import { useCacheStore } from "~/stores/cacheStore";
 
 const props = defineProps({
 	news: {
@@ -11,6 +12,11 @@ const props = defineProps({
 });
 
 const { deviceClassList } = useDevice();
+const cacheStore = useCacheStore();
+
+const onClick = () => {
+	cacheStore.news.set({ ...props.news });
+};
 
 const formatDate = (iso: string) => {
 	const d = new Date(iso);
@@ -29,98 +35,113 @@ const reactionIcon: Record<string, string> = {
 </script>
 
 <template>
-	<div
-		:class="[
-			$style.wrapper,
-			news.moderationStatus === 'pending' && $style.pending,
-			...deviceClassList,
-		]"
-	>
-		<div v-if="news.imageIds?.length" :class="$style.thumb">
-			<img
-				:class="$style.thumbImg"
-				:src="`/api/images/byGuid?guid=${news.imageIds[0]}`"
-			/>
-		</div>
-		<div v-else :class="[$style.thumb, $style.thumbEmpty]">
-			<Icon
-				name="mdi:newspaper-variant-outline"
-				:class="$style.thumbIcon"
-			/>
-		</div>
-
-		<div :class="$style.body">
-			<div :class="$style.top">
-				<h3 :class="$style.title">{{ news.title }}</h3>
-				<span
-					v-if="
-						news.moderationStatus &&
-						news.moderationStatus !== 'approved'
-					"
-					:class="[
-						$style.badge,
-						$style['badge_' + news.moderationStatus],
-					]"
-				>
-					{{
-						news.moderationStatus === "pending"
-							? "На проверке"
-							: news.moderationStatus
-					}}
-				</span>
+	<RouterLink :to="`/news/${news.id}`" :class="$style.link" @click="onClick">
+		<div
+			:class="[
+				$style.wrapper,
+				news.moderationStatus === 'pending' && $style.pending,
+				...deviceClassList,
+			]"
+		>
+			<div v-if="news.imageIds?.length" :class="$style.thumb">
+				<img
+					:class="$style.thumbImg"
+					:src="`/api/images/byGuid?guid=${news.imageIds[0]}`"
+				/>
+			</div>
+			<div v-else :class="[$style.thumb, $style.thumbEmpty]">
+				<Icon
+					name="mdi:newspaper-variant-outline"
+					:class="$style.thumbIcon"
+				/>
 			</div>
 
-			<p :class="$style.description">{{ news.content }}</p>
-
-			<div :class="$style.footer">
-				<div :class="$style.meta">
-					<span v-if="news.createdAt" :class="$style.metaItem">
-						<Icon
-							name="mdi:calendar-outline"
-							:class="$style.metaIcon"
-						/>
-						{{ formatDate(news.createdAt) }}
-					</span>
-					<span v-if="news.reactionCount" :class="$style.metaItem">
-						<Icon
-							name="mdi:heart-outline"
-							:class="$style.metaIcon"
-						/>
-						{{ news.reactionCount }}
-					</span>
+			<div :class="$style.body">
+				<div :class="$style.top">
+					<h3 :class="$style.title">{{ news.title }}</h3>
 					<span
-						v-if="news.activityIds?.length"
-						:class="$style.metaItem"
+						v-if="
+							news.moderationStatus &&
+							news.moderationStatus !== 'approved'
+						"
+						:class="[
+							$style.badge,
+							$style['badge_' + news.moderationStatus],
+						]"
 					>
-						<Icon
-							name="mdi:calendar-blank-outline"
-							:class="$style.metaIcon"
-						/>
-						{{ news.activityIds.length }}
-					</span>
-					<span
-						v-if="news.productIds?.length"
-						:class="$style.metaItem"
-					>
-						<Icon name="mdi:tag-outline" :class="$style.metaIcon" />
-						{{ news.productIds.length }}
+						{{
+							news.moderationStatus === "pending"
+								? "На проверке"
+								: news.moderationStatus
+						}}
 					</span>
 				</div>
 
-				<div :class="$style.author">
-					<Icon
-						name="mdi:account-outline"
-						:class="$style.authorIcon"
-					/>
-					{{ news.author?.name }} {{ news.author?.surname }}
+				<p :class="$style.description">{{ news.content }}</p>
+
+				<div :class="$style.footer">
+					<div :class="$style.meta">
+						<span v-if="news.createdAt" :class="$style.metaItem">
+							<Icon
+								name="mdi:calendar-outline"
+								:class="$style.metaIcon"
+							/>
+							{{ formatDate(news.createdAt) }}
+						</span>
+						<span
+							v-if="news.reactionCount"
+							:class="$style.metaItem"
+						>
+							<Icon
+								name="mdi:heart-outline"
+								:class="$style.metaIcon"
+							/>
+							{{ news.reactionCount }}
+						</span>
+						<span
+							v-if="news.activityIds?.length"
+							:class="$style.metaItem"
+						>
+							<Icon
+								name="mdi:calendar-blank-outline"
+								:class="$style.metaIcon"
+							/>
+							{{ news.activityIds.length }}
+						</span>
+						<span
+							v-if="news.productIds?.length"
+							:class="$style.metaItem"
+						>
+							<Icon
+								name="mdi:tag-outline"
+								:class="$style.metaIcon"
+							/>
+							{{ news.productIds.length }}
+						</span>
+					</div>
+
+					<div :class="$style.author">
+						<Icon
+							name="mdi:account-outline"
+							:class="$style.authorIcon"
+						/>
+						{{ news.author?.name }} {{ news.author?.surname }}
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	</RouterLink>
 </template>
 
 <style module lang="scss">
+.link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+}
+
 .wrapper {
+	@include color-white-bg(0.72);
 	width: 100%;
 	display: flex;
 	column-gap: 16px;
@@ -131,7 +152,7 @@ const reactionIcon: Record<string, string> = {
 	@include shadow;
 
 	&:hover {
-		@include color-black-bg(0.03);
+		@include color-white-bg;
 	}
 
 	&.pending {

@@ -3,6 +3,7 @@ import type { Category } from "~/entities/Category";
 import { useCategoryStore } from "~/stores/categoryStore";
 import type { ProductDtoCreate } from "~~/server/dto/product/create";
 import { useDevice } from "~/composables/device";
+import { PRODUCT_TEMPLATES } from "~/constants/templates";
 
 const { deviceClassList, isDevice } = useDevice();
 
@@ -238,6 +239,14 @@ const createProduct = async () => {
 							type="number"
 							:class="$style.price"
 							placeholder="1500"
+						/>
+					</div>
+
+					<div :class="$style.field">
+						<h3 :class="$style.label">Шаблон оформления</h3>
+						<UiTemplatePicker
+							:templates="PRODUCT_TEMPLATES"
+							v-model="form.viewTemplate"
 						/>
 					</div>
 

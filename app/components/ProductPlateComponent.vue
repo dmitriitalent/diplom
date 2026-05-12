@@ -2,6 +2,7 @@
 import type { PropType } from "vue";
 import type { Product } from "~/entities/Product";
 import { useDevice } from "~/composables/device";
+import { useCacheStore } from "~/stores/cacheStore";
 
 const props = defineProps({
 	product: {
@@ -11,6 +12,11 @@ const props = defineProps({
 });
 
 const { deviceClassList } = useDevice();
+const cacheStore = useCacheStore();
+
+const onClick = () => {
+	cacheStore.products.set({ ...props.product });
+};
 
 const formatPrice = (price: number) => price.toLocaleString("ru-RU") + " ₽";
 
@@ -32,71 +38,93 @@ const statusLabel: Record<string, string> = {
 </script>
 
 <template>
-	<div :class="[$style.wrapper, ...deviceClassList]">
-		<div v-if="product.images?.length" :class="$style.thumb">
-			<img
-				:class="$style.thumbImg"
-				:src="`/api/images/byGuid?guid=${product.images[0].fileGuid}`"
-			/>
-			<span v-if="product.images.length > 1" :class="$style.imageCount">
-				+{{ product.images.length - 1 }}
-			</span>
-		</div>
-		<div v-else :class="[$style.thumb, $style.thumbEmpty]">
-			<Icon name="mdi:image-outline" :class="$style.thumbIcon" />
-		</div>
-
-		<div :class="$style.body">
-			<div :class="$style.top">
-				<h3 :class="$style.title">{{ product.name }}</h3>
-				<span :class="$style.price">{{
-					formatPrice(product.price)
-				}}</span>
+	<RouterLink
+		:to="`/catalog/${product.id}`"
+		:class="$style.link"
+		@click="onClick"
+	>
+		<div :class="[$style.wrapper, ...deviceClassList]">
+			<div v-if="product.images?.length" :class="$style.thumb">
+				<img
+					:class="$style.thumbImg"
+					:src="`/api/images/byGuid?guid=${product.images[0].fileGuid}`"
+				/>
+				<span
+					v-if="product.images.length > 1"
+					:class="$style.imageCount"
+				>
+					+{{ product.images.length - 1 }}
+				</span>
+			</div>
+			<div v-else :class="[$style.thumb, $style.thumbEmpty]">
+				<Icon name="mdi:image-outline" :class="$style.thumbIcon" />
 			</div>
 
-			<p :class="$style.description">{{ product.description }}</p>
+			<div :class="$style.body">
+				<div :class="$style.top">
+					<h3 :class="$style.title">{{ product.name }}</h3>
+					<span :class="$style.price">{{
+						formatPrice(product.price)
+					}}</span>
+				</div>
 
-			<div :class="$style.footer">
-				<div :class="$style.meta">
-					<span
-						v-if="product.category?.name"
-						:class="$style.metaItem"
-					>
-						<Icon name="mdi:tag-outline" :class="$style.metaIcon" />
-						{{ product.category.name }}
-					</span>
-					<span v-if="product.publishedAt" :class="$style.metaItem">
+				<p :class="$style.description">{{ product.description }}</p>
+
+				<div :class="$style.footer">
+					<div :class="$style.meta">
+						<span
+							v-if="product.category?.name"
+							:class="$style.metaItem"
+						>
+							<Icon
+								name="mdi:tag-outline"
+								:class="$style.metaIcon"
+							/>
+							{{ product.category.name }}
+						</span>
+						<span
+							v-if="product.publishedAt"
+							:class="$style.metaItem"
+						>
+							<Icon
+								name="mdi:calendar-outline"
+								:class="$style.metaIcon"
+							/>
+							{{ formatDate(product.publishedAt) }}
+						</span>
+						<span
+							v-if="product.status && product.status !== 'active'"
+							:class="[
+								$style.badge,
+								$style['badge_' + product.status],
+							]"
+						>
+							{{ statusLabel[product.status] ?? product.status }}
+						</span>
+					</div>
+
+					<div :class="$style.owner">
 						<Icon
-							name="mdi:calendar-outline"
-							:class="$style.metaIcon"
+							name="mdi:account-outline"
+							:class="$style.ownerIcon"
 						/>
-						{{ formatDate(product.publishedAt) }}
-					</span>
-					<span
-						v-if="product.status && product.status !== 'active'"
-						:class="[
-							$style.badge,
-							$style['badge_' + product.status],
-						]"
-					>
-						{{ statusLabel[product.status] ?? product.status }}
-					</span>
-				</div>
-
-				<div :class="$style.owner">
-					<Icon
-						name="mdi:account-outline"
-						:class="$style.ownerIcon"
-					/>
-					{{ product.owner?.name }} {{ product.owner?.surname }}
+						{{ product.owner?.name }} {{ product.owner?.surname }}
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
+	</RouterLink>
 </template>
 
 <style module lang="scss">
+.link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+}
+
 .wrapper {
+	@include color-white-bg(0.72);
 	width: 100%;
 	display: flex;
 	column-gap: 16px;
@@ -107,7 +135,7 @@ const statusLabel: Record<string, string> = {
 	@include shadow;
 
 	&:hover {
-		@include color-black-bg(0.03);
+		@include color-white-bg;
 	}
 
 	@include respond-to(mobile) {

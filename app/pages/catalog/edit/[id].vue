@@ -7,6 +7,8 @@ import type { ProductDtoCreate } from "~~/server/dto/product/create";
 import type { byIdProduct } from "~~/server/dto/product/byId";
 import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
+import { useCacheStore } from "~/stores/cacheStore";
+import { PRODUCT_TEMPLATES } from "~/constants/templates";
 
 const route = useRoute();
 const router = useRouter();
@@ -16,6 +18,7 @@ const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
 const { deviceClassList, isDevice } = useDevice();
+const cacheStore = useCacheStore();
 
 const { data: original } = await useAsyncData<byIdProduct>(
 	"product-edit-" + id,
@@ -158,10 +161,11 @@ const saveProduct = async () => {
 		];
 
 		await $fetch("/api/product/edit?id=" + id, {
-			method: "PUT",
+			method: "PATCH",
 			body: form.value,
 		});
 
+		cacheStore.products.invalidate(id);
 		router.push("/catalog/" + id);
 	} finally {
 		saving.value = false;
@@ -321,6 +325,14 @@ const saveProduct = async () => {
 							type="number"
 							:class="$style.input"
 							placeholder="1500"
+						/>
+					</div>
+
+					<div :class="$style.field">
+						<h3 :class="$style.label">Шаблон оформления</h3>
+						<UiTemplatePicker
+							:templates="PRODUCT_TEMPLATES"
+							v-model="form.viewTemplate"
 						/>
 					</div>
 

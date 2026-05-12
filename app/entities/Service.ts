@@ -21,4 +21,5 @@ export type Service = {
 	status: string;
 	updatedAt: string;
 	viewTemplate: number;
+	comments?: ServiceComment[];
 };

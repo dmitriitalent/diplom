@@ -2,8 +2,9 @@
 import type { PropType } from "vue";
 import type { Service } from "~/entities/Service";
 import { useDevice } from "~/composables/device";
+import { useCacheStore } from "~/stores/cacheStore";
 
-defineProps({
+const props = defineProps({
 	service: {
 		type: Object as PropType<Service>,
 		required: true,
@@ -11,43 +12,67 @@ defineProps({
 });
 
 const { deviceClassList } = useDevice();
+const cacheStore = useCacheStore();
+
+const onClick = () => {
+	cacheStore.services.set({ ...props.service });
+};
 </script>
 
 <template>
-	<div :class="[$style.wrapper, 'ServicePlateComponent', ...deviceClassList]">
-		<div :class="$style.left">
-			<UiGallery :class="$style.gallery" :autoplay="3000" loop>
-				<template
-					v-for="(image, index) in service.images"
-					:key="index"
-					v-slot:[index]
-				>
-					<img
-						:class="$style.image"
-						:src="`/api/images/byGuid?guid=${image.fileGuid}`"
-					/>
-				</template>
-			</UiGallery>
-		</div>
+	<RouterLink
+		:to="`/services/${service.id}`"
+		:class="$style.link"
+		@click="onClick"
+	>
+		<div
+			:class="[
+				$style.wrapper,
+				'ServicePlateComponent',
+				...deviceClassList,
+			]"
+		>
+			<div :class="$style.left">
+				<UiGallery :class="$style.gallery" :autoplay="3000" loop>
+					<template
+						v-for="(image, index) in service.images"
+						:key="index"
+						v-slot:[index]
+					>
+						<img
+							:class="$style.image"
+							:src="`/api/images/byGuid?guid=${image.fileGuid}`"
+						/>
+					</template>
+				</UiGallery>
+			</div>
 
-		<div :class="$style.right">
-			<h3 :class="$style.name">{{ service.name }}</h3>
-			<p :class="$style.description">{{ service.description }}</p>
-			<div :class="$style.bottom">
-				<span :class="$style.owner">
-					{{ service.owner.name }} {{ service.owner.surname }}
-				</span>
-				<span :class="$style.price"
-					>{{ service.price }}
-					<span :class="$style.currency">₽</span>
-				</span>
+			<div :class="$style.right">
+				<h3 :class="$style.name">{{ service.name }}</h3>
+				<p :class="$style.description">{{ service.description }}</p>
+				<div :class="$style.bottom">
+					<span :class="$style.owner">
+						{{ service.owner.name }} {{ service.owner.surname }}
+					</span>
+					<span :class="$style.price"
+						>{{ service.price }}
+						<span :class="$style.currency">₽</span>
+					</span>
+				</div>
 			</div>
 		</div>
-	</div>
+	</RouterLink>
 </template>
 
 <style module lang="scss">
+.link {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+}
+
 .wrapper {
+	@include color-white-bg(0.72);
 	width: 100%;
 	height: 220px;
 	display: flex;
@@ -56,12 +81,10 @@ const { deviceClassList } = useDevice();
 	border-radius: 10px;
 	overflow: hidden;
 
-	@include color-black-bg(0.04);
-
 	transition: $transition-fast;
 
 	&:hover {
-		@include color-black-bg(0.08);
+		@include color-white-bg;
 	}
 
 	@include respond-to(mobile) {

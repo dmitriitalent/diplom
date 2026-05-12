@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ActivityDtoCreate } from "~~/server/dto/activity/create";
 import { useDevice } from "~/composables/device";
+import { ACTIVITY_TEMPLATES } from "~/constants/templates";
 
 const { deviceClassList, isDevice } = useDevice();
 
@@ -254,6 +255,14 @@ const createActivity = async () => {
 							v-model="form.isPrivate"
 							:class="$style.input"
 							name="Закрытое мероприятие"
+						/>
+					</div>
+
+					<div :class="$style.field">
+						<h3 :class="$style.label">Шаблон оформления</h3>
+						<UiTemplatePicker
+							:templates="ACTIVITY_TEMPLATES"
+							v-model="form.viewTemplate"
 						/>
 					</div>
 

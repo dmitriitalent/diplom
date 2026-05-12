@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const FILENAME = "product/edit.put.ts";
+const FILENAME = "product/edit.patch.ts";
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 		const query = getQuery(event);
 		const id = query.id;
 
-		const res = await axios.put(
+		const res = await axios.patch(
 			`${config.api}/products/` + String(id),
 			body,
 			{

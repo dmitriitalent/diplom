@@ -5,6 +5,8 @@ import type { ActivityDtoCreate } from "~~/server/dto/activity/create";
 import type { ActivityDtoById } from "~~/server/dto/activity/byId";
 import { jwtDecode } from "jwt-decode";
 import { useDevice } from "~/composables/device";
+import { useCacheStore } from "~/stores/cacheStore";
+import { ACTIVITY_TEMPLATES } from "~/constants/templates";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,6 +16,7 @@ const { at } = useAuthStore();
 const { self } = useSelfStore();
 const isAdmin = jwtDecode(at as string).roles.includes("ADMIN");
 const { deviceClassList, isDevice } = useDevice();
+const cacheStore = useCacheStore();
 
 const { data: original } = await useAsyncData<ActivityDtoById>(
 	"activity-edit-" + id,
@@ -143,6 +146,7 @@ const saveActivity = async () => {
 			body: form.value,
 		});
 
+		cacheStore.activities.invalidate(id);
 		router.push("/activities/" + id);
 	} finally {
 		saving.value = false;
@@ -323,6 +327,14 @@ const saveActivity = async () => {
 							v-model="form.isPrivate"
 							:class="$style.input"
 							name="Закрытое мероприятие"
+						/>
+					</div>
+
+					<div :class="$style.field">
+						<h3 :class="$style.label">Шаблон оформления</h3>
+						<UiTemplatePicker
+							:templates="ACTIVITY_TEMPLATES"
+							v-model="form.viewTemplate"
 						/>
 					</div>
 

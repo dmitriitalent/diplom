@@ -11,8 +11,8 @@ const headers = useRequestHeaders(["cookie"]);
 const { deviceClassList } = useDevice();
 
 const { at } = useAuthStore();
-const isAdmin = at.value
-	? (jwtDecode(at.value) as any).roles?.includes("ADMIN") ?? false
+const isAdmin = at
+	? ((jwtDecode(at) as any).roles?.includes("ADMIN") ?? false)
 	: false;
 
 const { data: newsPendingFetch } = isAdmin
@@ -21,10 +21,14 @@ const { data: newsPendingFetch } = isAdmin
 
 const { data: newsFetch } = await useFetch<NewsListDtoList>("/api/news/list");
 
+const newsPending = ref<Array<News>>([]);
 const newsList = ref<Array<News>>([]);
 
 const mapNews = async (f: NewsListDtoList["items"][number]): Promise<News> => {
-	const authorFetch = await $fetch<byId>("/api/profile/byId?id=" + f.authorId, { headers });
+	const authorFetch = await $fetch<byId>(
+		"/api/profile/byId?id=" + f.authorId,
+		{ headers },
+	);
 	return {
 		content: f.content,
 		id: f.id,
@@ -45,7 +49,7 @@ const mapNews = async (f: NewsListDtoList["items"][number]): Promise<News> => {
 };
 
 for (const f of newsPendingFetch.value?.items ?? []) {
-	newsList.value.push(await mapNews(f));
+	newsPending.value.push(await mapNews(f));
 }
 for (const f of newsFetch.value?.items ?? []) {
 	newsList.value.push(await mapNews(f));
@@ -59,9 +63,21 @@ for (const f of newsFetch.value?.items ?? []) {
 				<UiButton accent> Создать новость </UiButton>
 			</RouterLink>
 
-			<RouterLink :to="`/news/${news.id}`" v-for="news in newsList">
-				<NewsPlateComponent :news="news"></NewsPlateComponent>
-			</RouterLink>
+			<template v-if="isAdmin && newsPending.length > 0">
+				<h2 :class="$style.sectionTitle">На модерации</h2>
+				<NewsPlateComponent
+					v-for="news in newsPending"
+					:key="news.id"
+					:news="news"
+				></NewsPlateComponent>
+				<h2 :class="$style.sectionTitle">Все новости</h2>
+			</template>
+
+			<NewsPlateComponent
+				v-for="news in newsList"
+				:key="news.id"
+				:news="news"
+			></NewsPlateComponent>
 		</div>
 	</div>
 </template>
@@ -79,6 +95,14 @@ for (const f of newsFetch.value?.items ?? []) {
 			@include container(mobile);
 
 			row-gap: 24px;
+		}
+
+		.sectionTitle {
+			@include reset;
+			@include title-m;
+			@include color-black;
+
+			opacity: 0.5;
 		}
 	}
 }

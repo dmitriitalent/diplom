@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ServiceDtoCreate } from "~~/server/dto/service/create";
 import { useDevice } from "~/composables/device";
+import { SERVICE_TEMPLATES } from "~/constants/templates";
 
 const router = useRouter();
 const { deviceClassList, isDevice } = useDevice();
@@ -208,6 +209,14 @@ const createService = async () => {
 							type="number"
 							:class="$style.input"
 							placeholder="500"
+						/>
+					</div>
+
+					<div :class="$style.field">
+						<h3 :class="$style.label">Шаблон оформления</h3>
+						<UiTemplatePicker
+							:templates="SERVICE_TEMPLATES"
+							v-model="form.viewTemplate"
 						/>
 					</div>
 
