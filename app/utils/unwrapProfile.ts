@@ -9,6 +9,7 @@ const u = unwrapField;
 
 export const unwrapProfile = (p: byId): User => ({
 	id: u(p.id),
+	avatarId: p.avatarId,
 	login: u(p.login),
 	educationEmail: u(p.educationEmail),
 	birthdate: new Date(u(p.birthdate)),

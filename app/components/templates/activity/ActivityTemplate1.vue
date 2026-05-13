@@ -23,6 +23,18 @@ const emit = defineEmits<{
 
 const { deviceClassList } = useDevice();
 
+const bookmarks = useBookmarks("activity");
+const isBookmarked = computed(() =>
+	props.activity.id ? bookmarks.isBookmarked(props.activity.id) : false,
+);
+const bookmarkLimitReached = ref(false);
+const onToggleBookmark = () => {
+	if (!props.activity.id) return;
+	bookmarkLimitReached.value = false;
+	const ok = bookmarks.toggle(props.activity.id);
+	if (!ok) bookmarkLimitReached.value = true;
+};
+
 // Admin panel
 const adminDecision = ref<"approve" | "reject" | "block" | null>(null);
 
@@ -418,7 +430,7 @@ const moderationLabel = computed(() => {
 								:class="$style.participantCard"
 							>
 								<img
-									:src="`/api/images/byGuid?guid=avatar`"
+									:src="`/api/images/byGuid?guid=${p.avatarId}`"
 									:class="$style.participantAvatar"
 								/>
 								<div :class="$style.participantInfo">
@@ -490,7 +502,7 @@ const moderationLabel = computed(() => {
 							:class="$style.authorLink"
 						>
 							<img
-								:src="`/api/images/byGuid?guid=avatar`"
+								:src="`/api/images/byGuid?guid=${activity.author.avatarId}`"
 								:class="$style.authorAvatar"
 							/>
 							<div :class="$style.authorInfo">
@@ -533,6 +545,23 @@ const moderationLabel = computed(() => {
 									: "Записаться"
 							}}
 						</UiButton>
+						<UiButton :accent="isBookmarked" @click="onToggleBookmark">
+							<Icon
+								:name="
+									isBookmarked
+										? 'mdi:bookmark'
+										: 'mdi:bookmark-outline'
+								"
+								:class="$style.btnIcon"
+							/>
+							{{ isBookmarked ? "В закладках" : "Сохранить" }}
+						</UiButton>
+						<div
+							v-if="bookmarkLimitReached"
+							:class="$style.bookmarkHint"
+						>
+							Достигнут лимит — 10 закладок
+						</div>
 					</div>
 
 					<!-- Meta -->
@@ -1245,6 +1274,11 @@ const moderationLabel = computed(() => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 10px;
+	}
+
+	.bookmarkHint {
+		@include text-s;
+		@include color-error;
 	}
 
 	.rsvpHead {

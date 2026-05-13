@@ -8,7 +8,8 @@ export default defineEventHandler(async (event) => {
 		const cookie = getHeader(event, "cookie");
 		const { id } = getQuery(event);
 
-		const res = await axios.get(`${config.api}/showers/${String(id)}`, {
+		const res = await axios.get(`${config.api}/schedule/shower`, {
+			params: { id: String(id) },
 			headers: { cookie },
 			withCredentials: true,
 		});

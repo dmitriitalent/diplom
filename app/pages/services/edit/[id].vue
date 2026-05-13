@@ -299,7 +299,9 @@ const saveService = async () => {
 					</div>
 
 					<div :class="$style.field">
-						<h3 :class="$style.label">Цена (₽)</h3>
+						<h3 :class="$style.label">
+							Цена (<span :class="$style.currency">₽</span>)
+						</h3>
 						<UiInput
 							v-model="form.price"
 							type="number"
@@ -514,6 +516,11 @@ const saveService = async () => {
 					@include reset;
 					@include text-m;
 					@include color-black;
+
+					.currency {
+						font-family: Roboto;
+						font-weight: 300;
+					}
 				}
 
 				.statusRow {

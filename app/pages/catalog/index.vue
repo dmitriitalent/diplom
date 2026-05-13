@@ -9,34 +9,57 @@ import { useDevice } from "~/composables/device";
 const headers = useRequestHeaders(["cookie"]);
 const { deviceClassList } = useDevice();
 
-const { data: productsFetch } = await useFetch("/api/product/list");
+const PAGE_SIZE = 20;
 
 const products = ref<Array<Product>>([]);
+const offset = ref(0);
+const hasMore = ref(true);
+const loadingMore = ref(false);
 
 const { categories, init } = useCategoryStore();
 await init();
 
-for (const f of productsFetch.value?.products ?? []) {
+const mapProduct = (f: any): Product => {
 	const category: Category = categories?.find((c) => c.id == f.categoryId)!;
-
-	const ownerFetch = await $fetch<byId>("/api/profile/byId?id=" + f.ownerId, { headers });
-
-	const product: Product = {
-		category: category,
+	return {
+		category,
 		description: f.description,
 		id: f.id,
 		images: f.images,
 		name: f.name,
-		owner: unwrapProfile(ownerFetch),
+		owner: f.owner,
 		price: f.price,
 		publishedAt: f.publishedAt,
 		status: f.status,
 		updatedAt: f.updatedAt,
 		viewTemplate: f.viewTemplate,
-	};
+	} as Product;
+};
 
-	products.value.push(product);
-}
+const loadMore = async () => {
+	if (loadingMore.value || !hasMore.value) return;
+	loadingMore.value = true;
+	try {
+		const res = await $fetch<{ products: any[] }>("/api/product/list", {
+			headers,
+			query: { limit: PAGE_SIZE, offset: offset.value },
+		});
+		const items = res?.products ?? [];
+		for (const f of items) {
+			const ownerFetch = await $fetch<byId>(
+				"/api/profile/byId?id=" + f.ownerId,
+				{ headers },
+			);
+			products.value.push(mapProduct({ ...f, owner: unwrapProfile(ownerFetch) }));
+		}
+		offset.value += items.length;
+		if (items.length < PAGE_SIZE) hasMore.value = false;
+	} finally {
+		loadingMore.value = false;
+	}
+};
+
+await loadMore();
 </script>
 
 <template>
@@ -51,6 +74,8 @@ for (const f of productsFetch.value?.products ?? []) {
 				:key="product.id"
 				:product="product"
 			></ProductPlateComponent>
+
+			<ObserverComponent v-if="hasMore" @intersect="loadMore" />
 		</div>
 	</div>
 </template>

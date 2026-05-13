@@ -57,6 +57,7 @@ const handleModerate = (status: string) => {
 const buildSelfUser = (): User =>
 	({
 		id: unwrapField(self?.id),
+		avatarId: self?.avatarId,
 		login: unwrapField(self?.login),
 		educationEmail: unwrapField(self?.educationEmail),
 		birthdate: new Date(),

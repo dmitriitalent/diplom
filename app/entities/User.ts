@@ -2,6 +2,7 @@ import type { Dormitory } from "./Dormitory";
 
 export type User = {
 	id: string;
+	avatarId?: string;
 	login: string;
 	educationEmail: string;
 	birthdate: Date;

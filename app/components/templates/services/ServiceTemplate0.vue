@@ -70,7 +70,7 @@ const submitComment = async () => {
 				>
 					<div :class="$style.owner">
 						<img
-							:src="`/api/images/byGuid?guid=avatar`"
+							:src="`/api/images/byGuid?guid=${service.owner.avatarId}`"
 							:class="$style.avatar"
 						/>
 						<div :class="$style.ownerName">
@@ -81,7 +81,10 @@ const submitComment = async () => {
 
 				<h3 :class="$style.name">{{ service.name }}</h3>
 				<p :class="$style.description">{{ service.description }}</p>
-				<div :class="$style.price">{{ service.price }} ₽</div>
+				<div :class="$style.price">
+					{{ service.price }}
+					<span :class="$style.currency">₽</span>
+				</div>
 			</div>
 
 			<div :class="$style.commentsSection">
@@ -97,7 +100,7 @@ const submitComment = async () => {
 						:class="$style.commentAuthor"
 					>
 						<img
-							:src="`/api/images/byGuid?guid=avatar`"
+							:src="`/api/images/byGuid?guid=${comment.author?.avatarId}`"
 							:class="$style.commentAvatar"
 						/>
 						<span :class="$style.commentAuthorName">
@@ -249,6 +252,12 @@ const submitComment = async () => {
 
 			@include respond-to(mobile) {
 				margin-left: 0;
+			}
+
+			.currency {
+				font-family: Roboto;
+				font-weight: 300;
+				font-size: 20px;
 			}
 		}
 	}

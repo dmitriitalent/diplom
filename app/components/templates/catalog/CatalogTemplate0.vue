@@ -54,7 +54,7 @@ const { deviceClassList } = useDevice();
 				>
 					<div :class="$style.owner">
 						<img
-							:src="`/api/images/byGuid?guid=avatar`"
+							:src="`/api/images/byGuid?guid=${product.owner.avatarId}`"
 							:class="$style.image"
 						/>
 						<div :class="$style.name">

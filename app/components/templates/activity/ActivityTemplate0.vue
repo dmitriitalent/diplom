@@ -149,7 +149,7 @@ const formatDate = (iso?: string) => {
 				>
 					<div :class="$style.author">
 						<img
-							:src="`/api/images/byGuid?guid=avatar`"
+							:src="`/api/images/byGuid?guid=${activity.author.avatarId}`"
 							:class="$style.image"
 						/>
 						<div :class="$style.name">
@@ -180,7 +180,7 @@ const formatDate = (iso?: string) => {
 					>
 						<img
 							:class="$style.avatar"
-							:src="`/api/images/byGuid?guid=avatar`"
+							:src="`/api/images/byGuid?guid=${(participant as any).avatarId}`"
 						/>
 						<div :class="$style.name">
 							{{ participant.name + " " + participant.surname }}

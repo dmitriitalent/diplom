@@ -1147,8 +1147,9 @@ const deleteShower = async (id: string) => {
 		row-gap: 16px;
 		padding: 20px;
 		border-radius: 10px;
+		backdrop-filter: blur(12px);
 
-		@include color-black-bg(0.04);
+		@include color-white-bg(0.72);
 
 		@include respond-to(mobile) {
 			padding: 12px;
@@ -1251,9 +1252,10 @@ const deleteShower = async (id: string) => {
 // ─── Modal / Overlay ──────────────────────────────────────────────────────────
 
 .overlay {
+	@include modal-backdrop;
+
 	position: fixed;
 	inset: 0;
-	background: rgba(0, 0, 0, 0.5);
 	z-index: 1000;
 	display: flex;
 	align-items: center;

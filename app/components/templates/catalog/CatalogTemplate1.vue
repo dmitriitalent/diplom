@@ -16,12 +16,24 @@ const emit = defineEmits<{
 
 const { deviceClassList } = useDevice();
 
+const bookmarks = useBookmarks("product");
+const isBookmarked = computed(() =>
+	props.product.id ? bookmarks.isBookmarked(props.product.id) : false,
+);
+const bookmarkLimitReached = ref(false);
+const onToggleBookmark = () => {
+	if (!props.product.id) return;
+	bookmarkLimitReached.value = false;
+	const ok = bookmarks.toggle(props.product.id);
+	if (!ok) bookmarkLimitReached.value = true;
+};
+
 const isFree = computed(() => props.product.price === 0);
 
 const priceLabel = computed(() => {
 	if (isFree.value) return "Бесплатно";
 	if (props.product.price == null) return "";
-	return new Intl.NumberFormat("ru-RU").format(props.product.price) + " ₽";
+	return new Intl.NumberFormat("ru-RU").format(props.product.price);
 });
 
 const statusBadge = computed(() => {
@@ -203,8 +215,10 @@ const ownerRoom = computed(() => {
 					<div :class="$style.priceBlock">
 						<span
 							:class="[$style.price, isFree && $style.priceFree]"
-							>{{ priceLabel }}</span
 						>
+							{{ priceLabel }}
+							<span v-if="!isFree && product.price != null" :class="$style.currency">₽</span>
+						</span>
 						<span v-if="isFree" :class="$style.freeTag">
 							<Icon
 								name="mdi:gift-outline"
@@ -239,7 +253,7 @@ const ownerRoom = computed(() => {
 							:class="$style.authorLink"
 						>
 							<img
-								:src="`/api/images/byGuid?guid=avatar`"
+								:src="`/api/images/byGuid?guid=${product.owner.avatarId}`"
 								:class="$style.authorAvatar"
 							/>
 							<div :class="$style.authorInfo">
@@ -265,13 +279,23 @@ const ownerRoom = computed(() => {
 							/>
 							Написать продавцу
 						</UiButton>
-						<UiButton>
+						<UiButton :accent="isBookmarked" @click="onToggleBookmark">
 							<Icon
-								name="mdi:bookmark-outline"
+								:name="
+									isBookmarked
+										? 'mdi:bookmark'
+										: 'mdi:bookmark-outline'
+								"
 								:class="$style.btnIcon"
 							/>
-							Забронировать
+							{{ isBookmarked ? "В закладках" : "Сохранить" }}
 						</UiButton>
+						<div
+							v-if="bookmarkLimitReached"
+							:class="$style.bookmarkHint"
+						>
+							Достигнут лимит — 10 закладок
+						</div>
 					</div>
 
 					<!-- Meta -->
@@ -590,6 +614,12 @@ const ownerRoom = computed(() => {
 		@include color-black;
 
 		line-height: 1;
+
+		.currency {
+			font-family: Roboto;
+			font-weight: 300;
+			font-size: 24px;
+		}
 	}
 
 	.priceFree {
@@ -699,6 +729,11 @@ const ownerRoom = computed(() => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 8px;
+	}
+
+	.bookmarkHint {
+		@include text-s;
+		@include color-error;
 	}
 
 	.btnIcon {

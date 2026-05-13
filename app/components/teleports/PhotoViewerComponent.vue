@@ -120,14 +120,14 @@ onBeforeUnmount(() => window.removeEventListener("keydown", onEsc));
 
 <style module lang="scss">
 .overlay {
+	@include modal-backdrop;
+
 	position: fixed;
 	inset: 0;
 	z-index: 9999;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba($color-black, 0.55);
-	backdrop-filter: blur(8px);
 	padding: 32px 16px;
 	box-sizing: border-box;
 }

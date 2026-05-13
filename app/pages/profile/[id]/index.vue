@@ -234,7 +234,8 @@ const deletePost = async (post: Post) => {
 	}
 };
 
-const canEditPost = (post: Post) => isSelf.value && post.userId === self.value?.id;
+const canEditPost = (post: Post) =>
+	isSelf.value && post.userId === self.value?.id;
 
 // ─── Карусели: количество слайдов в зависимости от размера экрана ─────────────
 
@@ -340,11 +341,6 @@ const locationLine = computed(() => {
 
 const friendsCount = computed(() => userData.value?.friends?.length ?? 0);
 
-const formatPrice = (p?: number) => {
-	if (p == null) return "";
-	return new Intl.NumberFormat("ru-RU").format(p) + " ₽";
-};
-
 const formatActivityWhen = (iso?: string) => {
 	if (!iso) return "";
 	try {
@@ -370,7 +366,7 @@ const formatActivityWhen = (iso?: string) => {
 
 				<UiImage
 					:class="$style.avatar"
-					:src="avatarSrc || `/api/images/byGuid?guid=avatar`"
+					:src="avatarSrc"
 					style="cursor: pointer"
 					@click="onAvatarClick"
 				></UiImage>
@@ -390,6 +386,14 @@ const formatActivityWhen = (iso?: string) => {
 							<UiButton :class="$style.diamondBtn" size="custom">
 								<Icon
 									name="material-symbols:android-messages"
+									:class="$style.diamondIcon"
+								/>
+							</UiButton>
+						</RouterLink>
+						<RouterLink to="/bookmarks">
+							<UiButton :class="$style.diamondBtn" size="custom">
+								<Icon
+									name="material-symbols:bookmark"
 									:class="$style.diamondIcon"
 								/>
 							</UiButton>
@@ -647,7 +651,9 @@ const formatActivityWhen = (iso?: string) => {
 								{{ formatPostDate(p.createdAt) }}
 							</span>
 							<span
-								v-if="p.updatedAt && p.updatedAt !== p.createdAt"
+								v-if="
+									p.updatedAt && p.updatedAt !== p.createdAt
+								"
 								:class="$style.postEdited"
 							>
 								(изменено)
@@ -709,7 +715,9 @@ const formatActivityWhen = (iso?: string) => {
 								</UiButton>
 							</div>
 						</template>
-						<p v-else :class="$style.postContent">{{ p.content }}</p>
+						<p v-else :class="$style.postContent">
+							{{ p.content }}
+						</p>
 					</article>
 				</div>
 			</section>

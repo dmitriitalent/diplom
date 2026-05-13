@@ -14,14 +14,13 @@ const { deviceClassList } = useDevice();
 const auth = useAuthStore();
 const isAdmin = auth.isAdmin;
 
-const { data: newsPendingFetch } = isAdmin
-	? await useFetch<NewsListDtoList>("/api/news/list?status=pending")
-	: { data: ref(null) };
-
-const { data: newsFetch } = await useFetch<NewsListDtoList>("/api/news/list");
+const PAGE_SIZE = 20;
 
 const newsPending = ref<Array<News>>([]);
 const newsList = ref<Array<News>>([]);
+const offset = ref(0);
+const hasMore = ref(true);
+const loadingMore = ref(false);
 
 const mapNews = async (f: NewsListDtoList["items"][number]): Promise<News> => {
 	const authorFetch = await $fetch<byId>(
@@ -47,12 +46,36 @@ const mapNews = async (f: NewsListDtoList["items"][number]): Promise<News> => {
 	};
 };
 
-for (const f of newsPendingFetch.value?.items ?? []) {
-	newsPending.value.push(await mapNews(f));
+if (isAdmin) {
+	const pendingRes = await $fetch<NewsListDtoList>(
+		"/api/news/list?status=pending",
+		{ headers },
+	);
+	for (const f of pendingRes?.items ?? []) {
+		newsPending.value.push(await mapNews(f));
+	}
 }
-for (const f of newsFetch.value?.items ?? []) {
-	newsList.value.push(await mapNews(f));
-}
+
+const loadMore = async () => {
+	if (loadingMore.value || !hasMore.value) return;
+	loadingMore.value = true;
+	try {
+		const res = await $fetch<NewsListDtoList>("/api/news/list", {
+			headers,
+			query: { limit: PAGE_SIZE, offset: offset.value },
+		});
+		const items = res?.items ?? [];
+		for (const f of items) {
+			newsList.value.push(await mapNews(f));
+		}
+		offset.value += items.length;
+		if (items.length < PAGE_SIZE) hasMore.value = false;
+	} finally {
+		loadingMore.value = false;
+	}
+};
+
+await loadMore();
 </script>
 
 <template>
@@ -77,6 +100,8 @@ for (const f of newsFetch.value?.items ?? []) {
 				:key="news.id"
 				:news="news"
 			></NewsPlateComponent>
+
+			<ObserverComponent v-if="hasMore" @intersect="loadMore" />
 		</div>
 	</div>
 </template>

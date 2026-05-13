@@ -10,7 +10,7 @@ defineProps<{
 
 const formatPrice = (p?: number) => {
 	if (p == null) return "";
-	return new Intl.NumberFormat("ru-RU").format(p) + " ₽";
+	return new Intl.NumberFormat("ru-RU").format(p);
 };
 </script>
 
@@ -30,7 +30,10 @@ const formatPrice = (p?: number) => {
 		</div>
 		<h4 :class="$style.name">{{ product.name }}</h4>
 		<div :class="$style.foot">
-			<span :class="$style.price">{{ formatPrice(product.price) }}</span>
+			<span v-if="product.price != null" :class="$style.price">
+				{{ formatPrice(product.price) }}
+				<span :class="$style.currency">₽</span>
+			</span>
 		</div>
 	</div>
 </template>
@@ -97,5 +100,11 @@ const formatPrice = (p?: number) => {
 .price {
 	@include title-xs;
 	@include color-black;
+
+	.currency {
+		font-family: Roboto;
+		font-weight: 300;
+		font-size: 14px;
+	}
 }
 </style>
