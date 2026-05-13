@@ -17,6 +17,7 @@ const auth = useAuthStore();
 const { isAdmin, isVerified } = storeToRefs(auth);
 
 const { isDark, toggle: toggleTheme } = useTheme();
+const { canInstall, install } = useInstallPrompt();
 
 const close = () => {
 	sidebarOpen.value = false;
@@ -59,6 +60,19 @@ const close = () => {
 					v-if="!isDevice('mobile')"
 					:class="$style.rightActions"
 				>
+					<UiButton
+						v-if="canInstall"
+						:class="$style.themeBtn"
+						inset
+						title="Установить приложение"
+						@click="install"
+					>
+						<Icon
+							name="material-symbols:install-mobile-rounded"
+							:class="$style.themeIcon"
+						/>
+					</UiButton>
+
 					<UiButton
 						:class="$style.themeBtn"
 						inset
@@ -103,6 +117,19 @@ const close = () => {
 						</RouterLink>
 					</div>
 				</div>
+
+				<UiButton
+					v-if="isDevice('mobile') && canInstall"
+					:class="$style.themeBtn"
+					inset
+					title="Установить приложение"
+					@click="install"
+				>
+					<Icon
+						name="material-symbols:install-mobile-rounded"
+						:class="$style.themeIcon"
+					/>
+				</UiButton>
 
 				<UiButton
 					v-if="isDevice('mobile')"
