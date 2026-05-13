@@ -39,7 +39,10 @@
       "Bash(git -C \"D:/code/VUZ/Diplom/.claude/worktrees/awesome-borg-b208a3\" branch)",
       "Bash(git -C \"D:/code/VUZ/Diplom\" branch)",
       "Bash(git -C \"D:/code/VUZ/Diplom/.claude/worktrees/awesome-borg-b208a3\" add -A)",
-      "Bash(git -C D:/code/VUZ/Diplom/.claude/worktrees/awesome-borg-b208a3 commit -m ' *)"
+      "Bash(git -C D:/code/VUZ/Diplom/.claude/worktrees/awesome-borg-b208a3 commit -m ' *)",
+      "Bash(Get-ChildItem -Path \"D:\\\\code\\\\VUZ\\\\DiplomBelok\\\\Dormitory\\\\WebSite\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Remove-Item \"D:\\\\code\\\\VUZ\\\\DiplomBelok\\\\Dormitory\\\\WebSite\\\\app\\\\components\\\\admin\\\\AdminTemplatePreviews.vue\")"
     ]
   }
 }

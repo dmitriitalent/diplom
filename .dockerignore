@@ -1,0 +1,14 @@
+node_modules
+.nuxt
+.output
+.git
+.gitignore
+.vscode
+.idea
+.claude
+.eslintcache
+*.log
+npm-debug.log*
+README.md
+Dockerfile
+.dockerignore

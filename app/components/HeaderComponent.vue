@@ -56,10 +56,7 @@ const close = () => {
 					</RouterLink>
 				</div>
 
-				<div
-					v-if="!isDevice('mobile')"
-					:class="$style.rightActions"
-				>
+				<div v-if="!isDevice('mobile')" :class="$style.rightActions">
 					<UiButton
 						v-if="canInstall"
 						:class="$style.themeBtn"
@@ -183,7 +180,11 @@ const close = () => {
 					</div>
 
 					<nav v-if="!welcome" :class="$style.sidebarLinks">
-						<RouterLink v-if="isVerified" to="/schedule" @click="close">
+						<RouterLink
+							v-if="isVerified"
+							to="/schedule"
+							@click="close"
+						>
 							<UiButton :class="$style.sidebarLink" inset>
 								Расписание
 							</UiButton>
@@ -286,6 +287,7 @@ const close = () => {
 			align-items: center;
 			justify-content: space-between;
 			z-index: 2;
+			column-gap: 16px;
 
 			@include respond-to(mobile) {
 				@include container(mobile);
@@ -334,6 +336,7 @@ const close = () => {
 				width: 36px;
 				height: 36px;
 				padding: 0;
+				margin-left: auto;
 
 				.themeIcon {
 					width: 22px;
