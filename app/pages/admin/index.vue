@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { useAuthStore } from "~/stores/authStore";
+import { useDevice } from "~/composables/device";
+
+const { deviceClassList } = useDevice();
 
 const auth = useAuthStore();
 
@@ -9,7 +12,7 @@ if (!auth.isAdmin) {
 </script>
 
 <template>
-	<div :class="$style.wrapper">
+	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<h1 :class="$style.pageTitle">Панель администратора</h1>
 
@@ -27,38 +30,46 @@ if (!auth.isAdmin) {
 <style module lang="scss">
 .wrapper {
 	min-height: 100dvh;
-}
 
-.container {
-	@include container;
+	.container {
+		@include container;
 
-	padding: 40px 0 100px;
-	display: flex;
-	flex-direction: column;
-	row-gap: 40px;
+		padding: 40px 0 100px;
+		display: flex;
+		flex-direction: column;
+		row-gap: 40px;
 
-	@include respond-to(mobile) {
-		@include container(mobile);
+		@include respond-to(mobile) {
+			@include container(mobile);
 
-		padding: 24px 0 60px;
+			padding: 16px 0 60px;
+			row-gap: 16px;
+		}
 	}
-}
 
-.pageTitle {
-	@include reset;
-	@include title-l;
-	@include color-black;
-}
+	.pageTitle {
+		@include reset;
+		@include title-l;
+		@include color-black;
 
-.section {
-	padding: 28px;
-	border-radius: 12px;
+		@include respond-to(mobile) {
+			@include title-m;
+		}
+	}
 
-	@include color-white-bg;
-	@include shadow;
+	.section {
+		padding: 28px;
+		border-radius: 12px;
 
-	@include respond-to(mobile) {
-		padding: 16px;
+		@include color-white-bg(0.72);
+		@include shadow;
+
+		backdrop-filter: blur(12px);
+
+		@include respond-to(mobile) {
+			padding: 14px;
+			border-radius: 10px;
+		}
 	}
 }
 </style>

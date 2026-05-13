@@ -48,9 +48,6 @@ const close = () => {
 					<RouterLink v-if="isVerified" to="/news">
 						<UiButton :class="$style.link" inset>Новости</UiButton>
 					</RouterLink>
-					<RouterLink to="/chats">
-						<UiButton :class="$style.link" inset>Чаты</UiButton>
-					</RouterLink>
 					<RouterLink v-if="isAdmin" to="/admin">
 						<UiButton :class="$style.link" inset>Админ</UiButton>
 					</RouterLink>
@@ -138,11 +135,6 @@ const close = () => {
 						<RouterLink v-if="isVerified" to="/news" @click="close">
 							<UiButton :class="$style.sidebarLink" inset>
 								Новости
-							</UiButton>
-						</RouterLink>
-						<RouterLink to="/chats" @click="close">
-							<UiButton :class="$style.sidebarLink" inset>
-								Чаты
 							</UiButton>
 						</RouterLink>
 						<RouterLink v-if="isAdmin" to="/admin" @click="close">
@@ -292,11 +284,11 @@ const close = () => {
 // ── Overlay (teleported to body) ──────────────────────────────────────────────
 
 .overlay {
+	@include modal-backdrop;
+
 	position: fixed;
 	inset: 0;
 	z-index: $headerZIndex + 1;
-	background: rgba(0, 0, 0, 0.35);
-	backdrop-filter: blur(2px);
 }
 
 // ── Sidebar (teleported to body) ──────────────────────────────────────────────

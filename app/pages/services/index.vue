@@ -7,11 +7,29 @@ import { useDevice } from "~/composables/device";
 const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
 const { deviceClassList } = useDevice();
 
+const PAGE_SIZE = 20;
+
 const priceMin = ref<number | undefined>(undefined);
 const priceMax = ref<number | undefined>(undefined);
 
+const services = ref<Service[]>([]);
+const offset = ref(0);
+const hasMore = ref(true);
+const loading = ref(false);
+const loadingMore = ref(false);
 
-const fetchServices = async (query: Record<string, any> = {}): Promise<Service[]> => {
+const buildFilterQuery = (): Record<string, any> => {
+	const q: Record<string, any> = {};
+	if (priceMin.value !== undefined && String(priceMin.value) !== "")
+		q.price_min = priceMin.value;
+	if (priceMax.value !== undefined && String(priceMax.value) !== "")
+		q.price_max = priceMax.value;
+	return q;
+};
+
+const fetchServices = async (
+	query: Record<string, any> = {},
+): Promise<Service[]> => {
 	const data = await $fetch<ServiceDtoList>("/api/service/list", { query });
 	return Promise.all(
 		(data.services ?? []).map(async (f) => {
@@ -35,25 +53,36 @@ const fetchServices = async (query: Record<string, any> = {}): Promise<Service[]
 	);
 };
 
-const { data: initialServices } = await useAsyncData<Service[]>(
-	"services-list",
-	() => fetchServices(),
-);
-
-const services = ref<Service[]>(initialServices.value ?? []);
-const loading = ref(false);
+const loadMore = async () => {
+	if (loadingMore.value || !hasMore.value) return;
+	loadingMore.value = true;
+	try {
+		const items = await fetchServices({
+			...buildFilterQuery(),
+			limit: PAGE_SIZE,
+			offset: offset.value,
+		});
+		services.value.push(...items);
+		offset.value += items.length;
+		if (items.length < PAGE_SIZE) hasMore.value = false;
+	} finally {
+		loadingMore.value = false;
+	}
+};
 
 const loadServices = async () => {
 	loading.value = true;
+	services.value = [];
+	offset.value = 0;
+	hasMore.value = true;
 	try {
-		const q: Record<string, any> = {};
-		if (priceMin.value !== undefined && String(priceMin.value) !== "") q.price_min = priceMin.value;
-		if (priceMax.value !== undefined && String(priceMax.value) !== "") q.price_max = priceMax.value;
-		services.value = await fetchServices(q);
+		await loadMore();
 	} finally {
 		loading.value = false;
 	}
 };
+
+await loadMore();
 </script>
 
 <template>
@@ -99,6 +128,8 @@ const loadServices = async () => {
 				:key="service.id"
 				:service="service"
 			/>
+
+			<ObserverComponent v-if="hasMore" @intersect="loadMore" />
 		</div>
 	</div>
 </template>

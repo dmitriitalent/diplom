@@ -9,20 +9,19 @@ export default defineEventHandler(async (event) => {
 		const config = useRuntimeConfig();
 		const cookie = getHeader(event, "cookie");
 		const query = getQuery(event);
-		const status = query.status;
 
-		let url = `${config.api}/news?`;
-		if (status) {
-			url += `status=${status}`;
-		}
+		const params: Record<string, any> = {};
+		if (query.status) params.status = String(query.status);
+		if (query.limit) params.limit = Number(query.limit);
+		if (query.offset) params.offset = Number(query.offset);
 
-		const res = await axios.get<ProductDtoGetList>(url, {
+		const res = await axios.get<ProductDtoGetList>(`${config.api}/news`, {
 			headers: {
 				cookie,
 			},
 			withCredentials: true,
+			params,
 		});
-		console.log(url);
 
 		return res.data;
 	} catch (err) {

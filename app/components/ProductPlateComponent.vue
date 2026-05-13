@@ -18,7 +18,7 @@ const onClick = () => {
 	cacheStore.products.set({ ...props.product });
 };
 
-const formatPrice = (price: number) => price.toLocaleString("ru-RU") + " ₽";
+const formatPrice = (price: number) => price.toLocaleString("ru-RU");
 
 const formatDate = (iso: string) => {
 	const d = new Date(iso);
@@ -63,9 +63,10 @@ const statusLabel: Record<string, string> = {
 			<div :class="$style.body">
 				<div :class="$style.top">
 					<h3 :class="$style.title">{{ product.name }}</h3>
-					<span :class="$style.price">{{
-						formatPrice(product.price)
-					}}</span>
+					<span :class="$style.price">
+						{{ formatPrice(product.price) }}
+						<span :class="$style.currency">₽</span>
+					</span>
 				</div>
 
 				<p :class="$style.description">{{ product.description }}</p>
@@ -230,6 +231,12 @@ const statusLabel: Record<string, string> = {
 
 			flex-shrink: 0;
 			white-space: nowrap;
+
+			.currency {
+				font-family: Roboto;
+				font-weight: 300;
+				font-size: 16px;
+			}
 		}
 	}
 

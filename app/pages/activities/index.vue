@@ -12,24 +12,21 @@ const { deviceClassList } = useDevice();
 const auth = useAuthStore();
 const isAdmin = auth.isAdmin;
 
-const { data: activitiesPendingFetch } = isAdmin
-	? await useFetch<ActivityDtoList>("/api/activity/list?status=pending")
-	: { data: ref(null) };
+const PAGE_SIZE = 20;
+const headers = useRequestHeaders(["cookie"]);
 
 const activitiesPending = ref<Array<Activity>>([]);
 const activities = ref<Array<Activity>>([]);
-
-const { data: activitiesFetch } =
-	await useFetch<ActivityDtoList>("/api/activity/list");
+const offset = ref(0);
+const hasMore = ref(true);
+const loadingMore = ref(false);
 
 const mapActivity = async (
 	f: ActivityDtoList["activities"][number],
 ): Promise<Activity> => {
 	const authorFetch = await $fetch<byId>(
 		"/api/profile/byId?id=" + f.createdBy,
-		{
-			headers: useRequestHeaders(["cookie"]),
-		},
+		{ headers },
 	);
 	const author = unwrapProfile(authorFetch);
 	return {
@@ -52,13 +49,36 @@ const mapActivity = async (
 	};
 };
 
-for (const f of activitiesPendingFetch.value?.activities ?? []) {
-	activitiesPending.value.push(await mapActivity(f));
+if (isAdmin) {
+	const pendingRes = await $fetch<ActivityDtoList>(
+		"/api/activity/list?status=pending",
+		{ headers },
+	);
+	for (const f of pendingRes?.activities ?? []) {
+		activitiesPending.value.push(await mapActivity(f));
+	}
 }
 
-for (const f of activitiesFetch.value?.activities ?? []) {
-	activities.value.push(await mapActivity(f));
-}
+const loadMore = async () => {
+	if (loadingMore.value || !hasMore.value) return;
+	loadingMore.value = true;
+	try {
+		const res = await $fetch<ActivityDtoList>("/api/activity/list", {
+			headers,
+			query: { limit: PAGE_SIZE, offset: offset.value },
+		});
+		const items = res?.activities ?? [];
+		for (const f of items) {
+			activities.value.push(await mapActivity(f));
+		}
+		offset.value += items.length;
+		if (items.length < PAGE_SIZE) hasMore.value = false;
+	} finally {
+		loadingMore.value = false;
+	}
+};
+
+await loadMore();
 
 const inviteCode = ref<string>("");
 const joinError = ref(false);
@@ -115,6 +135,8 @@ const joinByCode = () => {
 				:key="activity.id"
 				:activity="activity"
 			></ActivityPlateComponent>
+
+			<ObserverComponent v-if="hasMore" @intersect="loadMore" />
 		</div>
 	</div>
 </template>

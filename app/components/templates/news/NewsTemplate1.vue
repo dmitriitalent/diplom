@@ -245,7 +245,7 @@ const applyModeration = () => {
 						:class="$style.authorLink"
 					>
 						<img
-							:src="`/api/images/byGuid?guid=avatar`"
+							:src="`/api/images/byGuid?guid=${news.author.avatarId}`"
 							:class="$style.authorAvatar"
 						/>
 						<div :class="$style.authorInfo">

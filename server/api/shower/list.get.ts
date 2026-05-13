@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 		const config = useRuntimeConfig();
 		const cookie = getHeader(event, "cookie");
 
-		const res = await axios.get(`${config.api}/showers`, {
+		const res = await axios.get(`${config.api}/schedule/shower`, {
 			headers: { cookie },
 			withCredentials: true,
 		});

@@ -19,6 +19,18 @@ const emit = defineEmits<{
 const { deviceClassList } = useDevice();
 const { self } = useSelfStore();
 
+const bookmarks = useBookmarks("service");
+const isBookmarked = computed(() =>
+	props.service.id ? bookmarks.isBookmarked(props.service.id) : false,
+);
+const bookmarkLimitReached = ref(false);
+const onToggleBookmark = () => {
+	if (!props.service.id) return;
+	bookmarkLimitReached.value = false;
+	const ok = bookmarks.toggle(props.service.id);
+	if (!ok) bookmarkLimitReached.value = true;
+};
+
 const comments = computed<ServiceComment[]>(() => props.service.comments ?? []);
 
 const commentBody = ref("");
@@ -69,11 +81,7 @@ const categoryLabel = computed(
 const priceLabel = computed(() => {
 	if (props.service.price == null) return "";
 	if (props.service.price === 0) return "Бесплатно";
-	return (
-		"от " +
-		new Intl.NumberFormat("ru-RU").format(props.service.price) +
-		" ₽"
-	);
+	return "от " + new Intl.NumberFormat("ru-RU").format(props.service.price);
 });
 
 const isFree = computed(() => props.service.price === 0);
@@ -175,7 +183,7 @@ const isMyComment = (comment: ServiceComment) => {
 									:class="$style.commentAuthorLink"
 								>
 									<img
-										:src="`/api/images/byGuid?guid=avatar`"
+										:src="`/api/images/byGuid?guid=${comment.author?.avatarId}`"
 										:class="$style.commentAvatar"
 									/>
 									<div :class="$style.commentAuthorInfo">
@@ -305,8 +313,14 @@ const isMyComment = (comment: ServiceComment) => {
 					<div :class="$style.priceBlock">
 						<span
 							:class="[$style.price, isFree && $style.priceFree]"
-							>{{ priceLabel }}</span
 						>
+							{{ priceLabel }}
+							<span
+								v-if="!isFree && service.price != null"
+								:class="$style.currency"
+								>₽</span
+							>
+						</span>
 						<span v-if="isFree" :class="$style.freeTag">
 							<Icon
 								name="mdi:gift-outline"
@@ -341,7 +355,7 @@ const isMyComment = (comment: ServiceComment) => {
 							:class="$style.authorLink"
 						>
 							<img
-								:src="`/api/images/byGuid?guid=avatar`"
+								:src="`/api/images/byGuid?guid=${service.owner.avatarId}`"
 								:class="$style.authorAvatar"
 							/>
 							<div :class="$style.authorInfo">
@@ -370,13 +384,23 @@ const isMyComment = (comment: ServiceComment) => {
 							/>
 							Написать исполнителю
 						</UiButton>
-						<UiButton>
+						<UiButton :accent="isBookmarked" @click="onToggleBookmark">
 							<Icon
-								name="mdi:bookmark-outline"
+								:name="
+									isBookmarked
+										? 'mdi:bookmark'
+										: 'mdi:bookmark-outline'
+								"
 								:class="$style.btnIcon"
 							/>
-							Сохранить
+							{{ isBookmarked ? "В закладках" : "Сохранить" }}
 						</UiButton>
+						<div
+							v-if="bookmarkLimitReached"
+							:class="$style.bookmarkHint"
+						>
+							Достигнут лимит — 10 закладок
+						</div>
 					</div>
 
 					<!-- Meta -->
@@ -814,6 +838,12 @@ const isMyComment = (comment: ServiceComment) => {
 		@include color-black;
 
 		line-height: 1;
+
+		.currency {
+			font-family: Roboto;
+			font-weight: 300;
+			font-size: 24px;
+		}
 	}
 
 	.priceFree {
@@ -930,6 +960,11 @@ const isMyComment = (comment: ServiceComment) => {
 		display: flex;
 		flex-direction: column;
 		row-gap: 8px;
+	}
+
+	.bookmarkHint {
+		@include text-s;
+		@include color-error;
 	}
 
 	.btnIcon {
