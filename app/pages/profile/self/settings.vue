@@ -460,7 +460,7 @@ const onClickLogout = () => {
 				</div>
 
 				<!-- ── Верификация ─────────────────────────────────────── -->
-				<div :class="$style.section">
+				<div id="verification" :class="$style.section">
 					<ProfileVerificationSection />
 				</div>
 
@@ -568,7 +568,7 @@ const onClickLogout = () => {
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
 				padding-bottom: 8px;
-				border-bottom: 1px solid rgba($color-black, 0.1);
+				border-bottom: 1px solid rgba($color-black-rgb, 0.1);
 				margin-bottom: 2px;
 			}
 		}
@@ -607,7 +607,7 @@ const onClickLogout = () => {
 				flex-wrap: wrap;
 				row-gap: 6px;
 				padding-bottom: 10px;
-				border-bottom: 1px solid rgba($color-black, 0.06);
+				border-bottom: 1px solid rgba($color-black-rgb, 0.06);
 			}
 		}
 

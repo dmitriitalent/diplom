@@ -645,7 +645,7 @@ const moderationLabel = computed(() => {
 	.panel {
 		padding: 20px;
 		border-radius: 12px;
-		border: 1px dashed rgba($color-black, 0.18);
+		border: 1px dashed rgba($color-black-rgb, 0.18);
 		display: flex;
 		flex-direction: column;
 		row-gap: 14px;
@@ -721,7 +721,7 @@ const moderationLabel = computed(() => {
 		padding: 8px 12px;
 		border-radius: 10px;
 		background: transparent;
-		border: 1px solid rgba($color-black, 0.15);
+		border: 1px solid rgba($color-black-rgb, 0.15);
 		cursor: pointer;
 
 		@include text-s;
@@ -795,7 +795,7 @@ const moderationLabel = computed(() => {
 	}
 
 	.decisionBlock {
-		background: rgba($color-black, 0.85);
+		background: rgba($color-black-rgb, 0.85);
 
 		@include color-white;
 
@@ -857,7 +857,7 @@ const moderationLabel = computed(() => {
 	.usesCounter {
 		display: inline-flex;
 		align-items: center;
-		border: 1px solid rgba($color-black, 0.15);
+		border: 1px solid rgba($color-black-rgb, 0.15);
 		border-radius: 100px;
 
 		@include color-white-bg;
@@ -899,7 +899,7 @@ const moderationLabel = computed(() => {
 	.usesPreset {
 		padding: 4px 10px;
 		border-radius: 100px;
-		border: 1px solid rgba($color-black, 0.12);
+		border: 1px solid rgba($color-black-rgb, 0.12);
 		background: transparent;
 		cursor: pointer;
 
@@ -922,7 +922,7 @@ const moderationLabel = computed(() => {
 		column-gap: 8px;
 		padding: 10px 14px;
 		border-radius: 10px;
-		border: 1px solid rgba($color-black, 0.12);
+		border: 1px solid rgba($color-black-rgb, 0.12);
 
 		@include color-white-bg;
 	}
@@ -953,7 +953,7 @@ const moderationLabel = computed(() => {
 		column-gap: 6px;
 		padding: 6px 12px;
 		border-radius: 8px;
-		border: 1px solid rgba($color-black, 0.15);
+		border: 1px solid rgba($color-black-rgb, 0.15);
 		background: transparent;
 		cursor: pointer;
 
@@ -1167,7 +1167,7 @@ const moderationLabel = computed(() => {
 
 	.sideRowBorder {
 		padding-top: 12px;
-		border-top: 1px solid rgba($color-black, 0.08);
+		border-top: 1px solid rgba($color-black-rgb, 0.08);
 	}
 
 	.dateBadge {

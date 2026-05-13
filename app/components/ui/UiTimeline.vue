@@ -179,6 +179,8 @@ const onSessionMouseLeave = (e: Event, s: TimelineSession) =>
 
 <style module lang="scss">
 .wrapper {
+	@include color-black;
+
 	display: flex;
 	flex-direction: column;
 	row-gap: 4px;

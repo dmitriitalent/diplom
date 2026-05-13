@@ -88,7 +88,7 @@ const resizeTextarea = async () => {
 
 		&.--variant-block {
 			border-radius: 10px;
-			border: 1px solid rgba($color-black, 0.3);
+			border: 1px solid rgba($color-black-rgb, 0.3);
 
 			&.--size-small {
 				@include text-s;

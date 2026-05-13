@@ -61,7 +61,7 @@ const formatPrice = (p?: number) => {
 .image {
 	height: 140px;
 	border-radius: 8px;
-	background: rgba($color-black, 0.06);
+	background: rgba($color-black-rgb, 0.06);
 	display: flex;
 	align-items: center;
 	justify-content: center;

@@ -291,7 +291,7 @@ const createNews = async () => {
 				height: 400px;
 				aspect-ratio: 1;
 				cursor: pointer;
-				background-color: rgba($color-black, 0.1);
+				background-color: rgba($color-black-rgb, 0.1);
 				border-radius: 10px;
 
 				@include respond-to(mobile) {
@@ -360,7 +360,7 @@ const createNews = async () => {
 					height: 100%;
 					width: 70px;
 					cursor: pointer;
-					background-color: rgba($color-black, 0.1);
+					background-color: rgba($color-black-rgb, 0.1);
 					border-radius: 10px;
 
 					.icon {

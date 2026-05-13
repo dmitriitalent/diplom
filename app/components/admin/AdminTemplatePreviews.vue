@@ -369,7 +369,7 @@ const onDelete = async (key: string) => {
 		flex: 1;
 		padding: 8px 10px;
 		border-radius: 8px;
-		border: 1px solid rgba($color-black, 0.15);
+		border: 1px solid rgba($color-black-rgb, 0.15);
 		background: transparent;
 		cursor: pointer;
 

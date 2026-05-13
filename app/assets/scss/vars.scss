@@ -1,9 +1,21 @@
-$color-white: #fffaf0;
-$color-black: #261c07;
-$color-accent: #f8c24e;
-$color-error: #ff6060;
-$color-warn: #ffd231;
-$color-success: #8aeb49;
+// ─── SCSS vars (compile-time) ───────────────────────────────────────────────
+// Каждая ссылается на CSS-переменную, чтобы при смене темы менялся реальный цвет.
+// Для непрозрачных мест используйте $color-X (полный цвет),
+// для rgba/opacity — $color-X-rgb (кортеж R,G,B).
+$color-white: var(--c-white);
+$color-black: var(--c-black);
+$color-accent: var(--c-accent);
+$color-error: var(--c-error);
+$color-warn: var(--c-warn);
+$color-success: var(--c-success);
+
+$color-white-rgb: var(--c-white-rgb);
+$color-black-rgb: var(--c-black-rgb);
+$color-accent-rgb: var(--c-accent-rgb);
+$color-error-rgb: var(--c-error-rgb);
+$color-warn-rgb: var(--c-warn-rgb);
+$color-success-rgb: var(--c-success-rgb);
+
 $transition-fast: 0.1s;
 $transition-default: 0.3s;
 $transition: $transition-default;
@@ -15,3 +27,66 @@ $devices: (
 );
 
 $headerZIndex: 1000;
+
+// ─── CSS vars (runtime, themable) ───────────────────────────────────────────
+:root {
+	// Light theme (default)
+	--c-white: #fffaf0;
+	--c-black: #261c07;
+	--c-accent: #f8c24e;
+	--c-error: #ff6060;
+	--c-warn: #ffd231;
+	--c-success: #8aeb49;
+
+	--c-white-rgb: 255, 250, 240;
+	--c-black-rgb: 38, 28, 7;
+	--c-accent-rgb: 248, 194, 78;
+	--c-error-rgb: 255, 96, 96;
+	--c-warn-rgb: 255, 210, 49;
+	--c-success-rgb: 138, 235, 73;
+
+	// Theme-specific decorative colors
+	--theme-cover-gradient: linear-gradient(120deg, #cfa, #fdc, #9ce, #bbf);
+	--theme-event-gradient: linear-gradient(135deg, #fde2c4, #ffd1a1, #f7b87f);
+	--theme-shadow: 1px 1px 5px 0px rgba(38, 28, 7, 0.2);
+	--theme-shadow-back: -1px -1px 5px 0px rgba(38, 28, 7, 0.2);
+}
+
+:root[data-theme="dark"] {
+	// В тёмной теме меняем местами белый и чёрный: фон карточек становится тёмным,
+	// текст — светлым.
+	--c-white: #1a1408;
+	--c-black: #f0e6d2;
+
+	--c-white-rgb: 26, 20, 8;
+	--c-black-rgb: 240, 230, 210;
+
+	// Акценты приглушаем чуть-чуть, чтобы не выжигали глаза.
+	--c-accent: #e0a93b;
+	--c-error: #ff7373;
+	--c-warn: #f5c52e;
+	--c-success: #6fcb39;
+
+	--c-accent-rgb: 224, 169, 59;
+	--c-error-rgb: 255, 115, 115;
+	--c-warn-rgb: 245, 197, 46;
+	--c-success-rgb: 111, 203, 57;
+
+	// В тёмной теме обложка профиля — глубокий градиент,
+	// а тени — мягкое свечение белым.
+	--theme-cover-gradient: linear-gradient(
+		120deg,
+		#2c3e50,
+		#3a2c4e,
+		#1e3a5f,
+		#2e4a3a
+	);
+	--theme-event-gradient: linear-gradient(
+		135deg,
+		#5a3b1c,
+		#7a4a20,
+		#3d2810
+	);
+	--theme-shadow: 0 1px 8px 0 rgba(0, 0, 0, 0.5);
+	--theme-shadow-back: 0 -1px 8px 0 rgba(0, 0, 0, 0.5);
+}

@@ -567,7 +567,7 @@ const ownerRoom = computed(() => {
 		padding: 6px 10px;
 		border-radius: 8px;
 		background: transparent;
-		border: 1px solid rgba($color-black, 0.15);
+		border: 1px solid rgba($color-black-rgb, 0.15);
 		cursor: pointer;
 
 		@include text-xs;
@@ -605,8 +605,8 @@ const ownerRoom = computed(() => {
 		align-items: baseline;
 		column-gap: 10px;
 		padding: 12px 0;
-		border-top: 1px solid rgba($color-black, 0.08);
-		border-bottom: 1px solid rgba($color-black, 0.08);
+		border-top: 1px solid rgba($color-black-rgb, 0.08);
+		border-bottom: 1px solid rgba($color-black-rgb, 0.08);
 	}
 
 	.price {
@@ -656,7 +656,7 @@ const ownerRoom = computed(() => {
 
 	.sideRowBorder {
 		padding-top: 12px;
-		border-top: 1px solid rgba($color-black, 0.08);
+		border-top: 1px solid rgba($color-black-rgb, 0.08);
 	}
 
 	.sideIconBox {

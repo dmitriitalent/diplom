@@ -1193,10 +1193,10 @@ const deleteShower = async (id: string) => {
 
 .tooltip {
 	@include text-s;
-	@include color-white;
 
 	position: fixed;
 	z-index: 9999;
+	color: #fff;
 	background: rgba(0, 0, 0, 0.8);
 	border-radius: 6px;
 	padding: 6px 10px;

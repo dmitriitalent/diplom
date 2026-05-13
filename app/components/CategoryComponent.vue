@@ -102,7 +102,7 @@ const categoryNode = ref<Array<Category>>([categorySelected.value]);
 	.list {
 		display: flex;
 		flex-wrap: wrap;
-		border-top: 1px dashed rgba($color-black, 0.3);
+		border-top: 1px dashed rgba($color-black-rgb, 0.3);
 		padding-top: 10px;
 
 		.button {

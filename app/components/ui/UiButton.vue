@@ -36,12 +36,15 @@ const props = defineProps({
 
 const isDisabled = computed(() => props.disable || props.disabled);
 
+const { isDark } = useTheme();
+
 const classList = computed(() => {
 	return [
 		{ ["--is-inset"]: props.inset },
 		{ ["--is-disable"]: isDisabled.value },
 		{ ["--is-accent"]: props.accent },
 		{ ["--is-unset"]: props.unset },
+		{ ["--is-dark"]: isDark.value },
 		[`--size-${props.size}`],
 	];
 });
@@ -120,6 +123,14 @@ const classList = computed(() => {
 		background-color: #ffffff00;
 
 		cursor: pointer;
+	}
+
+	// В тёмной теме «чёрный» становится светло-кремовым, поэтому на акцент-фоне
+	// (он жёлтый в обеих темах) текст оказывается нечитаемым. Здесь
+	// принудительно используем «белую» переменную, которая в dark-режиме как
+	// раз и есть тёмно-коричневая.
+	&wrapper.--is-dark.--is-accent &button {
+		@include color-white;
 	}
 }
 </style>
