@@ -11,6 +11,7 @@
 <style lang="scss">
 body {
 	@include color-white-bg;
+	@include color-black;
 
 	margin: 0;
 	padding: 0;

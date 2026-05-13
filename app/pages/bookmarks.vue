@@ -473,7 +473,7 @@ const formatDate = (iso?: string) => {
 		width: 56px;
 		height: 56px;
 		border-radius: 10px;
-		background: rgba($color-black, 0.06);
+		background: rgba($color-black-rgb, 0.06);
 		overflow: hidden;
 		display: flex;
 		align-items: center;

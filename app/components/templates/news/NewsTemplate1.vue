@@ -421,7 +421,7 @@ const applyModeration = () => {
 		padding: 8px 12px;
 		border-radius: 10px;
 		background: transparent;
-		border: 1px solid rgba($color-black, 0.15);
+		border: 1px solid rgba($color-black-rgb, 0.15);
 		cursor: pointer;
 
 		@include text-s;
@@ -500,7 +500,7 @@ const applyModeration = () => {
 	}
 
 	.decisionBlock {
-		background: rgba($color-black, 0.85);
+		background: rgba($color-black-rgb, 0.85);
 
 		@include color-white;
 

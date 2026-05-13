@@ -124,60 +124,60 @@
 
 // COLORS /////////////////////////////////////////////////////////////////////////////
 @mixin color-white-bg($opacity: 1) {
-	background-color: rgba($color-white, $opacity);
+	background-color: rgba($color-white-rgb, $opacity);
 }
 
 @mixin color-white($opacity: 1) {
-	color: rgba($color-white, $opacity);
+	color: rgba($color-white-rgb, $opacity);
 }
 
 @mixin color-black-bg($opacity: 1) {
-	background-color: rgba($color-black, $opacity);
+	background-color: rgba($color-black-rgb, $opacity);
 }
 
 @mixin color-black($opacity: 1) {
-	color: rgba($color-black, $opacity);
+	color: rgba($color-black-rgb, $opacity);
 }
 
 @mixin color-accent-bg($opacity: 1) {
-	background-color: rgba($color-accent, $opacity);
+	background-color: rgba($color-accent-rgb, $opacity);
 }
 
 @mixin color-accent($opacity: 1) {
-	color: rgba($color-accent, $opacity);
+	color: rgba($color-accent-rgb, $opacity);
 }
 
 @mixin color-error-bg($opacity: 0.1) {
-	background-color: rgba($color-error, $opacity);
+	background-color: rgba($color-error-rgb, $opacity);
 }
 
 @mixin color-error($opacity: 1) {
-	color: rgba($color-error, $opacity);
+	color: rgba($color-error-rgb, $opacity);
 }
 
 @mixin color-warn-bg($opacity: 0.1) {
-	background-color: rgba($color-warn, $opacity);
+	background-color: rgba($color-warn-rgb, $opacity);
 }
 
 @mixin color-warn($opacity: 1) {
-	color: rgba($color-warn, $opacity);
+	color: rgba($color-warn-rgb, $opacity);
 }
 
 @mixin color-success-bg($opacity: 0.1) {
-	background-color: rgba($color-success, $opacity);
+	background-color: rgba($color-success-rgb, $opacity);
 }
 
 @mixin color-success($opacity: 1) {
-	color: rgba($color-success, $opacity);
+	color: rgba($color-success-rgb, $opacity);
 }
 
 // SHADOWS ////////////////////////////////////////////////////////////////////////////
 @mixin shadow($set: true, $back: false) {
 	@if ($set) {
 		@if ($back) {
-			box-shadow: -1px -1px 5px 0px rgba($color-black, 0.2);
+			box-shadow: var(--theme-shadow-back);
 		} @else {
-			box-shadow: 1px 1px 5px 0px rgba($color-black, 0.2);
+			box-shadow: var(--theme-shadow);
 		}
 	} @else {
 		box-shadow: unset;
@@ -187,7 +187,7 @@
 // Others //////////////////////////////////////////////////////////////////////////////
 @mixin scroll(
 	$size: 6px,
-	$thumb: rgba($color-accent, 0.7),
+	$thumb: rgba($color-accent-rgb, 0.7),
 	$track: $color-white,
 	$radius: 6px
 ) {
@@ -214,7 +214,7 @@
 }
 
 @mixin modal-backdrop() {
-	background: rgba($color-black, 0.55);
+	background: rgba($color-black-rgb, 0.55);
 	backdrop-filter: blur(8px);
 }
 

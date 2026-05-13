@@ -164,7 +164,7 @@ const onSubmit = async () => {
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
 	padding-bottom: 8px;
-	border-bottom: 1px solid rgba($color-black, 0.1);
+	border-bottom: 1px solid rgba($color-black-rgb, 0.1);
 	margin-bottom: 2px;
 }
 
@@ -244,12 +244,12 @@ const onSubmit = async () => {
 	row-gap: 6px;
 	padding: 28px 20px;
 	border-radius: 10px;
-	border: 2px dashed rgba($color-black, 0.18);
+	border: 2px dashed rgba($color-black-rgb, 0.18);
 	cursor: pointer;
 	transition: background 0.15s, border-color 0.15s;
 
 	&:hover {
-		border-color: rgba($color-black, 0.35);
+		border-color: rgba($color-black-rgb, 0.35);
 
 		@include color-black-bg(0.04);
 	}

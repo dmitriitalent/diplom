@@ -204,7 +204,7 @@ watch(
 		text-align: left;
 		position: relative;
 		border: none;
-		border: 1px solid rgba($color-black, 0.3);
+		border: 1px solid rgba($color-black-rgb, 0.3);
 		display: flex;
 		align-items: center;
 		cursor: pointer;
@@ -305,7 +305,7 @@ watch(
 		position: absolute;
 		z-index: 1;
 		width: 100%;
-		border: 1px solid rgba($color-black, 0.3);
+		border: 1px solid rgba($color-black-rgb, 0.3);
 		border-top: none;
 		border-bottom-left-radius: 10px;
 		border-bottom-right-radius: 10px;

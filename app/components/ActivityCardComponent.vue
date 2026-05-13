@@ -62,7 +62,7 @@ const formatWhen = (iso?: string) => {
 .cover {
 	height: 120px;
 	border-radius: 8px;
-	background: linear-gradient(135deg, #fde2c4, #ffd1a1, #f7b87f);
+	background: var(--theme-event-gradient);
 	display: flex;
 	align-items: flex-end;
 	padding: 10px;

@@ -409,7 +409,7 @@ const onSubmit = async () => {
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
 				padding-bottom: 8px;
-				border-bottom: 1px solid rgba($color-black, 0.1);
+				border-bottom: 1px solid rgba($color-black-rgb, 0.1);
 				margin-bottom: 2px;
 			}
 		}

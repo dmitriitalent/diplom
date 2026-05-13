@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref } from "vue";
+import { onMounted, onBeforeUnmount, ref, watch } from "vue";
 
 // ════════════════════════════════════════════════════════════════════
 //   ПАРАМЕТРЫ ДЛЯ ТЮНИНГА — играй здесь
@@ -36,15 +36,33 @@ const MIN_SPEED = 0.5;
 // Длительность постепенного появления частиц из центра (секунд)
 const EMISSION_DURATION = 5;
 
-// Цвет фона (должен совпадать с body)
-const BACKGROUND_COLOR = "#fffaf0";
+// Цвета берём из CSS-переменных (см. assets/scss/vars.scss),
+// чтобы шейдер реагировал на смену темы.
+const readThemeColors = () => {
+	const root = getComputedStyle(document.documentElement);
+	const bg = root.getPropertyValue("--c-white").trim() || "#fffaf0";
+	const blackRgb =
+		root.getPropertyValue("--c-black-rgb").trim() || "38, 28, 7";
+	const accentRgb =
+		root.getPropertyValue("--c-accent-rgb").trim() || "248, 194, 78";
+	return {
+		bg,
+		particles: [
+			`rgba(${blackRgb}, 0.55)`,
+			`rgba(${accentRgb}, 0.7)`,
+			`rgba(${blackRgb}, 0.35)`,
+		],
+	};
+};
 
-// Цвет частиц: один или массив для разноцветных
-const PARTICLE_COLORS = [
-	"rgba(38, 28, 7, 0.55)", // основной — тёмный коричневый
-	"rgba(248, 194, 78, 0.7)", // акцент — жёлтый
+let BACKGROUND_COLOR = "#fffaf0";
+let PARTICLE_COLORS: string[] = [
+	"rgba(38, 28, 7, 0.55)",
+	"rgba(248, 194, 78, 0.7)",
 	"rgba(38, 28, 7, 0.35)",
 ];
+
+const { theme } = useTheme();
 
 // Включить движение частиц вместе со скроллом
 // true  — частицы «приклеены» к странице (двигаются при скролле)
@@ -77,6 +95,13 @@ onMounted(() => {
 	if (!c) return;
 	const ctx = c.getContext("2d");
 	if (!ctx) return;
+
+	// Подтянуть актуальные цвета темы на этапе монтирования.
+	{
+		const { bg, particles } = readThemeColors();
+		BACKGROUND_COLOR = bg;
+		PARTICLE_COLORS = particles;
+	}
 
 	const dpr = Math.min(window.devicePixelRatio || 1, 2);
 	let width = 0;
@@ -155,14 +180,27 @@ onMounted(() => {
 	});
 
 	// Helper: hex → rgba для подложки шлейфа
-	const fadeColor = (() => {
-		// "#fffaf0" → "rgba(255, 250, 240, TRAIL_FADE)"
-		const h = BACKGROUND_COLOR.replace("#", "");
+	const hexToRgbaWithAlpha = (hex: string, alpha: number) => {
+		const h = hex.replace("#", "");
+		if (h.length < 6) return `rgba(255, 250, 240, ${alpha})`;
 		const r = parseInt(h.substring(0, 2), 16);
 		const g = parseInt(h.substring(2, 4), 16);
 		const b = parseInt(h.substring(4, 6), 16);
-		return `rgba(${r}, ${g}, ${b}, ${TRAIL_FADE})`;
-	})();
+		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+	};
+	let fadeColor = hexToRgbaWithAlpha(BACKGROUND_COLOR, TRAIL_FADE);
+
+	// При смене темы перечитываем цвета и переназначаем частицам новую палитру.
+	const stopThemeWatch = watch(theme, () => {
+		const { bg, particles: newPalette } = readThemeColors();
+		BACKGROUND_COLOR = bg;
+		PARTICLE_COLORS = newPalette;
+		fadeColor = hexToRgbaWithAlpha(BACKGROUND_COLOR, TRAIL_FADE);
+		for (let i = 0; i < particles.length; i++) {
+			particles[i].color = newPalette[i % newPalette.length];
+		}
+	});
+	cleanups.push(() => stopThemeWatch());
 
 	const tick = () => {
 		// Подложка для шлейфа — заливка с малой прозрачностью затирает

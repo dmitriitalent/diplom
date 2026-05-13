@@ -16,6 +16,8 @@ const sidebarOpen = ref(false);
 const auth = useAuthStore();
 const { isAdmin, isVerified } = storeToRefs(auth);
 
+const { isDark, toggle: toggleTheme } = useTheme();
+
 const close = () => {
 	sidebarOpen.value = false;
 };
@@ -53,31 +55,73 @@ const close = () => {
 					</RouterLink>
 				</div>
 
-				<RouterLink
-					v-if="!welcome && !isDevice('mobile')"
-					to="/profile/self"
-					:class="$style.profileLink"
+				<div
+					v-if="!isDevice('mobile')"
+					:class="$style.rightActions"
 				>
-					<UiButton :class="$style.profile" inset>
+					<UiButton
+						:class="$style.themeBtn"
+						inset
+						:title="isDark ? 'Светлая тема' : 'Тёмная тема'"
+						@click="toggleTheme"
+					>
 						<Icon
-							:class="$style.icon"
-							name="material-symbols:account-circle-full"
-						></Icon>
+							v-if="isDark"
+							name="material-symbols:wb-sunny-rounded"
+							:class="$style.themeIcon"
+						/>
+						<Icon
+							v-else
+							name="material-symbols-light:moon-stars-rounded"
+							:class="$style.themeIcon"
+						/>
 					</UiButton>
-				</RouterLink>
 
-				<div v-if="welcome && !isDevice('mobile')" :class="$style.sign">
-					<RouterLink to="/registration">
+					<RouterLink
+						v-if="!welcome"
+						to="/profile/self"
+						:class="$style.profileLink"
+					>
 						<UiButton :class="$style.profile" inset>
-							Регистрация
+							<Icon
+								:class="$style.icon"
+								name="material-symbols:account-circle-full"
+							></Icon>
 						</UiButton>
 					</RouterLink>
-					<RouterLink to="/login">
-						<UiButton :class="$style.profile" inset>
-							Войти
-						</UiButton>
-					</RouterLink>
+
+					<div v-if="welcome" :class="$style.sign">
+						<RouterLink to="/registration">
+							<UiButton :class="$style.profile" inset>
+								Регистрация
+							</UiButton>
+						</RouterLink>
+						<RouterLink to="/login">
+							<UiButton :class="$style.profile" inset>
+								Войти
+							</UiButton>
+						</RouterLink>
+					</div>
 				</div>
+
+				<UiButton
+					v-if="isDevice('mobile')"
+					:class="$style.themeBtn"
+					inset
+					:title="isDark ? 'Светлая тема' : 'Тёмная тема'"
+					@click="toggleTheme"
+				>
+					<Icon
+						v-if="isDark"
+						name="material-symbols:wb-sunny-rounded"
+						:class="$style.themeIcon"
+					/>
+					<Icon
+						v-else
+						name="material-symbols-light:moon-stars-rounded"
+						:class="$style.themeIcon"
+					/>
+				</UiButton>
 
 				<UiButton
 					v-if="isDevice('mobile')"
@@ -233,6 +277,16 @@ const close = () => {
 				}
 			}
 
+			.rightActions {
+				display: flex;
+				align-items: center;
+				column-gap: 12px;
+
+				@include respond-to(mobile) {
+					display: none;
+				}
+			}
+
 			.profileLink {
 				@include respond-to(mobile) {
 					display: none;
@@ -243,6 +297,20 @@ const close = () => {
 				.icon {
 					height: 24px;
 					width: 24px;
+				}
+			}
+
+			.themeBtn {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 36px;
+				height: 36px;
+				padding: 0;
+
+				.themeIcon {
+					width: 22px;
+					height: 22px;
 				}
 			}
 
