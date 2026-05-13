@@ -80,8 +80,7 @@ export default defineNuxtConfig({
 		},
 
 		workbox: {
-			navigateFallback: "/",
-			globPatterns: ["**/*.{js,css,html,png,svg,ico,woff2}"],
+			globPatterns: ["**/*.{js,css,png,svg,ico,woff2}"],
 			runtimeCaching: [
 				{
 					urlPattern: /^\/api\/images\/byGuid/,
@@ -127,6 +126,7 @@ export default defineNuxtConfig({
 			],
 			meta: [
 				{ name: "theme-color", content: "#fffaf0" },
+				{ name: "mobile-web-app-capable", content: "yes" },
 				{ name: "apple-mobile-web-app-capable", content: "yes" },
 				{
 					name: "apple-mobile-web-app-status-bar-style",
