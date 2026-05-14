@@ -49,8 +49,8 @@ export default defineNuxtConfig({
 		registerType: "autoUpdate",
 
 		manifest: {
-			name: "Dormitory",
-			short_name: "Dorm",
+			name: "Hostelite",
+			short_name: "Hostelite",
 			description: "Сервис общежития",
 			lang: "ru",
 			theme_color: "#fffaf0",
@@ -133,7 +133,7 @@ export default defineNuxtConfig({
 					name: "apple-mobile-web-app-status-bar-style",
 					content: "default",
 				},
-				{ name: "apple-mobile-web-app-title", content: "Dormitory" },
+				{ name: "apple-mobile-web-app-title", content: "Hostelite" },
 			],
 		},
 	},
