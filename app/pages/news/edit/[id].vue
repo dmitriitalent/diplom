@@ -1,6 +1,11 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "verified" });
 
+useSeoMeta({
+	title: "Редактировать новость",
+	robots: "noindex, nofollow",
+});
+
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { NewsDtoCreate } from "~~/server/dto/news/create";

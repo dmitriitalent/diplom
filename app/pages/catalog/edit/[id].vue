@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Редактировать объявление",
+	robots: "noindex, nofollow",
+});
+
 import type { Category } from "~/entities/Category";
 import { useAuthStore } from "~/stores/authStore";
 import { useCategoryStore } from "~/stores/categoryStore";

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Настройки",
+	robots: "noindex, nofollow",
+});
+
 import { useDevice } from "~/composables/device";
 import type { HeiDTO } from "~/dto/hei.dto";
 import type { Dormitory } from "~/entities/Dormitory";
@@ -12,6 +17,12 @@ const router = useRouter();
 const { logout } = useAuthStore();
 const { self, updateSelf } = useSelfStore();
 const { deviceClassList } = useDevice();
+const { enabled: shaderEnabled } = useShader();
+const { isDark, setTheme } = useTheme();
+const darkTheme = computed({
+	get: () => isDark.value,
+	set: (v: boolean) => setTheme(v ? "dark" : "light"),
+});
 
 const saving = ref(false);
 const saveStatus = ref<"success" | "error" | null>(null);
@@ -198,7 +209,7 @@ const onClickReset = () => {
 
 const onClickLogout = () => {
 	logout().then(() => {
-		router.push("/welcome");
+		router.push("/");
 	});
 };
 </script>
@@ -457,6 +468,17 @@ const onClickLogout = () => {
 						/>
 						Добавить контакт
 					</UiButton>
+				</div>
+
+				<!-- ── Внешний вид ─────────────────────────────────────── -->
+				<div :class="$style.section">
+					<div :class="$style.sectionTitle">Внешний вид</div>
+
+					<UiCheckbox v-model="darkTheme" name="Тёмная тема" />
+					<UiCheckbox
+						v-model="shaderEnabled"
+						name="Фоновый шейдер"
+					/>
 				</div>
 
 				<!-- ── Верификация ─────────────────────────────────────── -->

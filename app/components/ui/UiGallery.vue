@@ -62,6 +62,7 @@ const classList = computed(() => {
 				v-for="name in slots"
 				:key="name"
 				:class="[...classList, $style.slide]"
+				@dragstart.prevent
 			>
 				<slot :name="name" />
 			</SwiperSlide>
@@ -96,6 +97,10 @@ const classList = computed(() => {
 		img {
 			-webkit-user-drag: none;
 			pointer-events: none;
+		}
+
+		a {
+			-webkit-user-drag: none;
 		}
 	}
 }

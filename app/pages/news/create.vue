@@ -1,6 +1,11 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "verified" });
 
+useSeoMeta({
+	title: "Создать новость",
+	robots: "noindex, nofollow",
+});
+
 import type { NewsDtoCreate } from "~~/server/dto/news/create";
 import { useDevice } from "~/composables/device";
 import { NEWS_TEMPLATES } from "~/constants/templates";

@@ -1,4 +1,10 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Услуги",
+	description:
+		"Услуги от жителей общежития: печать, готовка, починка техники, обучение и многое другое.",
+});
+
 import type { Service } from "~/entities/Service";
 import type { ServiceDtoList } from "~~/server/dto/service/list";
 import type { byId } from "~~/server/dto/profile/byId";

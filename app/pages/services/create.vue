@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Создать услугу",
+	robots: "noindex, nofollow",
+});
+
 import type { ServiceDtoCreate } from "~~/server/dto/service/create";
 import { useDevice } from "~/composables/device";
 import { SERVICE_TEMPLATES } from "~/constants/templates";

@@ -182,7 +182,7 @@ const isMyComment = (comment: ServiceComment) => {
 									:to="`/profile/${comment.authorId}`"
 									:class="$style.commentAuthorLink"
 								>
-									<img
+									<UiImage
 										:src="`/api/images/byGuid?guid=${comment.author?.avatarId}`"
 										:class="$style.commentAvatar"
 									/>
@@ -354,7 +354,7 @@ const isMyComment = (comment: ServiceComment) => {
 							:to="`/profile/${service.owner.id}`"
 							:class="$style.authorLink"
 						>
-							<img
+							<UiImage
 								:src="`/api/images/byGuid?guid=${service.owner.avatarId}`"
 								:class="$style.authorAvatar"
 							/>

@@ -1,4 +1,10 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Друзья",
+	description: "Список друзей в Hostelite.",
+	robots: "noindex, nofollow",
+});
+
 import type { byId } from "~~/server/dto/profile/byId";
 import { useDevice } from "~/composables/device";
 

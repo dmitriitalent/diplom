@@ -1,5 +1,13 @@
+import { useDevice } from "~/composables/device";
+
+// Глобальный (для приложения) флаг показа подсказки-инструкции
+// «как установить вручную». Поднимается при клике по кнопке установки,
+// когда системный prompt недоступен.
+const manualHintVisible = ref(false);
+
 export const useInstallPrompt = () => {
 	const { $pwa } = useNuxtApp() as any;
+	const { isDevice } = useDevice();
 
 	const isIos = computed(() => {
 		if (!import.meta.client) return false;
@@ -14,11 +22,46 @@ export const useInstallPrompt = () => {
 		);
 	});
 
+	const isMobile = computed(() => isDevice("mobile"));
+
+	// Системный prompt действительно готов.
 	const canInstall = computed(
 		() => !!$pwa?.showInstallPrompt && !isStandalone.value,
 	);
-	const showIosHint = computed(() => isIos.value && !isStandalone.value);
-	const install = () => $pwa?.install();
 
-	return { canInstall, showIosHint, isStandalone, install };
+	// Кнопку показываем всегда на мобильном устройстве вне standalone-режима,
+	// либо на десктопе, если Chrome готов выпустить системный диалог.
+	const showInstallButton = computed(() => {
+		if (isStandalone.value) return false;
+		if (isMobile.value) return true;
+		return canInstall.value;
+	});
+
+	// Подсказка для iOS — Safari не реализует beforeinstallprompt,
+	// единственный путь — «Поделиться → На экран „Домой"».
+	const showIosHint = computed(() => isIos.value && !isStandalone.value);
+
+	const install = () => {
+		if (canInstall.value) {
+			$pwa?.install();
+			return;
+		}
+		// Системного prompt нет — показываем инструкцию вручную.
+		manualHintVisible.value = true;
+	};
+
+	const dismissManualHint = () => {
+		manualHintVisible.value = false;
+	};
+
+	return {
+		canInstall,
+		showInstallButton,
+		showIosHint,
+		isStandalone,
+		isIos,
+		install,
+		manualHintVisible,
+		dismissManualHint,
+	};
 };

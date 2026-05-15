@@ -17,7 +17,8 @@ const auth = useAuthStore();
 const { isAdmin, isVerified } = storeToRefs(auth);
 
 const { isDark, toggle: toggleTheme } = useTheme();
-const { canInstall, install } = useInstallPrompt();
+const { enabled: shaderEnabled, toggle: toggleShader } = useShader();
+const { showInstallButton, install } = useInstallPrompt();
 
 const close = () => {
 	sidebarOpen.value = false;
@@ -28,7 +29,7 @@ const close = () => {
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.header">
 			<div :class="$style.container">
-				<UiLogo />
+				<UiLogo :class="$style.logo" />
 
 				<div
 					v-if="!welcome && !isDevice('mobile')"
@@ -58,7 +59,7 @@ const close = () => {
 
 				<div v-if="!isDevice('mobile')" :class="$style.rightActions">
 					<UiButton
-						v-if="canInstall"
+						v-if="showInstallButton"
 						:class="$style.themeBtn"
 						inset
 						title="Установить приложение"
@@ -83,7 +84,29 @@ const close = () => {
 						/>
 						<Icon
 							v-else
-							name="material-symbols-light:moon-stars-rounded"
+							name="material-symbols:dark-mode-rounded"
+							:class="$style.themeIcon"
+						/>
+					</UiButton>
+
+					<UiButton
+						:class="$style.themeBtn"
+						inset
+						:title="
+							shaderEnabled
+								? 'Выключить фоновый шейдер'
+								: 'Включить фоновый шейдер'
+						"
+						@click="toggleShader"
+					>
+						<Icon
+							v-if="shaderEnabled"
+							name="material-symbols:blur-on"
+							:class="$style.themeIcon"
+						/>
+						<Icon
+							v-else
+							name="material-symbols:blur-off"
 							:class="$style.themeIcon"
 						/>
 					</UiButton>
@@ -116,38 +139,6 @@ const close = () => {
 				</div>
 
 				<UiButton
-					v-if="isDevice('mobile') && canInstall"
-					:class="$style.themeBtn"
-					inset
-					title="Установить приложение"
-					@click="install"
-				>
-					<Icon
-						name="material-symbols:install-mobile-rounded"
-						:class="$style.themeIcon"
-					/>
-				</UiButton>
-
-				<UiButton
-					v-if="isDevice('mobile')"
-					:class="$style.themeBtn"
-					inset
-					:title="isDark ? 'Светлая тема' : 'Тёмная тема'"
-					@click="toggleTheme"
-				>
-					<Icon
-						v-if="isDark"
-						name="material-symbols:wb-sunny-rounded"
-						:class="$style.themeIcon"
-					/>
-					<Icon
-						v-else
-						name="material-symbols-light:moon-stars-rounded"
-						:class="$style.themeIcon"
-					/>
-				</UiButton>
-
-				<UiButton
 					v-if="isDevice('mobile')"
 					:class="$style.burger"
 					inset
@@ -167,7 +158,7 @@ const close = () => {
 					v-if="sidebarOpen"
 					:class="$style.overlay"
 					@click="close"
-				/>
+				></div>
 			</Transition>
 
 			<UiTransition name="fade-right">
@@ -229,6 +220,59 @@ const close = () => {
 						</RouterLink>
 					</nav>
 
+					<div :class="$style.sidebarIcons">
+						<UiButton
+							v-if="showInstallButton"
+							:class="$style.sidebarIconBtn"
+							inset
+							title="Установить приложение"
+							@click="install"
+						>
+							<Icon
+								name="material-symbols:install-mobile-rounded"
+								:class="$style.sidebarIconBtnIcon"
+							/>
+						</UiButton>
+						<UiButton
+							:class="$style.sidebarIconBtn"
+							inset
+							:title="isDark ? 'Светлая тема' : 'Тёмная тема'"
+							@click="toggleTheme"
+						>
+							<Icon
+								v-if="isDark"
+								name="material-symbols:wb-sunny-rounded"
+								:class="$style.sidebarIconBtnIcon"
+							/>
+							<Icon
+								v-else
+								name="material-symbols:dark-mode-rounded"
+								:class="$style.sidebarIconBtnIcon"
+							/>
+						</UiButton>
+						<UiButton
+							:class="$style.sidebarIconBtn"
+							inset
+							:title="
+								shaderEnabled
+									? 'Выключить фоновый шейдер'
+									: 'Включить фоновый шейдер'
+							"
+							@click="toggleShader"
+						>
+							<Icon
+								v-if="shaderEnabled"
+								name="material-symbols:blur-on"
+								:class="$style.sidebarIconBtnIcon"
+							/>
+							<Icon
+								v-else
+								name="material-symbols:blur-off"
+								:class="$style.sidebarIconBtnIcon"
+							/>
+						</UiButton>
+					</div>
+
 					<RouterLink
 						v-if="!welcome"
 						to="/profile/self"
@@ -285,12 +329,16 @@ const close = () => {
 
 			display: flex;
 			align-items: center;
-			justify-content: space-between;
+			justify-content: end;
 			z-index: 2;
-			column-gap: 16px;
+			column-gap: 12px;
 
 			@include respond-to(mobile) {
 				@include container(mobile);
+			}
+
+			.logo {
+				margin-right: auto;
 			}
 
 			.links {
@@ -336,7 +384,6 @@ const close = () => {
 				width: 36px;
 				height: 36px;
 				padding: 0;
-				margin-left: auto;
 
 				.themeIcon {
 					width: 22px;
@@ -439,6 +486,28 @@ const close = () => {
 			justify-content: flex-start;
 			padding: 14px 12px;
 			font-weight: 500;
+		}
+	}
+
+	.sidebarIcons {
+		display: flex;
+		column-gap: 8px;
+		padding: 8px 0;
+		justify-content: center;
+
+		.sidebarIconBtn {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 40px;
+			height: 40px;
+			padding: 0;
+			border-radius: 10px;
+
+			.sidebarIconBtnIcon {
+				width: 22px;
+				height: 22px;
+			}
 		}
 	}
 

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Создать мероприятие",
+	robots: "noindex, nofollow",
+});
+
 import type { ActivityDtoCreate } from "~~/server/dto/activity/create";
 import { useDevice } from "~/composables/device";
 import { ACTIVITY_TEMPLATES } from "~/constants/templates";

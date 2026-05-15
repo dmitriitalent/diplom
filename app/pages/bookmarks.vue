@@ -1,4 +1,11 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Закладки",
+	description:
+		"Сохранённые товары, услуги и мероприятия Hostelite.",
+	robots: "noindex, nofollow",
+});
+
 import { useDevice } from "~/composables/device";
 import type { byIdProduct } from "~~/server/dto/product/byId";
 import type { ServiceDtoById } from "~~/server/dto/service/byId";

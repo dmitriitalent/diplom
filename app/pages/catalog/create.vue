@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Создать объявление",
+	robots: "noindex, nofollow",
+});
+
 import type { Category } from "~/entities/Category";
 import { useCategoryStore } from "~/stores/categoryStore";
 import type { ProductDtoCreate } from "~~/server/dto/product/create";

@@ -22,6 +22,28 @@ if (import.meta.server && !activity._loaded) {
 	await cacheStore.activities.waitLoaded(id);
 }
 
+useSeoMeta({
+	title: () => (activity as any)?.title || "Мероприятие",
+	description: () => {
+		const d = (activity as any)?.description;
+		if (!d) return "Мероприятие в Hostelite.";
+		const plain = String(d).replace(/<[^>]+>/g, "").trim();
+		return plain.length > 160 ? plain.slice(0, 157) + "…" : plain;
+	},
+	ogTitle: () => (activity as any)?.title || "Мероприятие",
+	ogDescription: () => {
+		const d = (activity as any)?.description;
+		if (!d) return "";
+		const plain = String(d).replace(/<[^>]+>/g, "").trim();
+		return plain.length > 200 ? plain.slice(0, 197) + "…" : plain;
+	},
+	ogImage: () => {
+		const ids = (activity as any)?.imageIds;
+		const first = ids?.[0];
+		return first ? `/api/images/byGuid?guid=${first}` : undefined;
+	},
+});
+
 const isAuthor = computed(() => activity.author?.id === self?.id);
 const isParticipant = computed(() => !!activity.participants?.find((p: any) => p.id == self?.id));
 

@@ -1,4 +1,10 @@
 <script lang="ts" setup>
+useSeoMeta({
+	title: "Вход",
+	description: "Войдите в Hostelite — сервис для проживающих общежития.",
+	robots: "noindex, nofollow",
+});
+
 import { isFormField, type Form } from "~/components/types/Form";
 import type { FormField } from "~/components/types/FormField";
 import type { Status } from "~/components/types/Status";

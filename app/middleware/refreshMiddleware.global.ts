@@ -21,7 +21,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 		try {
 			await auth.refresh();
 		} catch {
-			return navigateTo("/welcome");
+			return navigateTo("/");
 		}
 	}
 

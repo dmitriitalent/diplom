@@ -2,14 +2,22 @@
 const props = defineProps({
 	src: {
 		type: String,
-		required: true,
+		default: "",
 	},
+});
+
+const hasSrc = computed(() => {
+	const s = props.src?.trim() ?? "";
+	if (!s) return false;
+	if (/guid=(undefined|null)?$/.test(s)) return false;
+	return true;
 });
 </script>
 
 <template>
 	<div :class="$style.wrapper">
-		<img :class="$style.image" :src="props.src" />
+		<img v-if="hasSrc" :class="$style.image" :src="props.src" />
+		<div v-else :class="$style.fallback"></div>
 	</div>
 </template>
 
@@ -25,6 +33,12 @@ const props = defineProps({
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+
+	.fallback {
+		width: 100%;
+		height: 100%;
+		background: var(--theme-cover-gradient);
 	}
 }
 </style>

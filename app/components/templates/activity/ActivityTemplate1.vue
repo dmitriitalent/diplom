@@ -429,7 +429,7 @@ const moderationLabel = computed(() => {
 								:to="`/profile/${p.id}`"
 								:class="$style.participantCard"
 							>
-								<img
+								<UiImage
 									:src="`/api/images/byGuid?guid=${p.avatarId}`"
 									:class="$style.participantAvatar"
 								/>
@@ -501,7 +501,7 @@ const moderationLabel = computed(() => {
 							:to="`/profile/${activity.author.id}`"
 							:class="$style.authorLink"
 						>
-							<img
+							<UiImage
 								:src="`/api/images/byGuid?guid=${activity.author.avatarId}`"
 								:class="$style.authorAvatar"
 							/>

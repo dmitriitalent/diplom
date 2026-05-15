@@ -5,10 +5,14 @@ const props = defineProps<{
 	id: string;
 	name: string;
 	surname: string;
-	avatarId: string;
+	avatarId?: string;
 	location?: string;
 	contacts?: ContactLike[];
 }>();
+
+const avatarSrc = computed(() =>
+	props.avatarId ? `/api/images/byGuid?guid=${props.avatarId}` : "",
+);
 
 const emit = defineEmits<{
 	delete: [id: string];
@@ -39,10 +43,7 @@ const writeContact = () => {
 
 <template>
 	<div :class="$style.plate" @click="goToProfile">
-		<UiImage
-			:class="$style.avatar"
-			:src="`/api/images/byGuid?guid=${avatarId}`"
-		></UiImage>
+		<UiImage :class="$style.avatar" :src="avatarSrc"></UiImage>
 		<div :class="$style.info">
 			<span :class="$style.name">{{ name }} {{ surname }}</span>
 			<span v-if="location" :class="$style.location">{{ location }}</span>
