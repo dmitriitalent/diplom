@@ -9,7 +9,9 @@ const { enabled: shaderEnabled } = useShader();
 	<ShaderComponent v-if="shaderEnabled" />
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<headerComponent :class="$style.header"></headerComponent>
-		<slot></slot>
+		<main :class="$style.main">
+			<slot></slot>
+		</main>
 		<footerComponent></footerComponent>
 	</div>
 </template>
@@ -20,10 +22,17 @@ const { enabled: shaderEnabled } = useShader();
 	position: relative;
 	flex-direction: column;
 	row-gap: 30px;
+	min-height: 100dvh;
 
 	.header {
 		display: flex;
 		z-index: $headerZIndex;
+	}
+
+	.main {
+		flex: 1 0 auto;
+		display: flex;
+		flex-direction: column;
 	}
 }
 </style>
