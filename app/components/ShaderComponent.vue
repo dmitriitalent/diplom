@@ -72,7 +72,7 @@ const SCROLL_LOCKED_TO_PAGE = true;
 // ════════════════════════════════════════════════════════════════════
 
 defineProps({
-	// Бэк-компат с layouts/welcome.vue: <ShaderComponent :cubes="800" />
+	// Бэк-компат с layouts/.vue: <ShaderComponent :cubes="800" />
 	// Не используется, оставлен чтобы не падать.
 	cubes: { type: Number, default: 0 },
 });

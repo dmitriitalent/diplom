@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Редактировать услугу",
+	robots: "noindex, nofollow",
+});
+
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { ServiceDtoById } from "~~/server/dto/service/byId";

@@ -6,7 +6,7 @@ const { userId } = storeToRefs(useAuthStore());
 
 onMounted(() => {
 	navigateTo(
-		userId.value ? `/profile/${userId.value}` : "/welcome",
+		userId.value ? `/profile/${userId.value}` : "/",
 		{ replace: true },
 	);
 });

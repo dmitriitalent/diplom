@@ -148,7 +148,7 @@ const formatDate = (iso?: string) => {
 					:to="`/profile/${activity.author.id}`"
 				>
 					<div :class="$style.author">
-						<img
+						<UiImage
 							:src="`/api/images/byGuid?guid=${activity.author.avatarId}`"
 							:class="$style.image"
 						/>
@@ -178,7 +178,7 @@ const formatDate = (iso?: string) => {
 						:to="`/profile/${participant.id}`"
 						:class="$style.link"
 					>
-						<img
+						<UiImage
 							:class="$style.avatar"
 							:src="`/api/images/byGuid?guid=${(participant as any).avatarId}`"
 						/>

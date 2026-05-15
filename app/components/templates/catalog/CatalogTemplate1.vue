@@ -252,7 +252,7 @@ const ownerRoom = computed(() => {
 							:to="`/profile/${product.owner.id}`"
 							:class="$style.authorLink"
 						>
-							<img
+							<UiImage
 								:src="`/api/images/byGuid?guid=${product.owner.avatarId}`"
 								:class="$style.authorAvatar"
 							/>

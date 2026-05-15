@@ -21,6 +21,28 @@ if (import.meta.server && !service._loaded) {
 	await cacheStore.services.waitLoaded(id);
 }
 
+useSeoMeta({
+	title: () => (service as any)?.name || "Услуга",
+	description: () => {
+		const d = (service as any)?.description;
+		if (!d) return "Услуга в Hostelite.";
+		const plain = String(d).replace(/<[^>]+>/g, "").trim();
+		return plain.length > 160 ? plain.slice(0, 157) + "…" : plain;
+	},
+	ogTitle: () => (service as any)?.name || "Услуга",
+	ogDescription: () => {
+		const d = (service as any)?.description;
+		if (!d) return "";
+		const plain = String(d).replace(/<[^>]+>/g, "").trim();
+		return plain.length > 200 ? plain.slice(0, 197) + "…" : plain;
+	},
+	ogImage: () => {
+		const imgs = (service as any)?.images;
+		const first = imgs?.[0]?.fileGuid;
+		return first ? `/api/images/byGuid?guid=${first}` : undefined;
+	},
+});
+
 const isOwner = computed(() => service.owner?.id === self?.id);
 
 const templateMap = { 0: ServiceTemplate0, 1: ServiceTemplate1 } as const;

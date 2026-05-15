@@ -83,7 +83,7 @@ const { deviceClassList } = useDevice();
 					:to="`/profile/${news.author.id}`"
 				>
 					<div :class="$style.author">
-						<img
+						<UiImage
 							:src="`/api/images/byGuid?guid=${news.author.avatarId}`"
 							:class="$style.image"
 						/>

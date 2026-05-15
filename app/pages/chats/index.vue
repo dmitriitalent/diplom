@@ -1,4 +1,10 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Чаты",
+	description: "Чаты с соседями и тематические каналы общежития.",
+	robots: "noindex, nofollow",
+});
+
 import type { byId } from "~~/server/dto/profile/byId";
 import { useDevice } from "~/composables/device";
 

@@ -1,4 +1,10 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Афиша",
+	description:
+		"Афиша мероприятий общежития: настолки, кино-вечера, прогулки и совместные активности.",
+});
+
 import type { Activity } from "~/entities/Activity";
 import type { Dormitory } from "~/entities/Dormitory";
 import type { User } from "~/entities/User";

@@ -5,7 +5,7 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		api: "http://api-gateway:8080",
 		public: {
-			publicRoutes: ["/", "/welcome", "/login", "/registration"],
+			publicRoutes: ["/", "/login", "/registration"],
 			api: "http://api-gateway:8080",
 		},
 	},
@@ -80,10 +80,31 @@ export default defineNuxtConfig({
 		},
 
 		workbox: {
+			disableDevLogs: true,
 			globPatterns: ["**/*.{js,css,png,svg,ico,woff2}"],
+			navigateFallbackDenylist: [/\/api\//, /\/_nuxt\//],
 			runtimeCaching: [
 				{
-					urlPattern: /^\/api\/images\/byGuid/,
+					urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
+					handler: "StaleWhileRevalidate",
+					options: {
+						cacheName: "google-fonts-stylesheets",
+					},
+				},
+				{
+					urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
+					handler: "CacheFirst",
+					options: {
+						cacheName: "google-fonts-webfonts",
+						cacheableResponse: { statuses: [0, 200] },
+						expiration: {
+							maxEntries: 30,
+							maxAgeSeconds: 60 * 60 * 24 * 365,
+						},
+					},
+				},
+				{
+					urlPattern: /\/api\/images\/byGuid/,
 					handler: "CacheFirst",
 					options: {
 						cacheName: "images",
@@ -94,7 +115,33 @@ export default defineNuxtConfig({
 					},
 				},
 				{
-					urlPattern: /^\/api\//,
+					urlPattern: /\/api\/_nuxt_icon\//,
+					handler: "StaleWhileRevalidate",
+					options: {
+						cacheName: "nuxt-icon",
+						expiration: {
+							maxEntries: 100,
+							maxAgeSeconds: 60 * 60 * 24 * 30,
+						},
+					},
+				},
+				{
+					urlPattern: /\/_nuxt\/builds\//,
+					handler: "NetworkOnly",
+				},
+				{
+					urlPattern: /\/icons\//,
+					handler: "CacheFirst",
+					options: {
+						cacheName: "static-icons",
+						expiration: {
+							maxEntries: 50,
+							maxAgeSeconds: 60 * 60 * 24 * 30,
+						},
+					},
+				},
+				{
+					urlPattern: /\/api\//,
 					handler: "NetworkFirst",
 					options: {
 						cacheName: "api",
@@ -117,6 +164,9 @@ export default defineNuxtConfig({
 
 	app: {
 		head: {
+			htmlAttrs: {
+				lang: "ru",
+			},
 			link: [
 				{ rel: "icon", href: "/favicon.ico", sizes: "any" },
 				{
@@ -134,6 +184,41 @@ export default defineNuxtConfig({
 					content: "default",
 				},
 				{ name: "apple-mobile-web-app-title", content: "Hostelite" },
+				// ── Language hints (предотвращают предложение перевода) ─────
+				{ "http-equiv": "Content-Language", content: "ru" },
+				{ name: "language", content: "Russian" },
+				// ── Базовое SEO ─────────────────────────────────────────────
+				{
+					name: "description",
+					content:
+						"Hostelite — вся инфраструктура общежития в одном месте: соседи, расписания, услуги, объявления и чаты.",
+				},
+				{ name: "robots", content: "index, follow" },
+				// ── Open Graph ──────────────────────────────────────────────
+				{ property: "og:site_name", content: "Hostelite" },
+				{ property: "og:locale", content: "ru_RU" },
+				{ property: "og:type", content: "website" },
+				{ property: "og:title", content: "Hostelite" },
+				{
+					property: "og:description",
+					content:
+						"Вся инфраструктура общежития в одном месте: соседи, расписания, услуги, объявления и чаты.",
+				},
+				{
+					property: "og:image",
+					content: "/icons/pwa-512x512.png",
+				},
+				// ── Twitter Card ────────────────────────────────────────────
+				{ name: "twitter:card", content: "summary" },
+				{ name: "twitter:title", content: "Hostelite" },
+				{
+					name: "twitter:description",
+					content: "Вся инфраструктура общежития в одном месте.",
+				},
+				{
+					name: "twitter:image",
+					content: "/icons/pwa-512x512.png",
+				},
 			],
 		},
 	},

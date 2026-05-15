@@ -69,7 +69,7 @@ const submitComment = async () => {
 					:to="`/profile/${service.owner.id}`"
 				>
 					<div :class="$style.owner">
-						<img
+						<UiImage
 							:src="`/api/images/byGuid?guid=${service.owner.avatarId}`"
 							:class="$style.avatar"
 						/>
@@ -99,7 +99,7 @@ const submitComment = async () => {
 						:to="`/profile/${comment.authorId}`"
 						:class="$style.commentAuthor"
 					>
-						<img
+						<UiImage
 							:src="`/api/images/byGuid?guid=${comment.author?.avatarId}`"
 							:class="$style.commentAvatar"
 						/>

@@ -1,4 +1,10 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Каталог",
+	description:
+		"Каталог объявлений: ненужные мелочи, вещи и товары жителей общежития.",
+});
+
 import CategoryComponent from "~/components/CategoryComponent.vue";
 import type { Category } from "~/entities/Category";
 import type { Product } from "~/entities/Product";

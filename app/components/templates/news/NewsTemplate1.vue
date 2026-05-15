@@ -244,7 +244,7 @@ const applyModeration = () => {
 						:to="`/profile/${news.author.id}`"
 						:class="$style.authorLink"
 					>
-						<img
+						<UiImage
 							:src="`/api/images/byGuid?guid=${news.author.avatarId}`"
 							:class="$style.authorAvatar"
 						/>

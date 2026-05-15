@@ -4,6 +4,7 @@ import { useDevice } from "~/composables/device";
 import { useAuthStore } from "~/stores/authStore";
 
 const { deviceClassList } = useDevice();
+const { enabled: shaderEnabled } = useShader();
 
 const { isAuthenticated } = storeToRefs(useAuthStore());
 if (isAuthenticated.value) {
@@ -13,7 +14,7 @@ if (isAuthenticated.value) {
 
 <template>
 	<div :class="[$style.wrapper, ...deviceClassList]">
-		<ShaderComponent />
+		<ShaderComponent v-if="shaderEnabled" />
 		<div :class="$style.container">
 			<slot></slot>
 		</div>

@@ -1,6 +1,12 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "verified" });
 
+useSeoMeta({
+	title: "Новости",
+	description:
+		"Новости общежития: объявления, обновления и важные события в Hostelite.",
+});
+
 import type { News } from "~/entities/News";
 import type { byId } from "~~/server/dto/profile/byId";
 import type { NewsListDtoList } from "~~/server/dto/news/newsList";

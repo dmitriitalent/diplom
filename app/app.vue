@@ -1,7 +1,19 @@
 <script setup lang="ts">
+useHead({
+	titleTemplate: (titleChunk?: string | null) =>
+		titleChunk && titleChunk.length > 0
+			? `Hostelite — ${titleChunk}`
+			: "Hostelite",
+});
+
 const { $pwa } = useNuxtApp() as any;
 
-const { showIosHint } = useInstallPrompt();
+const {
+	showIosHint,
+	isIos,
+	manualHintVisible,
+	dismissManualHint,
+} = useInstallPrompt();
 const { dismissed: iosHintDismissed, dismiss: dismissIosHint } =
 	useIosInstallHint();
 const showIosPlate = computed(
@@ -21,6 +33,33 @@ const showIosPlate = computed(
 			<UiButton accent @click="$pwa.updateServiceWorker()">
 				Обновить
 			</UiButton>
+		</div>
+
+		<!-- ── PWA: подсказка-инструкция вручную ───────────────────────── -->
+		<div
+			v-if="manualHintVisible"
+			:class="$style.iosHint"
+			@click.self="dismissManualHint"
+		>
+			<Icon
+				name="material-symbols:install-mobile-rounded"
+				:class="$style.iosIcon"
+			/>
+			<div :class="$style.iosBody">
+				<span :class="$style.iosTitle">
+					Установите приложение на главный экран
+				</span>
+				<span v-if="isIos" :class="$style.iosText">
+					В Safari нажмите «Поделиться»
+					<Icon name="material-symbols:ios-share" />
+					→ «На экран „Домой"».
+				</span>
+				<span v-else :class="$style.iosText">
+					Откройте меню браузера (⋮) → «Установить приложение» или
+					«Добавить на главный экран».
+				</span>
+				<UiButton @click="dismissManualHint">Понятно</UiButton>
+			</div>
 		</div>
 
 		<!-- ── PWA: подсказка для iOS ─────────────────────────────────── -->

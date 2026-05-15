@@ -20,6 +20,28 @@ if (import.meta.server && !product._loaded) {
 	await cacheStore.products.waitLoaded(id);
 }
 
+useSeoMeta({
+	title: () => (product as any)?.name || "Товар",
+	description: () => {
+		const d = (product as any)?.description;
+		if (!d) return "Товар в каталоге Hostelite.";
+		const plain = String(d).replace(/<[^>]+>/g, "").trim();
+		return plain.length > 160 ? plain.slice(0, 157) + "…" : plain;
+	},
+	ogTitle: () => (product as any)?.name || "Товар",
+	ogDescription: () => {
+		const d = (product as any)?.description;
+		if (!d) return "";
+		const plain = String(d).replace(/<[^>]+>/g, "").trim();
+		return plain.length > 200 ? plain.slice(0, 197) + "…" : plain;
+	},
+	ogImage: () => {
+		const imgs = (product as any)?.images;
+		const first = imgs?.[0]?.fileGuid;
+		return first ? `/api/images/byGuid?guid=${first}` : undefined;
+	},
+});
+
 const isOwner = computed(() => product.owner?.id === self?.id);
 
 const templateMap = { 0: CatalogTemplate0, 1: CatalogTemplate1 } as const;

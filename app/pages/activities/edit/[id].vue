@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Редактировать мероприятие",
+	robots: "noindex, nofollow",
+});
+
 import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { ActivityDtoCreate } from "~~/server/dto/activity/create";

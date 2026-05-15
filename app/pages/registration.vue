@@ -1,4 +1,11 @@
 <script lang="ts" setup>
+useSeoMeta({
+	title: "Регистрация",
+	description:
+		"Зарегистрируйтесь в Hostelite — сервисе для проживающих общежития.",
+	robots: "noindex, nofollow",
+});
+
 import type { HeiDTO } from "~/dto/hei.dto";
 import { useAuthStore } from "~/stores/authStore";
 import { useDevice } from "~/composables/device";

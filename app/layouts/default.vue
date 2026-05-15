@@ -2,10 +2,11 @@
 import { useDevice } from "~/composables/device";
 
 const { deviceClassList } = useDevice();
+const { enabled: shaderEnabled } = useShader();
 </script>
 
 <template>
-	<ShaderComponent />
+	<ShaderComponent v-if="shaderEnabled" />
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<headerComponent :class="$style.header"></headerComponent>
 		<slot></slot>

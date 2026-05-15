@@ -22,6 +22,28 @@ if (import.meta.server && !news._loaded) {
 	await cacheStore.news.waitLoaded(id);
 }
 
+useSeoMeta({
+	title: () => (news as any)?.title || "Новость",
+	description: () => {
+		const c = (news as any)?.content;
+		if (!c) return "Новость общежития в Hostelite.";
+		const plain = String(c).replace(/<[^>]+>/g, "").trim();
+		return plain.length > 160 ? plain.slice(0, 157) + "…" : plain;
+	},
+	ogTitle: () => (news as any)?.title || "Новость",
+	ogDescription: () => {
+		const c = (news as any)?.content;
+		if (!c) return "";
+		const plain = String(c).replace(/<[^>]+>/g, "").trim();
+		return plain.length > 200 ? plain.slice(0, 197) + "…" : plain;
+	},
+	ogImage: () => {
+		const ids = (news as any)?.imageIds;
+		const first = ids?.[0];
+		return first ? `/api/images/byGuid?guid=${first}` : undefined;
+	},
+});
+
 const moderationStatus = ref(news.moderationStatus ?? "approved");
 
 const isAuthor = computed(() => news.author?.id === self?.id);

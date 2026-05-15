@@ -1,4 +1,9 @@
 <script setup lang="ts">
+useSeoMeta({
+	title: "Админ-панель",
+	robots: "noindex, nofollow",
+});
+
 import { useAuthStore } from "~/stores/authStore";
 import { useDevice } from "~/composables/device";
 

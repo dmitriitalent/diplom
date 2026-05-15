@@ -1,2 +1,11 @@
-User-Agent: *
-Disallow:
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /bookmarks
+Disallow: /chats
+Disallow: /profile/self
+Disallow: /*/edit/
+Disallow: /*/create
+Disallow: /login
+Disallow: /registration

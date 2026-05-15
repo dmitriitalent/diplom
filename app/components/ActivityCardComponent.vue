@@ -1,13 +1,19 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
 	activity: {
 		id: string;
 		title: string;
 		startTime?: string;
 		location?: string;
 		participants?: any[];
+		imageIds?: string[];
 	};
 }>();
+
+const coverImage = computed(() => {
+	const guid = props.activity.imageIds?.[0];
+	return guid ? `/api/images/byGuid?guid=${guid}` : null;
+});
 
 const formatWhen = (iso?: string) => {
 	if (!iso) return "";
@@ -27,7 +33,10 @@ const formatWhen = (iso?: string) => {
 
 <template>
 	<div :class="$style.card">
-		<div :class="$style.cover">
+		<div
+			:class="[$style.cover, { [$style.coverFallback]: !coverImage }]"
+			:style="coverImage ? { backgroundImage: `url(${coverImage})` } : undefined"
+		>
 			<span :class="$style.when">{{ formatWhen(activity.startTime) }}</span>
 		</div>
 		<h4 :class="$style.title">{{ activity.title }}</h4>
@@ -62,11 +71,17 @@ const formatWhen = (iso?: string) => {
 .cover {
 	height: 120px;
 	border-radius: 8px;
-	background: var(--theme-event-gradient);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
 	display: flex;
 	align-items: flex-end;
 	padding: 10px;
 	box-sizing: border-box;
+}
+
+.coverFallback {
+	background: var(--theme-event-gradient);
 }
 
 .when {

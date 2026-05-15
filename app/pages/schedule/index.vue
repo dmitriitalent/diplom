@@ -1,6 +1,12 @@
 <script setup lang="ts">
 definePageMeta({ middleware: "verified" });
 
+useSeoMeta({
+	title: "Расписание",
+	description:
+		"Расписания душевых, прачечной, комендатуры и других служб общежития.",
+});
+
 import { useAuthStore } from "~/stores/authStore";
 import { useDevice } from "~/composables/device";
 import type { TimelineSession } from "~/components/ui/types/TimelineSession";
@@ -74,14 +80,28 @@ const { data: rawShowers } = await useAsyncData<ShowerDtoById[]>(
 	},
 );
 
+const parseSchedule = (raw: unknown): ShowerSlot[][] => {
+	const empty: ShowerSlot[][] = [[], [], [], [], [], [], []];
+	let parsed: unknown = raw;
+	if (typeof raw === "string") {
+		try {
+			parsed = JSON.parse(raw);
+		} catch {
+			return empty;
+		}
+	}
+	if (!Array.isArray(parsed)) return empty;
+	const result = parsed as ShowerSlot[][];
+	while (result.length < 7) result.push([]);
+	return result;
+};
+
 const showers = computed<ParsedShower[]>(() =>
 	(rawShowers.value ?? []).map((s) => ({
 		id: s.id,
 		name: "",
 		location: s.location,
-		days: Array.isArray(s.schedule)
-			? (s.schedule as ShowerSlot[][])
-			: [[], [], [], [], [], [], []],
+		days: parseSchedule(s.schedule),
 	})),
 );
 
@@ -1193,11 +1213,11 @@ const deleteShower = async (id: string) => {
 
 .tooltip {
 	@include text-s;
+	@include color-white;
+	@include color-black-bg(0.8);
 
 	position: fixed;
 	z-index: 9999;
-	color: #fff;
-	background: rgba(0, 0, 0, 0.8);
 	border-radius: 6px;
 	padding: 6px 10px;
 	display: flex;
@@ -1210,16 +1230,17 @@ const deleteShower = async (id: string) => {
 // ─── WM interactive tooltip ───────────────────────────────────────────────────
 
 .wmTooltip {
+	@include color-white-bg;
+	@include shadow;
+
 	position: fixed;
 	z-index: 9999;
-	background: #fff;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+	border: 1px solid rgba($color-black-rgb, 0.1);
 	border-radius: 8px;
 	padding: 10px 14px;
 	display: flex;
 	flex-direction: column;
 	row-gap: 8px;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 	min-width: 180px;
 
 	.wmTooltipTime {
@@ -1263,7 +1284,8 @@ const deleteShower = async (id: string) => {
 }
 
 .modal {
-	background: #fff;
+	@include color-white-bg;
+
 	border-radius: 12px;
 	padding: 28px;
 	width: min(600px, 95vw);

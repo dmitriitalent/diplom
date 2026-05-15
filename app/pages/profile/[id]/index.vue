@@ -20,7 +20,13 @@ const router = useRouter();
 const reqHeaders = useRequestHeaders(["cookie"]);
 
 const userId = computed(() => String(route.params.id));
-const isSelf = computed(() => self.value?.id === userId.value);
+const mounted = ref(false);
+onMounted(() => {
+	mounted.value = true;
+});
+const isSelf = computed(
+	() => mounted.value && self.value?.id === userId.value,
+);
 
 // ─── Плашка «не верифицирован» (только для своего профиля) ──────────────────
 const { isVerified } = storeToRefs(useAuthStore());
@@ -42,6 +48,26 @@ const { data: userData, refresh: refreshUser } = await useAsyncData(
 		}),
 	{ watch: [userId] },
 );
+
+useSeoMeta({
+	title: () => {
+		const u = userData.value as any;
+		const name = [u?.surname?.value, u?.name?.value]
+			.filter(Boolean)
+			.join(" ");
+		return name || "Профиль";
+	},
+	description: () => {
+		const u = userData.value as any;
+		const name = [u?.name?.value, u?.surname?.value]
+			.filter(Boolean)
+			.join(" ");
+		return name
+			? `Профиль ${name} в Hostelite.`
+			: "Профиль пользователя в Hostelite.";
+	},
+	robots: "noindex, nofollow",
+});
 
 // ─── Friend status (только для чужих) ─────────────────────────────────────────
 
@@ -373,7 +399,13 @@ const formatActivityWhen = (iso?: string) => {
 		<div :class="$style.inner">
 			<!-- ── HEADER: cover + avatar + buttons ──────────────────── -->
 			<div :class="$style.header">
-				<div :class="$style.cover"></div>
+				<div :class="$style.cover">
+					<UiImage
+						v-if="avatarSrc"
+						:class="$style.coverImage"
+						:src="avatarSrc"
+					/>
+				</div>
 
 				<UiImage
 					:class="$style.avatar"
@@ -801,11 +833,20 @@ const formatActivityWhen = (iso?: string) => {
 }
 
 .cover {
+	position: relative;
 	height: 220px;
 	width: 100%;
 	border-radius: 12px;
 	background: var(--theme-cover-gradient);
 	box-shadow: 0 1px 3px rgba(38, 28, 7, 0.1);
+	overflow: hidden;
+
+	.coverImage {
+		position: absolute;
+		inset: 0;
+		filter: blur(12px);
+		transform: scale(1.1);
+	}
 
 	@include respond-to(mobile) {
 		height: 130px;
