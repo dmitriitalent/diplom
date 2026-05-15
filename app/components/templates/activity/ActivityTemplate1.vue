@@ -1184,8 +1184,8 @@ const moderationLabel = computed(() => {
 
 	.dateBadgeMonth {
 		@include text-xs;
-		@include color-black(0.6);
 
+		color: rgba(38, 28, 7, 0.6);
 		font-weight: 600;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
@@ -1193,8 +1193,8 @@ const moderationLabel = computed(() => {
 
 	.dateBadgeDay {
 		@include title-s;
-		@include color-black;
 
+		color: #261c07;
 		line-height: 1;
 	}
 
