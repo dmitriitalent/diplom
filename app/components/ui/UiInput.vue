@@ -51,12 +51,19 @@ const props = defineProps({
 	},
 });
 
+const showPassword = ref(false);
+
+const effectiveType = computed(() =>
+	props.type === "password" && showPassword.value ? "text" : props.type,
+);
+
 const classList = computed(() => {
 	return [
 		[`--variant-${props.variant}`],
 		[`--size-${props.size}`],
 		[`--status-${props.status}`],
 		{ [`--has-left-icon`]: !!props.leftIconName },
+		{ [`--has-right-icon`]: props.type === "password" },
 	];
 });
 
@@ -76,15 +83,28 @@ const onInput = ($event: Event) => {
 		></Icon>
 		<input
 			class="uiInput__input"
-			:type="props.type"
+			:type="effectiveType"
 			:value="modelValue"
 			:class="classList"
 			:placeholder="props.placeholder"
 			:autocomplete="props.autocomplete"
 			:disabled="props.disabled"
 			@input="onInput($event)"
-		@blur="emit('blur')"
+			@blur="emit('blur')"
 		/>
+		<button
+			v-if="props.type === 'password'"
+			type="button"
+			class="uiInput__eyeBtn"
+			:class="classList"
+			@click="showPassword = !showPassword"
+		>
+			<Icon
+				:name="showPassword ? 'mdi:eye-off' : 'mdi:eye'"
+				class="uiInput__eyeIcon"
+				:class="classList"
+			/>
+		</button>
 	</div>
 </template>
 
@@ -125,6 +145,39 @@ const onInput = ($event: Event) => {
 		}
 	}
 
+	&eyeBtn {
+		@include reset;
+
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		background: none;
+		border: none;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 4px;
+		opacity: 0.5;
+		transition: opacity $transition-fast;
+
+		&:hover {
+			opacity: 1;
+		}
+
+		&.--size-small { right: 8px; }
+		&.--size-medium { right: 10px; }
+		&.--size-large { right: 14px; }
+	}
+
+	&eyeIcon {
+		@include color-black;
+
+		&.--size-small { width: 16px; height: 16px; }
+		&.--size-medium { width: 20px; height: 20px; }
+		&.--size-large { width: 24px; height: 24px; }
+	}
+
 	&input {
 		@include reset;
 		@include color-black;
@@ -146,6 +199,9 @@ const onInput = ($event: Event) => {
 				&.--has-left-icon {
 					padding-left: 36px;
 				}
+				&.--has-right-icon {
+					padding-right: 36px;
+				}
 			}
 			&.--size-medium {
 				@include text-m;
@@ -154,6 +210,9 @@ const onInput = ($event: Event) => {
 				&.--has-left-icon {
 					padding-left: 48px;
 				}
+				&.--has-right-icon {
+					padding-right: 44px;
+				}
 			}
 			&.--size-large {
 				@include text-l;
@@ -161,6 +220,9 @@ const onInput = ($event: Event) => {
 
 				&.--has-left-icon {
 					padding-left: 58px;
+				}
+				&.--has-right-icon {
+					padding-right: 54px;
 				}
 			}
 		}
@@ -175,6 +237,9 @@ const onInput = ($event: Event) => {
 				&.--has-left-icon {
 					padding-left: 40px;
 				}
+				&.--has-right-icon {
+					padding-right: 36px;
+				}
 			}
 			&.--size-medium {
 				@include text-m;
@@ -183,6 +248,9 @@ const onInput = ($event: Event) => {
 				&.--has-left-icon {
 					padding-left: 52px;
 				}
+				&.--has-right-icon {
+					padding-right: 44px;
+				}
 			}
 			&.--size-large {
 				@include text-l;
@@ -190,6 +258,9 @@ const onInput = ($event: Event) => {
 
 				&.--has-left-icon {
 					padding-left: 64px;
+				}
+				&.--has-right-icon {
+					padding-right: 54px;
 				}
 			}
 		}

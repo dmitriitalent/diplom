@@ -14,4 +14,5 @@ export type WashingMachineDto = {
 	dormitoryId: string;
 	id: string;
 	location: string;
+	floor?: string;
 };

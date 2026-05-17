@@ -29,13 +29,9 @@ export const useInstallPrompt = () => {
 		() => !!$pwa?.showInstallPrompt && !isStandalone.value,
 	);
 
-	// Кнопку показываем всегда на мобильном устройстве вне standalone-режима,
-	// либо на десктопе, если Chrome готов выпустить системный диалог.
-	const showInstallButton = computed(() => {
-		if (isStandalone.value) return false;
-		if (isMobile.value) return true;
-		return canInstall.value;
-	});
+	const showInstallButton = computed(
+		() => isMobile.value && !isStandalone.value,
+	);
 
 	// Подсказка для iOS — Safari не реализует beforeinstallprompt,
 	// единственный путь — «Поделиться → На экран „Домой"».

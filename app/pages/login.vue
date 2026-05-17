@@ -91,7 +91,7 @@ const form: Ref<Form> = ref({
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<UiAppear>
-				<div :class="$style.form">
+				<form :class="$style.form" @submit.prevent="onClickLogin">
 					<FormComponent
 						:form="form"
 						submit="Войти"
@@ -101,7 +101,7 @@ const form: Ref<Form> = ref({
 					<h1 v-if="errorText" :class="$style.error">
 						{{ errorText }}
 					</h1>
-				</div>
+				</form>
 			</UiAppear>
 		</div>
 

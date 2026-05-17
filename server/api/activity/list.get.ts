@@ -12,6 +12,7 @@ export default defineEventHandler(async (event) => {
 		if (query.status) params.status = String(query.status);
 		if (query.limit) params.limit = Number(query.limit);
 		if (query.offset) params.offset = Number(query.offset);
+		if (query.author_id) params.author_id = String(query.author_id);
 
 		const res = await axios.get(`${config.api}/activities`, {
 			headers: {

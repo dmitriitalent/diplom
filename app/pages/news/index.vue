@@ -19,10 +19,12 @@ const { deviceClassList } = useDevice();
 
 const auth = useAuthStore();
 const isAdmin = auth.isAdmin;
+const currentUserId = auth.userId;
 
 const PAGE_SIZE = 20;
 
 const newsPending = ref<Array<News>>([]);
+const newsMyPending = ref<Array<News>>([]);
 const newsList = ref<Array<News>>([]);
 const offset = ref(0);
 const hasMore = ref(true);
@@ -62,6 +64,18 @@ if (isAdmin) {
 	}
 }
 
+if (currentUserId) {
+	const myPendingRes = await $fetch<NewsListDtoList>(
+		`/api/news/list?status=pending&author_id=${currentUserId}`,
+		{ headers },
+	).catch(() => ({ items: [] as NewsListDtoList["items"] }));
+	for (const f of myPendingRes?.items ?? []) {
+		if (f.authorId === currentUserId) {
+			newsMyPending.value.push(await mapNews(f));
+		}
+	}
+}
+
 const loadMore = async () => {
 	if (loadingMore.value || !hasMore.value) return;
 	loadingMore.value = true;
@@ -90,6 +104,15 @@ await loadMore();
 			<RouterLink to="/news/create">
 				<UiButton accent> Создать новость </UiButton>
 			</RouterLink>
+
+			<template v-if="newsMyPending.length > 0">
+				<h2 :class="$style.sectionTitle">Мои предложения</h2>
+				<NewsPlateComponent
+					v-for="news in newsMyPending"
+					:key="news.id"
+					:news="news"
+				></NewsPlateComponent>
+			</template>
 
 			<template v-if="isAdmin && newsPending.length > 0">
 				<h2 :class="$style.sectionTitle">На модерации</h2>

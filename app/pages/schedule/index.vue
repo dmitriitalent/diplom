@@ -410,6 +410,7 @@ const createBooking = async () => {
 
 const wmCreateOpen = ref(false);
 const wmCreateLocation = ref("");
+const wmCreateFloor = ref("");
 const wmCreateSaving = ref(false);
 
 const createMachine = async () => {
@@ -417,22 +418,26 @@ const createMachine = async () => {
 	try {
 		await $fetch("/api/washingmachine/create", {
 			method: "POST",
-			body: { location: wmCreateLocation.value },
+			body: {
+				location: wmCreateLocation.value,
+				floor: wmCreateFloor.value.trim() || undefined,
+			},
 		});
 		await refreshNuxtData("wm-list");
 		wmCreateOpen.value = false;
 		wmCreateLocation.value = "";
+		wmCreateFloor.value = "";
 	} finally {
 		wmCreateSaving.value = false;
 	}
 };
 
 const wmEditOpen = ref(false);
-const wmEditMachine = ref<{ id: string; location: string } | null>(null);
+const wmEditMachine = ref<{ id: string; location: string; floor: string } | null>(null);
 const wmEditSaving = ref(false);
 
 const openWmEdit = (m: WashingMachineDto) => {
-	wmEditMachine.value = { id: m.id, location: m.location };
+	wmEditMachine.value = { id: m.id, location: m.location, floor: m.floor ?? "" };
 	wmEditOpen.value = true;
 };
 
@@ -445,6 +450,7 @@ const saveWmEdit = async () => {
 			body: {
 				id: wmEditMachine.value.id,
 				location: wmEditMachine.value.location,
+				floor: wmEditMachine.value.floor.trim() || undefined,
 			},
 		});
 		await refreshNuxtData("wm-list");
@@ -713,6 +719,10 @@ const deleteShower = async (id: string) => {
 			>
 				<div :class="$style.machineHeader">
 					<span :class="$style.machineLocation">{{ machine.location }}</span>
+					<span v-if="machine.floor" :class="$style.machineFloorBadge">
+						<Icon name="mdi:stairs" :class="$style.machineFloorIcon" />
+						{{ machine.floor }} этаж
+					</span>
 					<div :class="$style.machineActions">
 						<UiButton inset @click="openBookModal(machine.id)"
 							>Записаться</UiButton
@@ -980,7 +990,18 @@ const deleteShower = async (id: string) => {
 							<UiInput
 								v-model="wmCreateLocation"
 								:class="$style.input"
-								placeholder="Этаж 2, комната 201"
+								placeholder="Комната 201"
+							/>
+						</div>
+						<div :class="$style.field">
+							<label :class="$style.label">
+								Этаж
+								<span :class="$style.labelHint">(оставьте пустым — видна всем)</span>
+							</label>
+							<UiInput
+								v-model="wmCreateFloor"
+								:class="$style.input"
+								placeholder="2"
 							/>
 						</div>
 					</div>
@@ -1013,6 +1034,17 @@ const deleteShower = async (id: string) => {
 							<UiInput
 								v-model="wmEditMachine!.location"
 								:class="$style.input"
+							/>
+						</div>
+						<div :class="$style.field">
+							<label :class="$style.label">
+								Этаж
+								<span :class="$style.labelHint">(оставьте пустым — видна всем)</span>
+							</label>
+							<UiInput
+								v-model="wmEditMachine!.floor"
+								:class="$style.input"
+								placeholder="2"
 							/>
 						</div>
 					</div>
@@ -1191,6 +1223,27 @@ const deleteShower = async (id: string) => {
 				@include color-black;
 			}
 
+			.machineFloorBadge {
+				@include text-s;
+				@include color-black(0.75);
+				@include color-black-bg(0.07);
+
+				display: inline-flex;
+				align-items: center;
+				column-gap: 4px;
+				padding: 3px 10px;
+				border-radius: 100px;
+				margin-left: 10px;
+			}
+
+			.machineFloorIcon {
+				@include color-black(0.6);
+
+				width: 14px;
+				height: 14px;
+				flex-shrink: 0;
+			}
+
 			.machineActions {
 				display: flex;
 				column-gap: 8px;
@@ -1316,6 +1369,17 @@ const deleteShower = async (id: string) => {
 	.label {
 		@include text-s;
 		@include color-black;
+
+		display: flex;
+		align-items: baseline;
+		column-gap: 6px;
+	}
+
+	.labelHint {
+		@include text-xs;
+		@include color-black(0.45);
+
+		font-style: italic;
 	}
 
 	.input {
