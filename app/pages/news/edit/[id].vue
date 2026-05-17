@@ -41,11 +41,11 @@ if (!isAdmin && !isAuthor) {
 const form = ref<NewsDtoCreate>({
 	title: original.value.title,
 	content: original.value.content,
-	imageIds: [...original.value.imageIds],
+	imageIds: [...(original.value.imageIds ?? [])],
 	viewTemplate: original.value.viewTemplate,
 });
 
-const existingImageIds = ref<string[]>([...original.value.imageIds]);
+const existingImageIds = ref<string[]>([...(original.value.imageIds ?? [])]);
 const newImageFiles = ref<File[]>([]);
 const newImagePreviewUrls = ref<string[]>([]);
 const newImageThumbnailUrls = ref<string[]>([]);

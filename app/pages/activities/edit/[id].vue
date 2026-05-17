@@ -42,7 +42,7 @@ const form = ref<ActivityDtoCreate>({
 	location: original.value.location,
 	startTime: original.value.startTime,
 	endTime: original.value.endTime,
-	imageIds: [...original.value.imageIds],
+	imageIds: [...(original.value.imageIds ?? [])],
 	isPrivate: Boolean(original.value.isPrivate),
 	viewTemplate: original.value.viewTemplate,
 });
@@ -50,7 +50,7 @@ const form = ref<ActivityDtoCreate>({
 const startTime = ref<Date>(new Date(original.value.startTime));
 const endTime = ref<Date>(new Date(original.value.endTime));
 
-const existingImageIds = ref<string[]>([...original.value.imageIds]);
+const existingImageIds = ref<string[]>([...(original.value.imageIds ?? [])]);
 const newImageFiles = ref<File[]>([]);
 const newImagePreviewUrls = ref<string[]>([]);
 const newImageThumbnailUrls = ref<string[]>([]);
