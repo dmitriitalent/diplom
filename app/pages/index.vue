@@ -15,20 +15,25 @@ useSeoMeta({
 		"Соседи, расписания, услуги, объявления и чаты — собранные вместе для одного общежития.",
 });
 
-// ─── Auth redirect ────────────────────────────────────────────────────────────
-// Используем auth.refresh() из store — он обновляет токен в Pinia,
-// поэтому global middleware не будет делать повторный рефреш при переходе.
-// const auth = useAuthStore();
-// if (!auth.isAuthenticated) {
-// 	try {
-// 		await auth.refresh();
-// 	} catch {
-// 		// Нет действительных токенов — остаёмся на лендинге
-// 	}
-// }
-// if (auth.isAuthenticated) {
-// 	await navigateTo("/profile/self", { replace: true });
-// }
+// ─── Auth redirect (client-only, после гидратации) ───────────────────────────
+// onMounted гарантирует: SSR рендерит лендинг без редиректа.
+// auth.refresh() обновляет Pinia-store — global middleware увидит свежий токен
+// и не будет делать повторный рефреш, исключая redirect-loop.
+onMounted(async () => {
+	const auth = useAuthStore();
+	if (auth.isAuthenticated) {
+		await navigateTo("/profile/self", { replace: true });
+		return;
+	}
+	try {
+		await auth.refresh();
+		if (auth.isAuthenticated) {
+			await navigateTo("/profile/self", { replace: true });
+		}
+	} catch {
+		// Нет действительных токенов — остаёмся на лендинге
+	}
+});
 
 const { deviceClassList, isDevice } = useDevice();
 const { isDark, toggle: toggleTheme } = useTheme();
