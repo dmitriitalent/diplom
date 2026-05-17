@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { useDevice } from "~/composables/device";
+import { useAuthStore } from "~/stores/authStore";
 
 definePageMeta({
 	layout: "welcome",
@@ -15,16 +16,18 @@ useSeoMeta({
 });
 
 // ─── Auth redirect ────────────────────────────────────────────────────────────
-// Пробуем рефреш — браузер сам отправит httpOnly куки.
-// Если токены живые, редиректим на профиль; иначе остаёмся на лендинге.
-try {
-	const headers = import.meta.server
-		? useRequestHeaders(["cookie"])
-		: undefined;
-	await $fetch("/api/auth/refresh", { method: "POST", headers });
+// Используем auth.refresh() из store — он обновляет токен в Pinia,
+// поэтому global middleware не будет делать повторный рефреш при переходе.
+const auth = useAuthStore();
+if (!auth.isAuthenticated) {
+	try {
+		await auth.refresh();
+	} catch {
+		// Нет действительных токенов — остаёмся на лендинге
+	}
+}
+if (auth.isAuthenticated) {
 	await navigateTo("/profile/self", { replace: true });
-} catch {
-	// Нет действительных токенов — остаёмся на лендинге
 }
 
 const { deviceClassList, isDevice } = useDevice();
