@@ -47,14 +47,14 @@ const form = ref<ProductDtoCreate>({
 	name: original.value.name,
 	price: original.value.price,
 	viewTemplate: original.value.viewTemplate,
-	images: original.value.images.map((img) => ({
+	images: (original.value.images ?? []).map((img) => ({
 		fileGuid: img.fileGuid,
 		sortOrder: img.sortOrder,
 	})),
 });
 
 const existingImages = ref(
-	original.value.images.map((img) => ({
+	(original.value.images ?? []).map((img) => ({
 		fileGuid: img.fileGuid,
 		sortOrder: img.sortOrder,
 	})),
