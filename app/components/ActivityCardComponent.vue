@@ -4,6 +4,7 @@ const props = defineProps<{
 		id: string;
 		title: string;
 		startTime?: string;
+		endTime?: string;
 		location?: string;
 		participants?: any[];
 		imageIds?: string[];
@@ -29,10 +30,33 @@ const formatWhen = (iso?: string) => {
 		return iso;
 	}
 };
+
+const now = () => new Date();
+
+const isPast = computed(() => {
+	const end = props.activity.endTime;
+	return !!end && new Date(end) < now();
+});
+
+const isNow = computed(() => {
+	const start = props.activity.startTime;
+	const end = props.activity.endTime;
+	if (!start || !end) return false;
+	const n = now();
+	return new Date(start) <= n && new Date(end) >= n;
+});
 </script>
 
 <template>
-	<div :class="$style.card">
+	<div :class="[$style.card, isPast && $style.past]">
+		<div v-if="isPast" :class="$style.endedBadge">
+			<Icon name="mdi:lock-outline" :class="$style.endedIcon" />
+			<span>Окончено</span>
+		</div>
+		<div v-else-if="isNow" :class="$style.nowBadge">
+			<span :class="$style.nowDot" />
+			Сейчас
+		</div>
 		<div
 			:class="[$style.cover, { [$style.coverFallback]: !coverImage }]"
 			:style="coverImage ? { backgroundImage: `url(${coverImage})` } : undefined"
@@ -57,6 +81,7 @@ const formatWhen = (iso?: string) => {
 	@include color-white-bg(0.72);
 	@include shadow;
 
+	position: relative;
 	width: 100%;
 	min-height: 220px;
 	padding: 16px;
@@ -66,6 +91,71 @@ const formatWhen = (iso?: string) => {
 	flex-direction: column;
 	row-gap: 10px;
 	box-sizing: border-box;
+	transition: opacity $transition-fast;
+
+	&.past {
+		opacity: 0.6;
+	}
+}
+
+.endedBadge {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	row-gap: 5px;
+	border-radius: 12px;
+	background: rgba($color-black-rgb, 0.07);
+	backdrop-filter: blur(2px);
+	pointer-events: none;
+
+	@include text-s;
+	@include color-black;
+
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	font-size: 11px;
+}
+
+.endedIcon {
+	width: 20px;
+	height: 20px;
+	opacity: 0.7;
+}
+
+.nowBadge {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	column-gap: 5px;
+	padding: 3px 10px 3px 7px;
+	border-radius: 100px;
+	background: $color-success;
+	pointer-events: none;
+
+	@include text-s;
+	@include color-black;
+
+	font-weight: 700;
+	font-size: 11px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.nowDot {
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: currentColor;
+	opacity: 0.8;
+	animation: nowPulse 1.5s ease-in-out infinite;
 }
 
 .cover {
@@ -133,5 +223,10 @@ const formatWhen = (iso?: string) => {
 	border-radius: 100px;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
+}
+
+@keyframes nowPulse {
+	0%, 100% { opacity: 0.8; }
+	50% { opacity: 0.2; }
 }
 </style>

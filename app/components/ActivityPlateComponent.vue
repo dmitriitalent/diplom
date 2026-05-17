@@ -33,6 +33,21 @@ const statusLabel: Record<string, string> = {
 	declined: "Отклонено",
 	blocked: "Заблокировано",
 };
+
+const now = () => new Date();
+
+const isPast = computed(() => {
+	const end = props.activity.endTime;
+	return !!end && new Date(end) < now();
+});
+
+const isNow = computed(() => {
+	const start = props.activity.startTime;
+	const end = props.activity.endTime;
+	if (!start || !end) return false;
+	const n = now();
+	return new Date(start) <= n && new Date(end) >= n;
+});
 </script>
 
 <template>
@@ -45,9 +60,18 @@ const statusLabel: Record<string, string> = {
 			:class="[
 				$style.wrapper,
 				activity.moderationStatus === 'pending' && $style.pending,
+				isPast && $style.past,
 				...deviceClassList,
 			]"
 		>
+			<div v-if="isPast" :class="$style.endedBadge">
+				<Icon name="mdi:lock-outline" :class="$style.endedIcon" />
+				<span>Окончено</span>
+			</div>
+			<div v-else-if="isNow" :class="$style.nowBadge">
+				<span :class="$style.nowDot" />
+				Сейчас
+			</div>
 			<div v-if="activity.imageIds?.length" :class="$style.thumb">
 				<img
 					:class="$style.thumbImg"
@@ -143,12 +167,13 @@ const statusLabel: Record<string, string> = {
 	@include shadow;
 	@include color-white-bg(0.72);
 
+	position: relative;
 	width: 100%;
 	display: flex;
 	column-gap: 16px;
 	border-radius: 12px;
 	overflow: hidden;
-	transition: background-color $transition-fast;
+	transition: background-color $transition-fast, opacity $transition-fast;
 
 	&:hover {
 		@include color-white-bg;
@@ -156,6 +181,69 @@ const statusLabel: Record<string, string> = {
 
 	&.pending {
 		@include color-warn-bg(0.15);
+	}
+
+	&.past {
+		opacity: 0.6;
+	}
+
+	.endedBadge {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		row-gap: 5px;
+		background: rgba($color-black-rgb, 0.07);
+		backdrop-filter: blur(2px);
+		pointer-events: none;
+
+		@include text-s;
+		@include color-black;
+
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		font-size: 11px;
+	}
+
+	.endedIcon {
+		width: 20px;
+		height: 20px;
+		opacity: 0.7;
+	}
+
+	.nowBadge {
+		position: absolute;
+		top: 10px;
+		left: 10px;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		column-gap: 5px;
+		padding: 3px 10px 3px 7px;
+		border-radius: 100px;
+		background: $color-success;
+		pointer-events: none;
+
+		@include text-s;
+		@include color-black;
+
+		font-weight: 700;
+		font-size: 11px;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+	}
+
+	.nowDot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: currentColor;
+		opacity: 0.8;
+		animation: nowPulse 1.5s ease-in-out infinite;
 	}
 
 	@include respond-to(mobile) {
@@ -300,5 +388,10 @@ const statusLabel: Record<string, string> = {
 			height: 13px;
 		}
 	}
+}
+
+@keyframes nowPulse {
+	0%, 100% { opacity: 0.8; }
+	50% { opacity: 0.2; }
 }
 </style>
