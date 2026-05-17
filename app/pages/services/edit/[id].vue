@@ -39,7 +39,6 @@ const form = ref({
 	name: original.value.name,
 	description: original.value.description,
 	price: original.value.price,
-	status: original.value.status,
 	viewTemplate: original.value.viewTemplate,
 	images: (original.value.images ?? []).map((img) => ({
 		fileGuid: img.fileGuid,
@@ -138,11 +137,6 @@ const uploadNewImages = async () => {
 	);
 	return results;
 };
-
-const statusOptions = [
-	{ value: "active", label: "Активна" },
-	{ value: "hidden", label: "Скрыта" },
-];
 
 const saving = ref(false);
 
@@ -313,25 +307,6 @@ const saveService = async () => {
 							:class="$style.input"
 							placeholder="500"
 						/>
-					</div>
-
-					<div :class="$style.field">
-						<h3 :class="$style.label">Статус</h3>
-						<div :class="$style.statusRow">
-							<UiButton
-								v-for="opt in statusOptions"
-								:key="opt.value"
-								:class="[
-									$style.statusBtn,
-									form.status === opt.value &&
-										$style.statusBtnActive,
-								]"
-								inset
-								@click="form.status = opt.value"
-							>
-								{{ opt.label }}
-							</UiButton>
-						</div>
 					</div>
 
 					<div :class="$style.field">
@@ -528,18 +503,7 @@ const saveService = async () => {
 					}
 				}
 
-				.statusRow {
-					display: flex;
-					column-gap: 10px;
 
-					.statusBtn {
-						flex: 1;
-					}
-
-					.statusBtnActive {
-						@include color-black-bg(0.12);
-					}
-				}
 			}
 
 			.actions {
