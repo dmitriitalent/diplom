@@ -107,23 +107,27 @@ const uploadImages = async () => {
 	);
 };
 
+const router = useRouter();
+const saving = ref(false);
+
 const createActivity = async () => {
-	await uploadImages();
-	form.value.startTime = startTime.value!.toISOString();
-	form.value.endTime = endTime.value!.toISOString();
+	if (saving.value) return;
+	saving.value = true;
+	try {
+		await uploadImages();
+		form.value.startTime = startTime.value!.toISOString();
+		form.value.endTime = endTime.value!.toISOString();
 
-	console.log(form.value.endTime);
-
-	$fetch("/api/activity/create", {
-		method: "POST",
-		body: form.value,
-	})
-		.then((res) => {
-			console.log(res);
-		})
-		.catch((err) => {
-			console.log(err);
+		const res = await $fetch<{ id: string }>("/api/activity/create", {
+			method: "POST",
+			body: form.value,
 		});
+		await router.push("/activities/" + res.id);
+	} catch (err) {
+		console.log(err);
+	} finally {
+		saving.value = false;
+	}
 };
 </script>
 
@@ -274,9 +278,10 @@ const createActivity = async () => {
 					<UiButton
 						:class="$style.submit"
 						accent
+						:disabled="saving"
 						@click="createActivity"
 					>
-						Предложить к публикации
+						{{ saving ? "Отправка..." : "Предложить к публикации" }}
 					</UiButton>
 				</div>
 			</div>

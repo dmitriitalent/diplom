@@ -14,6 +14,46 @@ useSeoMeta({
 		"Соседи, расписания, услуги, объявления и чаты — собранные вместе для одного общежития.",
 });
 
+// ─── Auth redirect ────────────────────────────────────────────────────────────
+// Если у пользователя есть живые токены — отправляем на профиль, не заставляя
+// заново логиниться. refreshToken может быть протухшим, поэтому сначала
+// проверяем accessToken, и только если нужно — идём в сеть.
+
+const _at = useCookie("accessToken");
+const _rt = useCookie("refreshToken");
+
+if (_at.value || _rt.value) {
+	// Быстрая проверка accessToken без сетевых запросов
+	let accessTokenAlive = false;
+	if (_at.value) {
+		try {
+			const raw = _at.value.split(".")[1] ?? "";
+			const payload = JSON.parse(atob(raw)) as { exp?: number };
+			const exp = payload.exp;
+			accessTokenAlive =
+				typeof exp === "number" &&
+				exp > Math.floor(Date.now() / 1000) + 30;
+		} catch {
+			// Битый токен — считаем протухшим
+		}
+	}
+
+	if (accessTokenAlive) {
+		await navigateTo("/profile/self", { replace: true });
+	} else {
+		// accessToken протух или отсутствует — пробуем рефреш
+		try {
+			const headers = import.meta.server
+				? useRequestHeaders(["cookie"])
+				: undefined;
+			await $fetch("/api/auth/refresh", { method: "POST", headers });
+			await navigateTo("/profile/self", { replace: true });
+		} catch {
+			// refreshToken тоже недействителен — остаёмся на лендинге
+		}
+	}
+}
+
 const { deviceClassList, isDevice } = useDevice();
 const { isDark, toggle: toggleTheme } = useTheme();
 const { enabled: shaderEnabled, toggle: toggleShader } = useShader();

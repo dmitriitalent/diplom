@@ -103,19 +103,24 @@ const uploadImages = async () => {
 	);
 };
 
-const createNews = async () => {
-	await uploadImages();
+const router = useRouter();
+const saving = ref(false);
 
-	$fetch("/api/news/create", {
-		method: "POST",
-		body: form.value,
-	})
-		.then((res) => {
-			console.log(res);
-		})
-		.catch((err) => {
-			console.log(err);
+const createNews = async () => {
+	if (saving.value) return;
+	saving.value = true;
+	try {
+		await uploadImages();
+		const res = await $fetch<{ id: string }>("/api/news/create", {
+			method: "POST",
+			body: form.value,
 		});
+		await router.push("/news/" + res.id);
+	} catch (err) {
+		console.log(err);
+	} finally {
+		saving.value = false;
+	}
 };
 </script>
 
@@ -225,8 +230,8 @@ const createNews = async () => {
 						/>
 					</div>
 
-					<UiButton :class="$style.submit" accent @click="createNews">
-						Предложить к публикации
+					<UiButton :class="$style.submit" accent :disabled="saving" @click="createNews">
+						{{ saving ? "Отправка..." : "Предложить к публикации" }}
 					</UiButton>
 				</div>
 			</div>

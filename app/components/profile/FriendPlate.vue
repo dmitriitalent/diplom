@@ -149,10 +149,10 @@ const writeContact = () => {
 			position: absolute;
 			right: 0;
 			top: calc(100% + 4px);
-			background: #fff;
-			border: 1px solid rgba(0, 0, 0, 0.08);
+			@include color-white-bg;
+			border: 1px solid rgba($color-black-rgb, 0.08);
 			border-radius: 8px;
-			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+			@include shadow;
 			display: flex;
 			flex-direction: column;
 			padding: 4px;

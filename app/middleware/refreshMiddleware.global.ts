@@ -32,4 +32,32 @@ export default defineNuxtRouteMiddleware(async (to) => {
 			/* ignore — не критично для навигации */
 		});
 	}
+
+	// 3. Проверка устаревшего токена после верификации.
+	//    Роль VERIFIED_RESIDENT выдаётся бэкендом только при login, не при refresh.
+	//    Если токен выдан до того, как модератор одобрил заявку — принуждаем к
+	//    явному re-login. Проверяем не чаще одного раза за сессию (useState
+	//    сохраняется между клиентскими навигациями, но сбрасывается при новой загрузке).
+	if (auth.isAuthenticated && !auth.isVerified) {
+		const verificationChecked = useState("verification-stale-checked", () => false);
+		if (!verificationChecked.value) {
+			verificationChecked.value = true;
+			try {
+				const headers = import.meta.server
+					? useRequestHeaders(["cookie"])
+					: undefined;
+				const me = await $fetch<{ status: string } | null>(
+					"/api/verifications/me",
+					{ headers },
+				);
+				if (me?.status === "APPROVED") {
+					// Токен устарел: верификация одобрена, но роли в JWT ещё нет
+					try { await auth.logout(); } catch { /* ignore */ }
+					return navigateTo("/login");
+				}
+			} catch {
+				// Сервис недоступен — не блокируем навигацию
+			}
+		}
+	}
 });

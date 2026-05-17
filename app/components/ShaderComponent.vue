@@ -6,10 +6,10 @@ import { onMounted, onBeforeUnmount, ref, watch } from "vue";
 // ════════════════════════════════════════════════════════════════════
 
 // Количество частиц (100..500)
-const PARTICLE_COUNT = 3000;
+const PARTICLE_COUNT = 1500;
 
 // Размер точки (радиус в пикселях)
-const PARTICLE_SIZE = 4;
+const PARTICLE_SIZE = 6;
 
 // Базовая скорость частицы (px/кадр)
 const PARTICLE_SPEED = 1.3;

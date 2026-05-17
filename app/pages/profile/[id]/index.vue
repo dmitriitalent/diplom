@@ -14,6 +14,7 @@ const selfStore = useSelfStore();
 const { self } = storeToRefs(selfStore);
 const { updateAvatar, deleteAvatar } = selfStore;
 const { deviceClassList, isDevice } = useDevice();
+const { isAdmin } = storeToRefs(useAuthStore());
 
 const route = useRoute();
 const router = useRouter();
@@ -155,10 +156,24 @@ const { data: services } = await useAsyncData(
 	() => `profile-services-${userId.value}`,
 	() =>
 		$fetch<ServiceDtoList>(
-			`/api/service/list?owner_id=${userId.value}&limit=20`,
+			`/api/service/list?owner_id=${userId.value}&limit=20&status=active`,
 			{ headers: reqHeaders },
 		).catch(() => ({ services: [] })),
 	{ watch: [userId] },
+);
+
+const canSeeHidden = computed(() => isSelf.value || isAdmin.value);
+
+const { data: hiddenServices } = await useAsyncData(
+	() => `profile-hidden-services-${userId.value}`,
+	async () => {
+		if (!canSeeHidden.value) return { services: [] };
+		return $fetch<ServiceDtoList>(
+			`/api/service/list?owner_id=${userId.value}&limit=20&status=hidden`,
+			{ headers: reqHeaders },
+		).catch(() => ({ services: [] }));
+	},
+	{ watch: [userId, canSeeHidden] },
 );
 
 const { data: activities } = await useAsyncData(
@@ -642,6 +657,46 @@ const formatActivityWhen = (iso?: string) => {
 						>
 							<ServiceCardComponent :service="s as any" />
 						</RouterLink>
+					</template>
+				</UiGallery>
+			</section>
+
+			<!-- ── Hidden services (owner / admin only) ──────────────── -->
+			<section
+				v-if="canSeeHidden && hiddenServices?.services?.length"
+				:class="$style.section"
+			>
+				<div :class="$style.sectionHead">
+					<div :class="$style.sectionTitleWrap">
+						<h3 :class="$style.sectionTitle">Скрытые услуги</h3>
+						<span :class="$style.sectionCount">
+							{{ hiddenServices.services.length }}
+						</span>
+					</div>
+				</div>
+				<UiGallery
+					:slides-per-view="serviceSlides"
+					:space-between="14"
+					:class="$style.gallery"
+				>
+					<template
+						v-for="(s, i) in hiddenServices.services"
+						:key="(s as any).id"
+						v-slot:[i]
+					>
+						<div :class="$style.hiddenSlide">
+							<ServiceCardComponent :service="s as any" />
+							<RouterLink
+								:to="`/services/${(s as any).id}`"
+								:class="$style.hiddenBadge"
+							>
+								<Icon
+									name="mdi:lock-outline"
+									:class="$style.hiddenBadgeIcon"
+								/>
+								<span>Скрыто</span>
+							</RouterLink>
+						</div>
 					</template>
 				</UiGallery>
 			</section>
@@ -1479,5 +1534,49 @@ const formatActivityWhen = (iso?: string) => {
 
 .postCancel {
 	min-width: 100px;
+}
+
+// ── Hidden service card ────────────────────────────────────────────
+
+.hiddenSlide {
+	position: relative;
+	display: block;
+	width: 100%;
+	opacity: 0.6;
+}
+
+.hiddenBadge {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	row-gap: 6px;
+	text-decoration: none;
+	border-radius: 12px;
+	background: rgba($color-black-rgb, 0.08);
+	backdrop-filter: blur(2px);
+	cursor: pointer;
+	transition: background-color $transition-fast;
+
+	@include text-s;
+	@include color-black;
+
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+
+	&:hover {
+		background: rgba($color-black-rgb, 0.14);
+		opacity: 1;
+	}
+}
+
+.hiddenBadgeIcon {
+	@include color-black;
+
+	width: 24px;
+	height: 24px;
 }
 </style>

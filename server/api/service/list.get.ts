@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
 		if (query.price_max) params.price_max = Number(query.price_max);
 		if (query.limit) params.limit = Number(query.limit);
 		if (query.offset) params.offset = Number(query.offset);
+		if (query.status) params.status = String(query.status);
 
 		const res = await axios.get<ServiceDtoList>(`${config.api}/services`, {
 			headers: { cookie },
