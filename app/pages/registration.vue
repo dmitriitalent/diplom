@@ -316,7 +316,7 @@ const onSubmit = async () => {
 					/>
 					<span :class="$style.consentText">
 						Я даю
-						<RouterLink to="/agreement" :class="$style.consentLink">
+						<RouterLink to="/agreements/privacy" :class="$style.consentLink">
 							согласие на обработку моих персональных данных
 						</RouterLink>
 					</span>

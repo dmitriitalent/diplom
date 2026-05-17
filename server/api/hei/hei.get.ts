@@ -8,11 +8,6 @@ export default defineEventHandler(async (event) => {
 				value: "MAI",
 				leftIconName: "icon",
 			},
-			{
-				name: "МЭИ (Московский Энергетический Институт)",
-				value: "MEI",
-				leftIconName: "icon",
-			},
 		];
 	} catch (err) {
 		console.log("error at " + FILENAME + ": " + String(err));
