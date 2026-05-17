@@ -5,7 +5,14 @@ export default defineNuxtConfig({
 	runtimeConfig: {
 		api: "http://api-gateway:8080",
 		public: {
-			publicRoutes: ["/", "/login", "/registration"],
+			publicRoutes: [
+				"/",
+				"/login",
+				"/registration",
+				"/privacy",
+				"/privacy-policy",
+				"/agreements/privacy",
+			],
 			api: "http://api-gateway:8080",
 		},
 	},
