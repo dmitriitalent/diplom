@@ -115,7 +115,7 @@ const createNews = async () => {
 			method: "POST",
 			body: form.value,
 		});
-		await router.push("/news/" + res.id);
+		await router.push("/news");
 	} catch (err) {
 		console.log(err);
 	} finally {
