@@ -6,8 +6,6 @@ useSeoMeta({
 });
 
 import type { Activity } from "~/entities/Activity";
-import type { Dormitory } from "~/entities/Dormitory";
-import type { User } from "~/entities/User";
 import type { byId } from "~~/server/dto/profile/byId";
 import type { ActivityDtoList } from "~~/server/dto/activity/list";
 import { useAuthStore } from "~/stores/authStore";
@@ -17,13 +15,11 @@ const { deviceClassList } = useDevice();
 
 const auth = useAuthStore();
 const isAdmin = auth.isAdmin;
-const currentUserId = auth.userId;
 
 const PAGE_SIZE = 20;
 const headers = useRequestHeaders(["cookie"]);
 
 const activitiesPending = ref<Array<Activity>>([]);
-const activitiesMyPending = ref<Array<Activity>>([]);
 const activities = ref<Array<Activity>>([]);
 const offset = ref(0);
 const hasMore = ref(true);
@@ -64,18 +60,6 @@ if (isAdmin) {
 	);
 	for (const f of pendingRes?.activities ?? []) {
 		activitiesPending.value.push(await mapActivity(f));
-	}
-}
-
-if (currentUserId) {
-	const myPendingRes = await $fetch<ActivityDtoList>(
-		`/api/activity/list?status=pending&author_id=${currentUserId}`,
-		{ headers },
-	).catch(() => ({ activities: [] as ActivityDtoList["activities"] }));
-	for (const f of myPendingRes?.activities ?? []) {
-		if (f.createdBy === currentUserId) {
-			activitiesMyPending.value.push(await mapActivity(f));
-		}
 	}
 }
 
@@ -139,15 +123,6 @@ const joinByCode = () => {
 					:class="[$style.inviteCode, joinError ? '--is-error' : '']"
 				></UiInput>
 			</div>
-
-			<template v-if="activitiesMyPending.length > 0">
-				<h2 :class="$style.sectionTitle">Мои предложения</h2>
-				<ActivityPlateComponent
-					v-for="activity in activitiesMyPending"
-					:key="activity.id"
-					:activity="activity"
-				></ActivityPlateComponent>
-			</template>
 
 			<template v-if="isAdmin && activitiesPending.length > 0">
 				<h2 :class="$style.sectionTitle">На модерации</h2>

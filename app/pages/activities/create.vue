@@ -122,7 +122,7 @@ const createActivity = async () => {
 			method: "POST",
 			body: form.value,
 		});
-		await router.push("/activities/" + res.id);
+		await router.push("/activities");
 	} catch (err) {
 		console.log(err);
 	} finally {
