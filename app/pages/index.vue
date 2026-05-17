@@ -18,17 +18,17 @@ useSeoMeta({
 // ─── Auth redirect ────────────────────────────────────────────────────────────
 // Используем auth.refresh() из store — он обновляет токен в Pinia,
 // поэтому global middleware не будет делать повторный рефреш при переходе.
-const auth = useAuthStore();
-if (!auth.isAuthenticated) {
-	try {
-		await auth.refresh();
-	} catch {
-		// Нет действительных токенов — остаёмся на лендинге
-	}
-}
-if (auth.isAuthenticated) {
-	await navigateTo("/profile/self", { replace: true });
-}
+// const auth = useAuthStore();
+// if (!auth.isAuthenticated) {
+// 	try {
+// 		await auth.refresh();
+// 	} catch {
+// 		// Нет действительных токенов — остаёмся на лендинге
+// 	}
+// }
+// if (auth.isAuthenticated) {
+// 	await navigateTo("/profile/self", { replace: true });
+// }
 
 const { deviceClassList, isDevice } = useDevice();
 const { isDark, toggle: toggleTheme } = useTheme();
