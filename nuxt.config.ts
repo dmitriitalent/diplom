@@ -2,9 +2,16 @@ export default defineNuxtConfig({
 	compatibilityDate: "2025-07-15",
 	devtools: { enabled: true },
 
+	nitro: {
+		experimental: {
+			websocket: true,
+		},
+	},
+
 	runtimeConfig: {
-		api: "http://api-gateway:8080",
+		api: "http://localhost:8080",
 		public: {
+<<<<<<< HEAD
 			publicRoutes: [
 				"/",
 				"/login",
@@ -15,6 +22,10 @@ export default defineNuxtConfig({
 				"/agreements/terms",
 			],
 			api: "http://api-gateway:8080",
+=======
+			publicRoutes: ["/", "/login", "/registration"],
+			api: "http://localhost:8080",
+>>>>>>> 16ffce4 (add games, orders)
 		},
 	},
 

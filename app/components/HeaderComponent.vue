@@ -52,6 +52,12 @@ const close = () => {
 					<RouterLink v-if="isVerified" to="/news">
 						<UiButton :class="$style.link" inset>Новости</UiButton>
 					</RouterLink>
+					<RouterLink v-if="isVerified" to="/orders">
+						<UiButton :class="$style.link" inset>Заявки</UiButton>
+					</RouterLink>
+					<RouterLink v-if="isVerified" to="/games">
+						<UiButton :class="$style.link" inset>Игры</UiButton>
+					</RouterLink>
 					<RouterLink v-if="isAdmin" to="/admin">
 						<UiButton :class="$style.link" inset>Админ</UiButton>
 					</RouterLink>
@@ -198,6 +204,24 @@ const close = () => {
 						<RouterLink v-if="isVerified" to="/news" @click="close">
 							<UiButton :class="$style.sidebarLink" inset>
 								Новости
+							</UiButton>
+						</RouterLink>
+						<RouterLink
+							v-if="isVerified"
+							to="/orders"
+							@click="close"
+						>
+							<UiButton :class="$style.sidebarLink" inset>
+								Заявки
+							</UiButton>
+						</RouterLink>
+						<RouterLink
+							v-if="isVerified"
+							to="/games"
+							@click="close"
+						>
+							<UiButton :class="$style.sidebarLink" inset>
+								Игры
 							</UiButton>
 						</RouterLink>
 						<RouterLink v-if="isAdmin" to="/admin" @click="close">
