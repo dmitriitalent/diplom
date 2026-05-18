@@ -36,17 +36,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 502, message: err.message ?? "Ошибка создания списка рассылки" });
 	}
 
-	const emailBody = `
-<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;">
-  <h2 style="color:#333;margin-bottom:16px;">Hostelite — подтверждение регистрации</h2>
-  <p style="color:#555;margin-bottom:24px;">Ваш код верификации для завершения регистрации:</p>
-  <div style="font-size:36px;font-weight:bold;letter-spacing:8px;color:#1a1a1a;background:#f5f5f5;border-radius:8px;padding:20px;text-align:center;margin-bottom:24px;">${code}</div>
-  <p style="color:#777;font-size:14px;">Код действителен <strong>20 минут</strong>.</p>
-  <p style="color:#777;font-size:14px;">Если вы не запрашивали регистрацию — просто проигнорируйте это письмо.</p>
-  <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
-  {{UnsubscribeUrl}}
-</div>
-`;
+	const emailBody = `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px"><h2 style="color:#333">Hostelite — подтверждение регистрации</h2><p style="color:#555">Ваш код верификации:</p><div style="font-size:36px;font-weight:bold;letter-spacing:8px;background:#f5f5f5;border-radius:8px;padding:20px;text-align:center;margin:16px 0">${code}</div><p style="color:#777;font-size:14px">Код действителен 20 минут.</p><p style="color:#777;font-size:14px">Если вы не запрашивали регистрацию — проигнорируйте это письмо.</p><p>{{UnsubscribeUrl}}</p></div>`;
 
 	try {
 		await sendUnisenderEmail({

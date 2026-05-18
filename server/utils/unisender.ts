@@ -21,22 +21,33 @@ export async function sendUnisenderEmail(params: {
 	body: string;
 	listId: number;
 }): Promise<void> {
-	const url = new URL(`${UNISENDER_BASE}/sendEmail`);
-	url.searchParams.set("format", "json");
-	url.searchParams.set("api_key", UNISENDER_API_KEY);
-	url.searchParams.set("email", params.email);
-	url.searchParams.set("sender_name", "Hostelite.ru");
-	url.searchParams.set("sender_email", "dmitriitalent@gmail.com");
-	url.searchParams.set("subject", params.subject);
-	url.searchParams.set("body", params.body);
-	url.searchParams.set("list_id", String(params.listId));
-	url.searchParams.set("lang", "ru");
-	url.searchParams.set("error_checking", "1");
+	const formData = new URLSearchParams({
+		format: "json",
+		api_key: UNISENDER_API_KEY,
+		email: params.email,
+		sender_name: "Hostelite.ru",
+		sender_email: "dmitriitalent@gmail.com",
+		subject: params.subject,
+		body: params.body,
+		list_id: String(params.listId),
+		lang: "ru",
+		error_checking: "1",
+	});
 
-	const res = await $fetch<any>(url.toString());
+	const res = await $fetch<any>(`${UNISENDER_BASE}/sendEmail`, {
+		method: "POST",
+		headers: { "Content-Type": "application/x-www-form-urlencoded" },
+		body: formData.toString(),
+	});
 
+	// Ошибка на уровне API (invalid_arg, auth fail и т.д.)
+	if (res?.code && res?.error) {
+		throw new Error(`Ошибка Unisender: ${res.error} (${res.code})`);
+	}
+
+	// Ошибки на уровне адресата (error_checking=1)
 	if (Array.isArray(res?.result) && res.result[0]?.errors?.length) {
 		const err = res.result[0].errors[0];
-		throw new Error(`Ошибка отправки письма: ${err.code}`);
+		throw new Error(`Ошибка отправки письма: ${err.code} — ${err.message}`);
 	}
 }
