@@ -11,7 +11,8 @@ const { deviceClassList } = useDevice();
 
 const auth = useAuthStore();
 
-if (!auth.isAdmin) {
+// Доступ — COMMANDANT и выше. Внутренние разделы скрываются по ролям отдельно.
+if (!auth.isCommandant) {
 	await navigateTo("/");
 }
 </script>
@@ -21,11 +22,21 @@ if (!auth.isAdmin) {
 		<div :class="$style.container">
 			<h1 :class="$style.pageTitle">Панель администратора</h1>
 
+			<nav :class="$style.nav">
+				<RouterLink to="/admin/residents" :class="$style.navLink">
+					<Icon
+						name="mdi:account-group-outline"
+						:class="$style.navIcon"
+					/>
+					<span :class="$style.navLabel">Проживающие</span>
+				</RouterLink>
+			</nav>
+
 			<section :class="$style.section">
 				<AdminVerifications />
 			</section>
 
-			<section :class="$style.section">
+			<section v-if="auth.isAdmin" :class="$style.section">
 				<AdminTemplatePreviews />
 			</section>
 		</div>
@@ -74,6 +85,41 @@ if (!auth.isAdmin) {
 		@include respond-to(mobile) {
 			padding: 14px;
 			border-radius: 10px;
+		}
+	}
+
+	.nav {
+		display: flex;
+		flex-wrap: wrap;
+		column-gap: 10px;
+		row-gap: 10px;
+
+		.navLink {
+			display: inline-flex;
+			align-items: center;
+			column-gap: 8px;
+			padding: 12px 18px;
+			border-radius: 10px;
+			text-decoration: none;
+			transition: background-color $transition-fast;
+
+			@include color-white-bg(0.7);
+			@include color-black;
+			@include text-m;
+			@include shadow;
+
+			&:hover {
+				@include color-accent-bg(0.18);
+			}
+
+			.navIcon {
+				width: 22px;
+				height: 22px;
+			}
+
+			.navLabel {
+				font-weight: 500;
+			}
 		}
 	}
 }

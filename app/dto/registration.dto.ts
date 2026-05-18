@@ -14,4 +14,6 @@ export type RegistrationDto = {
 	surname?: string;
 	name?: string;
 	patronymic?: string;
+	/** Обязателен для резидентов. Сохраняется как первичный контакт. */
+	vkContact?: string;
 };
