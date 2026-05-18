@@ -3,15 +3,42 @@ import { RegistrationDto } from "~~/server/dto/registration.dto";
 
 const FILENAME = "auth/registration.post.ts";
 
+type RegistrationBody = RegistrationDto & {
+	passwordConfirm?: string;
+	vkContact?: string;
+};
+
+type BackendContact = {
+	key: string;
+	value: string;
+	visibility: "EVERYONE" | "FRIEND" | "ADMIN";
+	isPrimary: boolean;
+};
+
 export default defineEventHandler(async (event) => {
 	try {
 		const config = useRuntimeConfig();
-		const body = await readBody(event);
+		const body = (await readBody(event)) as RegistrationBody;
 
-		const date = body.birthdate.split("T")[0].split(".")[0].split("-");
+		const date = (body.birthdate as unknown as string)
+			.split("T")[0]
+			.split(".")[0]
+			.split("-");
 		const birthdate = date[2] + "." + date[1] + "." + date[0];
 
-		const res = await axios.post<RegistrationDto>(
+		// VK обязателен для резидентов и сохраняется как primary-контакт.
+		const contacts: BackendContact[] = [];
+		const vk = body.vkContact?.trim();
+		if (body.isResident && vk) {
+			contacts.push({
+				key: "vk",
+				value: vk,
+				visibility: "EVERYONE",
+				isPrimary: true,
+			});
+		}
+
+		const res = await axios.post<{ accessToken: string; refreshToken: string }>(
 			`${config.api}/auth/registration`,
 			{
 				login: body.login,
@@ -28,6 +55,7 @@ export default defineEventHandler(async (event) => {
 				surname: body.surname,
 				name: body.name,
 				patronymic: body.patronymic,
+				contacts,
 			},
 			{
 				withCredentials: true,

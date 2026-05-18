@@ -54,6 +54,7 @@ const form = reactive({
 	building: "",
 	floor: "",
 	room: "",
+	vk: "",
 	consentUserAgreement: false,
 });
 
@@ -172,10 +173,16 @@ const errors = reactive({
 	passwordConfirm: false,
 	educationEmail: false,
 	birthdate: false,
+	vk: false,
 	consent: false,
 });
 
 const passwordRegex = /^(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
+
+// Допустимый VK-контакт: @handle, handle или vk.com/... ссылка.
+// Минимум 2 значимых символа после "@" / в URL pathname.
+const vkContactRegex =
+	/^(@?[A-Za-z0-9._-]{2,}|https?:\/\/(www\.)?vk\.com\/[A-Za-z0-9._-]{2,}\/?.*)$/i;
 
 const validate = () => {
 	errors.login = form.login.length < 6;
@@ -183,6 +190,7 @@ const validate = () => {
 	errors.passwordConfirm = form.password !== form.passwordConfirm;
 	errors.educationEmail = !studentEmailRegex.test(form.educationEmail);
 	errors.birthdate = !form.birthdate;
+	errors.vk = isResident.value && !vkContactRegex.test(form.vk.trim());
 	errors.consent = !form.consentUserAgreement;
 	return (
 		!errors.login &&
@@ -190,6 +198,7 @@ const validate = () => {
 		!errors.passwordConfirm &&
 		!errors.educationEmail &&
 		!errors.birthdate &&
+		!errors.vk &&
 		!errors.consent
 	);
 };
@@ -226,6 +235,8 @@ const onSubmit = async () => {
 		building: form.building,
 		floor: form.floor,
 		room: form.room,
+		// Для резидентов: VK обязателен и сохраняется как primary-контакт.
+		vkContact: isResident.value ? form.vk.trim() : undefined,
 	};
 
 	try {
@@ -367,7 +378,7 @@ const onSubmit = async () => {
 										rel="noopener noreferrer"
 										:class="$style.mailLink"
 									>
-										Открыть почту MAI
+										Открыть почту МАИ
 									</a>
 									<span :class="$style.mailLinkHint">
 										(если не пришло письмо)
@@ -524,6 +535,27 @@ const onSubmit = async () => {
 							placeholder="Комната"
 							left-icon-name="material-symbols:home-work-outline-rounded"
 						/>
+
+						<div :class="$style.fieldGroup">
+							<UiInput
+								v-model="form.vk"
+								placeholder="Ссылка или тег ВКонтакте"
+								left-icon-name="mdi:vk"
+								:status="errors.vk ? 'error' : undefined"
+								@blur="
+									errors.vk =
+										isResident &&
+										!vkContactRegex.test(form.vk.trim())
+								"
+							/>
+							<span
+								:class="[$style.hint, errors.vk && $style.hintError]"
+							>
+								Например: <strong>@durov</strong> или
+								<strong>https://vk.com/durov</strong>. Это основной
+								способ связи коменданта с вами.
+							</span>
+						</div>
 					</template>
 				</div>
 
