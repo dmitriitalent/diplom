@@ -6,11 +6,11 @@ useSeoMeta({
 	robots: "noindex, nofollow",
 });
 
-import type { HeiDTO } from "~/dto/hei.dto";
 import { useAuthStore } from "~/stores/authStore";
 import { useDevice } from "~/composables/device";
 import type { DormitoryDtoGetList } from "~~/server/dto/dormitory/getList";
 import type { RegistrationDto } from "~/dto/registration.dto";
+import { requiresParentalConsent } from "~/utils/getAgeFromUnix";
 
 definePageMeta({
 	layout: "welcome",
@@ -21,10 +21,6 @@ const router = useRouter();
 const { registration } = useAuthStore();
 
 // ─── Remote data ──────────────────────────────────────────────────────────────
-
-const { data: heiList } = await useAsyncData<Array<HeiDTO>>(
-	async (_nuxtApp, { signal }) => $fetch("/api/hei/hei", { signal }),
-);
 
 const { data: dormitoriesFetch } = await useFetch<DormitoryDtoGetList>(
 	"/api/dormitory/list",
@@ -48,7 +44,6 @@ const form = reactive({
 	surname: "",
 	name: "",
 	patronymic: "",
-	hei: undefined as string | undefined,
 	birthdate: undefined as Date | undefined,
 	dormitory: undefined as string | undefined,
 	building: "",
@@ -56,9 +51,22 @@ const form = reactive({
 	room: "",
 	vk: "",
 	consentUserAgreement: false,
+	// Согласие законного представителя — обязательно для несовершеннолетних
+	// и для случаев, когда дата рождения не указана.
+	parentalConsent: false,
 });
 
 const isResident = ref(false);
+
+// ─── Возраст / родительское согласие ───────────────────────────────────────
+
+/**
+ * Нужно ли отображать чекбокс согласия законного представителя.
+ * Срабатывает, если дата рождения не указана либо пользователь младше 18.
+ */
+const needsParentalConsent = computed(() =>
+	requiresParentalConsent(form.birthdate),
+);
 
 // ─── Email verification state ─────────────────────────────────────────────────
 
@@ -172,9 +180,9 @@ const errors = reactive({
 	password: false,
 	passwordConfirm: false,
 	educationEmail: false,
-	birthdate: false,
-	vk: false,
+	dormitory: false,
 	consent: false,
+	parentalConsent: false,
 });
 
 const passwordRegex = /^(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
@@ -184,22 +192,29 @@ const passwordRegex = /^(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
 const vkContactRegex =
 	/^(@?[A-Za-z0-9._-]{2,}|https?:\/\/(www\.)?vk\.com\/[A-Za-z0-9._-]{2,}\/?.*)$/i;
 
+/**
+ * VK по умолчанию подсвечивается красным (поле пустое или невалидное).
+ * Заполнение не блокирует регистрацию — это «мягкая» подсказка.
+ */
+const isVkValid = computed(() => vkContactRegex.test(form.vk.trim()));
+
 const validate = () => {
 	errors.login = form.login.length < 6;
 	errors.password = !passwordRegex.test(form.password);
 	errors.passwordConfirm = form.password !== form.passwordConfirm;
 	errors.educationEmail = !studentEmailRegex.test(form.educationEmail);
-	errors.birthdate = !form.birthdate;
-	errors.vk = isResident.value && !vkContactRegex.test(form.vk.trim());
+	errors.dormitory = isResident.value && !form.dormitory;
 	errors.consent = !form.consentUserAgreement;
+	errors.parentalConsent =
+		needsParentalConsent.value && !form.parentalConsent;
 	return (
 		!errors.login &&
 		!errors.password &&
 		!errors.passwordConfirm &&
 		!errors.educationEmail &&
-		!errors.birthdate &&
-		!errors.vk &&
-		!errors.consent
+		!errors.dormitory &&
+		!errors.consent &&
+		!errors.parentalConsent
 	);
 };
 
@@ -224,7 +239,8 @@ const onSubmit = async () => {
 		password: form.password,
 		passwordConfirm: form.passwordConfirm,
 		educationEmail: form.educationEmail,
-		hei: form.hei,
+		// birthdate теперь опционален — BFF подставит sentinel 01.01.1900,
+		// если поле не заполнено.
 		birthdate: form.birthdate,
 		consentUserAgreement: form.consentUserAgreement,
 		isResident: isResident.value,
@@ -235,8 +251,8 @@ const onSubmit = async () => {
 		building: form.building,
 		floor: form.floor,
 		room: form.room,
-		// Для резидентов: VK обязателен и сохраняется как primary-контакт.
-		vkContact: isResident.value ? form.vk.trim() : undefined,
+		// VK теперь опционален. Если заполнен — сохраняется как primary.
+		vkContact: form.vk.trim() || undefined,
 	};
 
 	try {
@@ -461,31 +477,43 @@ const onSubmit = async () => {
 					/>
 				</div>
 
-				<!-- ── Учёба ───────────────────────────────────────────── -->
+				<!-- ── Дата рождения (необязательно) ──────────────────── -->
 				<div :class="$style.section">
-					<div :class="$style.sectionTitle">Учёба</div>
+					<div :class="$style.sectionTitle">
+						Дата рождения
+						<span :class="$style.optionalBadge">необязательно</span>
+					</div>
 
-					<div :class="$style.row">
-						<UiSelect
-							v-model="form.hei"
-							:options="heiList ?? []"
-							placeholder="Учебное заведение"
-							left-icon-name="tdesign:education"
+					<div :class="$style.fieldGroup">
+						<ClientOnly>
+							<UiDatePicker
+								v-model="form.birthdate"
+								placeholder="Дата рождения"
+								left-icon-name="cil:birthday-cake"
+								:enable-time="false"
+							/>
+						</ClientOnly>
+					</div>
+				</div>
+
+				<!-- ── Контакты — ВКонтакте ───────────────────────────── -->
+				<div :class="$style.section">
+					<div :class="$style.sectionTitle">Контакт ВКонтакте</div>
+
+					<div :class="$style.fieldGroup">
+						<UiInput
+							v-model="form.vk"
+							placeholder="Ссылка или тег ВКонтакте"
+							left-icon-name="mdi:vk"
+							:status="!isVkValid ? 'error' : undefined"
 						/>
-						<div :class="$style.fieldGroup">
-							<ClientOnly>
-								<UiDatePicker
-									v-model="form.birthdate"
-									placeholder="Дата рождения"
-									left-icon-name="cil:birthday-cake"
-									:enable-time="false"
-									@update:model-value="errors.birthdate = false"
-								/>
-							</ClientOnly>
-							<span v-if="errors.birthdate" :class="$style.errorMsg">
-								Укажите дату рождения
-							</span>
-						</div>
+						<span
+							:class="[$style.hint, !isVkValid && $style.hintError]"
+						>
+							Например: <strong>@example</strong> или
+							<strong>https://vk.com/example</strong>. Это основной
+							способ связи коменданта с вами.
+						</span>
 					</div>
 				</div>
 
@@ -498,6 +526,7 @@ const onSubmit = async () => {
 							v-model="isResident"
 							type="checkbox"
 							:class="$style.consentCheckbox"
+							@change="errors.dormitory = false"
 						/>
 						<span :class="$style.consentText">
 							Я являюсь проживающим в общежитии
@@ -510,12 +539,18 @@ const onSubmit = async () => {
 							После регистрации администратор получит заявку на вашу верификацию как проживающего.
 						</span>
 
-						<UiSelect
-							v-model="form.dormitory"
-							:options="dormitoryOptions"
-							placeholder="Общежитие"
-							left-icon-name="material-symbols:home-work-outline-rounded"
-						/>
+						<div :class="$style.fieldGroup">
+							<UiSelect
+								v-model="form.dormitory"
+								:options="dormitoryOptions"
+								placeholder="Общежитие"
+								left-icon-name="material-symbols:home-work-outline-rounded"
+								:status="errors.dormitory ? 'error' : undefined"
+							/>
+							<span v-if="errors.dormitory" :class="$style.errorMsg">
+								Выберите общежитие
+							</span>
+						</div>
 
 						<div :class="$style.row">
 							<UiInput
@@ -535,31 +570,10 @@ const onSubmit = async () => {
 							placeholder="Комната"
 							left-icon-name="material-symbols:home-work-outline-rounded"
 						/>
-
-						<div :class="$style.fieldGroup">
-							<UiInput
-								v-model="form.vk"
-								placeholder="Ссылка или тег ВКонтакте"
-								left-icon-name="mdi:vk"
-								:status="errors.vk ? 'error' : undefined"
-								@blur="
-									errors.vk =
-										isResident &&
-										!vkContactRegex.test(form.vk.trim())
-								"
-							/>
-							<span
-								:class="[$style.hint, errors.vk && $style.hintError]"
-							>
-								Например: <strong>@durov</strong> или
-								<strong>https://vk.com/durov</strong>. Это основной
-								способ связи коменданта с вами.
-							</span>
-						</div>
 					</template>
 				</div>
 
-				<!-- ── Согласие и кнопка ───────────────────────────────── -->
+				<!-- ── Согласие на обработку ПДн ──────────────────────── -->
 				<label
 					:class="[
 						$style.consent,
@@ -579,6 +593,50 @@ const onSubmit = async () => {
 						</RouterLink>
 					</span>
 				</label>
+
+				<!-- ── Согласие законного представителя (для < 18) ─────── -->
+				<label
+					v-if="needsParentalConsent"
+					:class="[
+						$style.consent,
+						errors.parentalConsent && $style.consentError,
+					]"
+				>
+					<input
+						v-model="form.parentalConsent"
+						type="checkbox"
+						:class="$style.consentCheckbox"
+						@change="errors.parentalConsent = false"
+					/>
+					<span :class="$style.consentText">
+						Мне меньше 18&nbsp;лет. Мой законный представитель
+						(родитель, усыновитель, опекун или попечитель)
+						ознакомлен с
+						<RouterLink to="/agreements/privacy" :class="$style.consentLink">
+							Политикой конфиденциальности
+						</RouterLink>
+						и дал согласие на мою регистрацию в&nbsp;сервисе
+						Hostelite, а также на обработку моих персональных
+						данных в&nbsp;порядке, описанном в&nbsp;Политике.
+						<RouterLink
+							to="/agreements/privacy"
+							:class="$style.consentLink"
+						>
+							Подробнее →
+						</RouterLink>
+					</span>
+				</label>
+
+				<!-- ── Серая плашка про настройки ──────────────────────── -->
+				<p :class="$style.settingsHint">
+					<Icon
+						name="mdi:cog-outline"
+						:class="$style.settingsHintIcon"
+					/>
+					Все персональные данные и видимость отдельных полей профиля
+					можно будет отредактировать в&nbsp;настройках профиля
+					в&nbsp;любое время.
+				</p>
 
 				<div :class="$style.submitWrap">
 					<UiButton
@@ -675,12 +733,51 @@ const onSubmit = async () => {
 				@include text-s;
 				@include color-black;
 
+				display: flex;
+				align-items: center;
+				column-gap: 8px;
 				opacity: 0.4;
 				text-transform: uppercase;
 				letter-spacing: 0.08em;
 				padding-bottom: 8px;
 				border-bottom: 1px solid rgba($color-black-rgb, 0.1);
 				margin-bottom: 2px;
+			}
+
+			.optionalBadge {
+				@include text-xs;
+
+				font-weight: 500;
+				text-transform: none;
+				letter-spacing: 0;
+				padding: 2px 8px;
+				border-radius: 100px;
+				background: rgba($color-black-rgb, 0.08);
+				opacity: 0.85;
+			}
+		}
+
+		// ── Серая подсказка про настройки ────────────────────────
+
+		.settingsHint {
+			@include reset;
+			@include text-s;
+			@include color-black(0.55);
+
+			display: flex;
+			align-items: flex-start;
+			column-gap: 8px;
+			padding: 12px 14px;
+			border-radius: 10px;
+			background: rgba($color-black-rgb, 0.04);
+			line-height: 1.45;
+
+			.settingsHintIcon {
+				width: 16px;
+				height: 16px;
+				flex-shrink: 0;
+				margin-top: 2px;
+				opacity: 0.7;
 			}
 		}
 

@@ -20,16 +20,28 @@ export default defineEventHandler(async (event) => {
 		const config = useRuntimeConfig();
 		const body = (await readBody(event)) as RegistrationBody;
 
-		const date = (body.birthdate as unknown as string)
-			.split("T")[0]
-			.split(".")[0]
-			.split("-");
-		const birthdate = date[2] + "." + date[1] + "." + date[0];
+		// Дата рождения теперь опциональна. Если пользователь не указал —
+		// сохраняем sentinel 01.01.1900 (означает «возраст не указан»).
+		// В UI такая дата выводится прочерком (см. utils/getAgeFromUnix.ts).
+		const PLACEHOLDER_BIRTHDATE = "01.01.1900";
 
-		// VK обязателен для резидентов и сохраняется как primary-контакт.
+		let birthdate = PLACEHOLDER_BIRTHDATE;
+		const rawBirthdate = body.birthdate;
+		if (rawBirthdate) {
+			const raw =
+				typeof rawBirthdate === "string"
+					? rawBirthdate
+					: new Date(rawBirthdate as unknown as Date).toISOString();
+			const date = raw.split("T")[0].split(".")[0].split("-");
+			if (date.length === 3) {
+				birthdate = date[2] + "." + date[1] + "." + date[0];
+			}
+		}
+
+		// VK теперь опционален. Если указан — сохраняется как primary-контакт.
 		const contacts: BackendContact[] = [];
 		const vk = body.vkContact?.trim();
-		if (body.isResident && vk) {
+		if (vk) {
 			contacts.push({
 				key: "vk",
 				value: vk,
@@ -89,7 +101,7 @@ export default defineEventHandler(async (event) => {
 		throw createError({
 			statusCode: err?.response?.status || 500,
 			statusMessage:
-				err?.response?.data?.message || "Неверный логин или пароль",
+				err?.response?.data?.message || "Такая почта уже используется",
 		});
 	}
 });

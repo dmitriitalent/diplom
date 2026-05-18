@@ -12,6 +12,7 @@ import { useAuthStore } from "~/stores/authStore";
 import { useSelfStore } from "~/stores/selfStore";
 import type { DormitoryDtoGetList } from "~~/server/dto/dormitory/getList";
 import type { SelfDataVisibility } from "~~/server/dto/selfDataVisibility.dto";
+import { isVkContact } from "~/utils/contactUrl";
 
 const router = useRouter();
 const { logout } = useAuthStore();
@@ -122,6 +123,24 @@ const deleteContact = (index: number) => {
 const setPrimary = (index: number) => {
 	localContacts.value.forEach((c, i) => {
 		c.isPrimary = i === index;
+	});
+};
+
+/**
+ * `true`, если у пользователя НЕ заполнен ни один VK-контакт.
+ * Используется для отображения неубираемой плашки в секции контактов:
+ * VK — основной канал связи комендатуры с проживающим.
+ */
+const hasNoVkContact = computed(() =>
+	!localContacts.value.some((c) => isVkContact(c.key) && c.value.trim()),
+);
+
+const addVkContactQuick = () => {
+	localContacts.value.push({
+		key: "vk",
+		value: "",
+		visibility: "EVERYONE",
+		isPrimary: localContacts.value.length === 0,
 	});
 };
 
@@ -390,6 +409,35 @@ const onClickLogout = () => {
 				<!-- ── Контакты ────────────────────────────────────────── -->
 				<div :class="$style.section">
 					<div :class="$style.sectionTitle">Контакты</div>
+
+					<!-- Неубираемая плашка: VK — основной канал коменданта -->
+					<div v-if="hasNoVkContact" :class="$style.vkWarning">
+						<Icon
+							name="mdi:vk"
+							:class="$style.vkWarningIcon"
+						/>
+						<div :class="$style.vkWarningBody">
+							<div :class="$style.vkWarningTitle">
+								Не указан контакт ВКонтакте
+							</div>
+							<div :class="$style.vkWarningText">
+								ВКонтакте — основной канал связи коменданта
+								с&nbsp;проживающими. Без него комендант не
+								сможет написать вам в&nbsp;личные сообщения.
+							</div>
+							<button
+								type="button"
+								:class="$style.vkWarningBtn"
+								@click="addVkContactQuick"
+							>
+								<Icon
+									name="mdi:plus"
+									:class="$style.vkWarningBtnIcon"
+								/>
+								Добавить VK
+							</button>
+						</div>
+					</div>
 
 					<div
 						v-for="(contact, i) in localContacts"
@@ -721,6 +769,76 @@ const onClickLogout = () => {
 				width: 16px;
 				height: 16px;
 				margin-right: 4px;
+			}
+		}
+
+		// ── Плашка: VK не указан (неубираемая) ──────────────────
+
+		.vkWarning {
+			@include color-black;
+
+			display: flex;
+			align-items: flex-start;
+			column-gap: 12px;
+			padding: 14px 16px;
+			border-radius: 10px;
+			border: 1px solid rgba($color-error-rgb, 0.35);
+			background: rgba($color-error-rgb, 0.08);
+
+			.vkWarningIcon {
+				width: 28px;
+				height: 28px;
+				flex-shrink: 0;
+				color: #0077ff;
+				margin-top: 2px;
+			}
+
+			.vkWarningBody {
+				display: flex;
+				flex-direction: column;
+				row-gap: 6px;
+				min-width: 0;
+			}
+
+			.vkWarningTitle {
+				@include text-m;
+				@include color-black;
+
+				font-weight: 600;
+			}
+
+			.vkWarningText {
+				@include text-s;
+				@include color-black(0.75);
+
+				line-height: 1.45;
+			}
+
+			.vkWarningBtn {
+				@include text-s;
+
+				display: inline-flex;
+				align-items: center;
+				column-gap: 6px;
+				align-self: flex-start;
+				margin-top: 4px;
+				padding: 7px 14px;
+				border-radius: 8px;
+				border: 1px solid rgba($color-accent-rgb, 0.4);
+				background: rgba($color-accent-rgb, 0.1);
+				color: $color-accent;
+				cursor: pointer;
+				font-weight: 600;
+				transition: background 0.15s;
+
+				&:hover {
+					background: rgba($color-accent-rgb, 0.2);
+				}
+
+				.vkWarningBtnIcon {
+					width: 14px;
+					height: 14px;
+				}
 			}
 		}
 
