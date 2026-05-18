@@ -276,6 +276,20 @@ const onInput = ($event: Event) => {
 		&.--status-error {
 			@include color-error-bg;
 		}
+
+		// Скрываем нативные стрелки увеличения/уменьшения у type="number".
+		// В Hostelite не используется steppers UX — поле для ввода цифр
+		// (цена, этаж и т.п.) выглядит чище без спиннера.
+		&[type="number"] {
+			-moz-appearance: textfield;
+			appearance: textfield;
+		}
+		&[type="number"]::-webkit-inner-spin-button,
+		&[type="number"]::-webkit-outer-spin-button {
+			-webkit-appearance: none;
+			appearance: none;
+			margin: 0;
+		}
 	}
 }
 </style>
