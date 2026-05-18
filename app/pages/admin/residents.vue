@@ -147,7 +147,7 @@ const generatedMentions = computed(() => {
 			),
 		)
 		.filter((s) => s.length > 0)
-		.join(" ");
+		.join(", ");
 });
 
 const generatedMessage = computed(() => {
