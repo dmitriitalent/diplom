@@ -12,6 +12,7 @@ export default defineNuxtConfig({
 				"/privacy",
 				"/privacy-policy",
 				"/agreements/privacy",
+				"/agreements/terms",
 			],
 			api: "http://api-gateway:8080",
 		},

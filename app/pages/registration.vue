@@ -50,6 +50,9 @@ const form = reactive({
 	floor: "",
 	room: "",
 	vk: "",
+	// Согласие с Пользовательским соглашением (/agreements/terms)
+	consentTerms: false,
+	// Согласие на обработку ПДн (/agreements/privacy)
 	consentUserAgreement: false,
 	// Согласие законного представителя — обязательно для несовершеннолетних
 	// и для случаев, когда дата рождения не указана.
@@ -181,6 +184,7 @@ const errors = reactive({
 	passwordConfirm: false,
 	educationEmail: false,
 	dormitory: false,
+	consentTerms: false,
 	consent: false,
 	parentalConsent: false,
 });
@@ -204,6 +208,7 @@ const validate = () => {
 	errors.passwordConfirm = form.password !== form.passwordConfirm;
 	errors.educationEmail = !studentEmailRegex.test(form.educationEmail);
 	errors.dormitory = isResident.value && !form.dormitory;
+	errors.consentTerms = !form.consentTerms;
 	errors.consent = !form.consentUserAgreement;
 	errors.parentalConsent =
 		needsParentalConsent.value && !form.parentalConsent;
@@ -213,6 +218,7 @@ const validate = () => {
 		!errors.passwordConfirm &&
 		!errors.educationEmail &&
 		!errors.dormitory &&
+		!errors.consentTerms &&
 		!errors.consent &&
 		!errors.parentalConsent
 	);
@@ -572,6 +578,27 @@ const onSubmit = async () => {
 						/>
 					</template>
 				</div>
+
+				<!-- ── Согласие с Пользовательским соглашением ─────────── -->
+				<label
+					:class="[
+						$style.consent,
+						errors.consentTerms && $style.consentError,
+					]"
+				>
+					<input
+						v-model="form.consentTerms"
+						type="checkbox"
+						:class="$style.consentCheckbox"
+						@change="errors.consentTerms = false"
+					/>
+					<span :class="$style.consentText">
+						Я принимаю
+						<RouterLink to="/agreements/terms" :class="$style.consentLink">
+							Пользовательское соглашение
+						</RouterLink>
+					</span>
+				</label>
 
 				<!-- ── Согласие на обработку ПДн ──────────────────────── -->
 				<label
