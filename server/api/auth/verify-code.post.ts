@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import { STATICFILES_DIR, ensureStaticfilesDir } from "~~/server/utils/staticfiles";
-import { deleteUnisenderList } from "~~/server/utils/unisender";
 
 const STUDENT_EMAIL_REGEX = /^[^@]+@mai\.education$/i;
 
@@ -12,7 +11,6 @@ function emailToFileKey(email: string): string {
 interface VerifyData {
 	code: string;
 	email: string;
-	listId: number;
 	expires: number;
 }
 
@@ -41,7 +39,6 @@ export default defineEventHandler(async (event) => {
 
 	if (Date.now() > data.expires) {
 		fs.unlinkSync(filePath);
-		await deleteUnisenderList(data.listId);
 		throw createError({ statusCode: 410, message: "Код истёк. Запросите новый код." });
 	}
 
@@ -50,7 +47,6 @@ export default defineEventHandler(async (event) => {
 	}
 
 	fs.unlinkSync(filePath);
-	await deleteUnisenderList(data.listId);
 
 	return { success: true };
 });
