@@ -37,6 +37,23 @@ export default defineEventHandler(async (event) => {
 		setCookie(event, "accessToken", res.data.accessToken);
 		setCookie(event, "refreshToken", res.data.refreshToken);
 
+		// Если пользователь указал что проживает в общежитии — автоматически создаём заявку на верификацию
+		if (body.isResident && body.educationEmail && body.dormitory) {
+			try {
+				await axios.post(
+					`${config.api}/verifications`,
+					{ documentId: body.educationEmail },
+					{
+						headers: {
+							Cookie: `accessToken=${res.data.accessToken}; refreshToken=${res.data.refreshToken}`,
+						},
+					},
+				);
+			} catch (verifyErr: any) {
+				console.log(FILENAME, "auto-verification submit failed:", verifyErr?.response?.data);
+			}
+		}
+
 		return "login success";
 	} catch (err: any) {
 		console.log("error at " + FILENAME, err?.response?.data);
