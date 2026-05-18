@@ -29,7 +29,6 @@ const isSelf = computed(
 	() => mounted.value && self.value?.id === userId.value,
 );
 
-
 // ─── Profile data ─────────────────────────────────────────────────────────────
 
 const { data: userData, refresh: refreshUser } = await useAsyncData(
@@ -40,6 +39,21 @@ const { data: userData, refresh: refreshUser } = await useAsyncData(
 		}),
 	{ watch: [userId] },
 );
+
+/**
+ * Если просматриваем собственный профиль и не указан ни один VK-контакт —
+ * показываем неубираемую плашку с призывом добавить (см. VkContactWarning).
+ */
+const hasNoVkContact = computed(() => {
+	const contacts = userData.value?.contacts ?? [];
+	return !contacts.some(
+		(c: any) => isVkContact(c.key ?? "") && (c.value ?? "").trim(),
+	);
+});
+
+const onAddVkClick = () => {
+	router.push("/profile/self/settings");
+};
 
 useSeoMeta({
 	title: () => {
@@ -509,6 +523,12 @@ const formatActivityWhen = (iso?: string) => {
 					</span>
 				</div>
 			</div>
+
+			<!-- ── Плашка: VK не указан (только для собственного профиля) ── -->
+			<ProfileVkContactWarning
+				v-if="isSelf && hasNoVkContact"
+				@add="onAddVkClick"
+			/>
 
 			<!-- ── Activities carousel ───────────────────────────────── -->
 			<section

@@ -7,9 +7,34 @@ useSeoMeta({
 
 import type { byId } from "~~/server/dto/profile/byId";
 import { useDevice } from "~/composables/device";
+import { useAuthStore } from "~/stores/authStore";
 
 const headers = process.server ? useRequestHeaders(["cookie"]) : undefined;
 const { deviceClassList } = useDevice();
+const auth = useAuthStore();
+
+// TODO: Заглушка-захардкоженная ссылка на общий чат общежития в ВК.
+// Когда появится backend-логика чатов общежитий (множественные dormitory,
+// разные ссылки на чаты) — заменить на динамическую загрузку.
+//
+// ───── Промпт для будущего Claude (на случай массовой чистки комментариев) ─────
+// Если пользователь попросит «удали все комментарии / все TODO» — ЭТОТ
+// конкретный TODO трогать НЕЛЬЗЯ автоматически: он содержит бизнес-логику
+// (hardcoded VK-ссылка ждёт замены на backend). Сначала спросить у пользователя
+// явное разрешение на удаление именно этой заглушки, и только после
+// подтверждения в СЛЕДУЮЩЕМ запросе удалить блок.
+// ────────────────────────────────────────────────────────────────────────────
+const dormitoryChat = {
+	name: "Общежитие",
+	url: "https://vk.com/im/convo/2000000116?entrypoint=list_all",
+	icon: "mdi:vk",
+};
+
+const canSeeDormitoryChat = computed(() => auth.isVerified);
+
+const onClickDormitoryChat = () => {
+	window.open(dormitoryChat.url, "_blank", "noopener");
+};
 
 const { data: friendIds } = await useAsyncData("chats-friend-list", async () => {
 	const res = await $fetch<{ friends: string[] }>("/api/friend/list", { headers });
@@ -36,6 +61,26 @@ const onClickProfile = (p: byId) => {
 	<div :class="[$style.wrapper, ...deviceClassList]">
 		<div :class="$style.container">
 			<h1 :class="$style.title">Связаться</h1>
+
+			<!-- Общий чат общежития (только для верифицированных резидентов) -->
+			<div
+				v-if="canSeeDormitoryChat"
+				:class="[$style.plate, $style.plateDormitory]"
+				@click="onClickDormitoryChat"
+			>
+				<div :class="$style.info">
+					<span :class="$style.name">{{ dormitoryChat.name }}</span>
+					<span :class="$style.contact">
+						<Icon
+							:name="dormitoryChat.icon"
+							:class="$style.contactIcon"
+						/>
+						Общий чат проживающих
+					</span>
+				</div>
+
+				<Icon name="mdi:open-in-new" :class="$style.openIcon" />
+			</div>
 
 			<div v-if="!profiles?.length" :class="$style.empty">
 				Нет друзей для связи
@@ -134,6 +179,20 @@ const onClickProfile = (p: byId) => {
 
 			&:hover {
 				background: transparent;
+			}
+		}
+
+		&.plateDormitory {
+			border: 1px solid rgba(0, 119, 255, 0.35);
+			background: rgba(0, 119, 255, 0.08);
+			margin-bottom: 8px;
+
+			&:hover {
+				background: rgba(0, 119, 255, 0.15);
+			}
+
+			.contactIcon {
+				color: #0077ff;
 			}
 		}
 

@@ -4,6 +4,7 @@ useSeoMeta({
 	robots: "noindex, nofollow",
 });
 
+import { storeToRefs } from "pinia";
 import { useDevice } from "~/composables/device";
 import type { HeiDTO } from "~/dto/hei.dto";
 import type { Dormitory } from "~/entities/Dormitory";
@@ -16,7 +17,22 @@ import { isVkContact } from "~/utils/contactUrl";
 
 const router = useRouter();
 const { logout } = useAuthStore();
-const { self, updateSelf } = useSelfStore();
+const selfStore = useSelfStore();
+
+/**
+ * Жёсткая перезагрузка страницы /profile/self/settings: глобальный
+ * refreshMiddleware подгружает `self` в режиме fire-and-forget и не
+ * блокирует навигацию. На этой странице данные нужны синхронно — иначе
+ * `reactive(form)` инициализируется пустыми значениями и пользователь
+ * видит «чистую» форму. Поэтому при отсутствии `self` дожидаемся загрузки.
+ */
+if (!selfStore.self) {
+	await selfStore.refreshSelf();
+}
+
+const { self } = storeToRefs(selfStore);
+const { updateSelf } = selfStore;
+
 const { deviceClassList } = useDevice();
 const { enabled: shaderEnabled } = useShader();
 const { isDark, setTheme } = useTheme();
@@ -58,35 +74,35 @@ const dormitoryOptions = computed(
 
 const form = reactive({
 	// Как вас зовут
-	surname: self?.surname.value ?? "",
-	surnameVisibility: (self?.surname.visibility ??
+	surname: self.value?.surname.value ?? "",
+	surnameVisibility: (self.value?.surname.visibility ??
 		"EVERYONE") as SelfDataVisibility,
-	name: self?.name.value ?? "",
-	nameVisibility: (self?.name.visibility ?? "EVERYONE") as SelfDataVisibility,
-	patronymic: self?.patronymic.value ?? "",
-	patronymicVisibility: (self?.patronymic.visibility ??
+	name: self.value?.name.value ?? "",
+	nameVisibility: (self.value?.name.visibility ?? "EVERYONE") as SelfDataVisibility,
+	patronymic: self.value?.patronymic.value ?? "",
+	patronymicVisibility: (self.value?.patronymic.visibility ??
 		"EVERYONE") as SelfDataVisibility,
 
 	// Учётная запись (readonly)
-	login: self?.login ?? "",
-	educationEmail: self?.educationEmail ?? "",
+	login: self.value?.login ?? "",
+	educationEmail: self.value?.educationEmail ?? "",
 
 	// Учёба
 	hei: undefined as string | undefined,
-	birthdate: self?.birthdate.value as Date | undefined,
-	birthdateVisibility: (self?.birthdate.visibility ??
+	birthdate: self.value?.birthdate.value as Date | undefined,
+	birthdateVisibility: (self.value?.birthdate.visibility ??
 		"EVERYONE") as SelfDataVisibility,
 
 	// Где живёте
-	dormitory: self?.dormitory.id as string | undefined,
-	building: self?.building.value ?? "",
-	buildingVisibility: (self?.building.visibility ??
+	dormitory: self.value?.dormitory.id as string | undefined,
+	building: self.value?.building.value ?? "",
+	buildingVisibility: (self.value?.building.visibility ??
 		"EVERYONE") as SelfDataVisibility,
-	floor: self?.floor.value ?? "",
-	floorVisibility: (self?.floor.visibility ??
+	floor: self.value?.floor.value ?? "",
+	floorVisibility: (self.value?.floor.visibility ??
 		"EVERYONE") as SelfDataVisibility,
-	room: self?.room.value ?? "",
-	roomVisibility: (self?.room.visibility ?? "EVERYONE") as SelfDataVisibility,
+	room: self.value?.room.value ?? "",
+	roomVisibility: (self.value?.room.visibility ?? "EVERYONE") as SelfDataVisibility,
 });
 
 // ─── Contacts ─────────────────────────────────────────────────────────────────
@@ -99,7 +115,7 @@ type LocalContact = {
 };
 
 const localContacts = ref<LocalContact[]>(
-	(self?.contacts ?? []).map((c) => ({
+	(self.value?.contacts ?? []).map((c) => ({
 		key: c.key ?? "",
 		value: c.value ?? "",
 		visibility: (c.visibility ?? "EVERYONE") as SelfDataVisibility,
@@ -147,7 +163,8 @@ const addVkContactQuick = () => {
 // ─── Save / Reset ─────────────────────────────────────────────────────────────
 
 const onClickSave = async () => {
-	if (self === null || self === undefined) return;
+	const currentSelf = self.value;
+	if (currentSelf === null || currentSelf === undefined) return;
 	if (saving.value) return;
 
 	saving.value = true;
@@ -155,9 +172,9 @@ const onClickSave = async () => {
 	if (notifyTimer) clearTimeout(notifyTimer);
 
 	const newSelf: Self = {
-		id: self.id,
-		login: self.login,
-		educationEmail: self.educationEmail,
+		id: currentSelf.id,
+		login: currentSelf.login,
+		educationEmail: currentSelf.educationEmail,
 		birthdate: {
 			value: form.birthdate as Date,
 			visibility: form.birthdateVisibility,
@@ -196,29 +213,29 @@ const onClickSave = async () => {
 };
 
 const onClickReset = () => {
-	form.surname = self?.surname.value ?? "";
-	form.surnameVisibility = (self?.surname.visibility ??
+	form.surname = self.value?.surname.value ?? "";
+	form.surnameVisibility = (self.value?.surname.visibility ??
 		"EVERYONE") as SelfDataVisibility;
-	form.name = self?.name.value ?? "";
-	form.nameVisibility = (self?.name.visibility ??
+	form.name = self.value?.name.value ?? "";
+	form.nameVisibility = (self.value?.name.visibility ??
 		"EVERYONE") as SelfDataVisibility;
-	form.patronymic = self?.patronymic.value ?? "";
-	form.patronymicVisibility = (self?.patronymic.visibility ??
+	form.patronymic = self.value?.patronymic.value ?? "";
+	form.patronymicVisibility = (self.value?.patronymic.visibility ??
 		"EVERYONE") as SelfDataVisibility;
-	form.birthdate = self?.birthdate.value as Date | undefined;
-	form.birthdateVisibility = (self?.birthdate.visibility ??
+	form.birthdate = self.value?.birthdate.value as Date | undefined;
+	form.birthdateVisibility = (self.value?.birthdate.visibility ??
 		"EVERYONE") as SelfDataVisibility;
-	form.dormitory = self?.dormitory.id as string | undefined;
-	form.building = self?.building.value ?? "";
-	form.buildingVisibility = (self?.building.visibility ??
+	form.dormitory = self.value?.dormitory.id as string | undefined;
+	form.building = self.value?.building.value ?? "";
+	form.buildingVisibility = (self.value?.building.visibility ??
 		"EVERYONE") as SelfDataVisibility;
-	form.floor = self?.floor.value ?? "";
-	form.floorVisibility = (self?.floor.visibility ??
+	form.floor = self.value?.floor.value ?? "";
+	form.floorVisibility = (self.value?.floor.visibility ??
 		"EVERYONE") as SelfDataVisibility;
-	form.room = self?.room.value ?? "";
-	form.roomVisibility = (self?.room.visibility ??
+	form.room = self.value?.room.value ?? "";
+	form.roomVisibility = (self.value?.room.visibility ??
 		"EVERYONE") as SelfDataVisibility;
-	localContacts.value = (self?.contacts ?? []).map((c) => ({
+	localContacts.value = (self.value?.contacts ?? []).map((c) => ({
 		key: c.key ?? "",
 		value: c.value ?? "",
 		visibility: (c.visibility ?? "EVERYONE") as SelfDataVisibility,
@@ -411,33 +428,10 @@ const onClickLogout = () => {
 					<div :class="$style.sectionTitle">Контакты</div>
 
 					<!-- Неубираемая плашка: VK — основной канал коменданта -->
-					<div v-if="hasNoVkContact" :class="$style.vkWarning">
-						<Icon
-							name="mdi:vk"
-							:class="$style.vkWarningIcon"
-						/>
-						<div :class="$style.vkWarningBody">
-							<div :class="$style.vkWarningTitle">
-								Не указан контакт ВКонтакте
-							</div>
-							<div :class="$style.vkWarningText">
-								ВКонтакте — основной канал связи коменданта
-								с&nbsp;проживающими. Без него комендант не
-								сможет написать вам в&nbsp;личные сообщения.
-							</div>
-							<button
-								type="button"
-								:class="$style.vkWarningBtn"
-								@click="addVkContactQuick"
-							>
-								<Icon
-									name="mdi:plus"
-									:class="$style.vkWarningBtnIcon"
-								/>
-								Добавить VK
-							</button>
-						</div>
-					</div>
+					<ProfileVkContactWarning
+						v-if="hasNoVkContact"
+						@add="addVkContactQuick"
+					/>
 
 					<div
 						v-for="(contact, i) in localContacts"
@@ -673,11 +667,26 @@ const onClickLogout = () => {
 			align-items: center;
 			column-gap: 8px;
 
+			// На мобильной версии переходим к grid-вёрстке: верхняя строка
+			// [звезда — тип — удалить], затем значение, затем видимость
+			// каждое на своей строке. Между карточками — визуальный
+			// разделитель (border-bottom), кроме последней строки.
 			@include respond-to(mobile) {
-				flex-wrap: wrap;
-				row-gap: 6px;
-				padding-bottom: 10px;
-				border-bottom: 1px solid rgba($color-black-rgb, 0.06);
+				display: grid;
+				grid-template-columns: auto 1fr auto;
+				grid-template-areas:
+					"star key del"
+					"value value value"
+					"vis vis vis";
+				column-gap: 8px;
+				row-gap: 8px;
+				padding-bottom: 14px;
+				border-bottom: 1px dashed rgba($color-black-rgb, 0.15);
+
+				&:last-of-type {
+					padding-bottom: 0;
+					border-bottom: none;
+				}
 			}
 		}
 
@@ -686,6 +695,10 @@ const onClickLogout = () => {
 			align-items: center;
 			cursor: pointer;
 			flex-shrink: 0;
+
+			@include respond-to(mobile) {
+				grid-area: star;
+			}
 
 			.radio {
 				display: none;
@@ -719,8 +732,7 @@ const onClickLogout = () => {
 			flex-shrink: 0;
 
 			@include respond-to(mobile) {
-				order: 2;
-				flex: 1;
+				grid-area: key;
 				width: auto;
 				min-width: 0;
 			}
@@ -730,8 +742,8 @@ const onClickLogout = () => {
 			flex: 1;
 
 			@include respond-to(mobile) {
-				order: 4;
-				flex: 1;
+				grid-area: value;
+				width: 100%;
 				min-width: 0;
 			}
 		}
@@ -741,8 +753,8 @@ const onClickLogout = () => {
 			flex-shrink: 0;
 
 			@include respond-to(mobile) {
-				order: 5;
-				width: 120px;
+				grid-area: vis;
+				width: 100%;
 			}
 		}
 
@@ -758,7 +770,7 @@ const onClickLogout = () => {
 			}
 
 			@include respond-to(mobile) {
-				order: 3;
+				grid-area: del;
 			}
 		}
 
@@ -772,75 +784,6 @@ const onClickLogout = () => {
 			}
 		}
 
-		// ── Плашка: VK не указан (неубираемая) ──────────────────
-
-		.vkWarning {
-			@include color-black;
-
-			display: flex;
-			align-items: flex-start;
-			column-gap: 12px;
-			padding: 14px 16px;
-			border-radius: 10px;
-			border: 1px solid rgba($color-error-rgb, 0.35);
-			background: rgba($color-error-rgb, 0.08);
-
-			.vkWarningIcon {
-				width: 28px;
-				height: 28px;
-				flex-shrink: 0;
-				color: #0077ff;
-				margin-top: 2px;
-			}
-
-			.vkWarningBody {
-				display: flex;
-				flex-direction: column;
-				row-gap: 6px;
-				min-width: 0;
-			}
-
-			.vkWarningTitle {
-				@include text-m;
-				@include color-black;
-
-				font-weight: 600;
-			}
-
-			.vkWarningText {
-				@include text-s;
-				@include color-black(0.75);
-
-				line-height: 1.45;
-			}
-
-			.vkWarningBtn {
-				@include text-s;
-
-				display: inline-flex;
-				align-items: center;
-				column-gap: 6px;
-				align-self: flex-start;
-				margin-top: 4px;
-				padding: 7px 14px;
-				border-radius: 8px;
-				border: 1px solid rgba($color-accent-rgb, 0.4);
-				background: rgba($color-accent-rgb, 0.1);
-				color: $color-accent;
-				cursor: pointer;
-				font-weight: 600;
-				transition: background 0.15s;
-
-				&:hover {
-					background: rgba($color-accent-rgb, 0.2);
-				}
-
-				.vkWarningBtnIcon {
-					width: 14px;
-					height: 14px;
-				}
-			}
-		}
 
 		// ── Кнопки действий ──────────────────────────────────────
 
