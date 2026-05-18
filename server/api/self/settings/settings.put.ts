@@ -45,11 +45,21 @@ export default defineEventHandler(async (event) => {
 		const config = useRuntimeConfig();
 		const cookie = getHeader(event, "cookie");
 
-		const date = body.birthdate.value
-			.split("T")[0]
-			.split(".")[0]
-			.split("-");
-		const birthdate = date[2] + "." + date[1] + "." + date[0];
+		// Дата рождения опциональна. Если не задана — sentinel 01.01.1900.
+		const PLACEHOLDER_BIRTHDATE = "01.01.1900";
+
+		let birthdate = PLACEHOLDER_BIRTHDATE;
+		const rawBirthdate = body.birthdate?.value;
+		if (rawBirthdate) {
+			const raw =
+				typeof rawBirthdate === "string"
+					? rawBirthdate
+					: new Date(rawBirthdate).toISOString();
+			const date = raw.split("T")[0].split(".")[0].split("-");
+			if (date.length === 3) {
+				birthdate = date[2] + "." + date[1] + "." + date[0];
+			}
+		}
 
 		const normalizedContacts = ensureSinglePrimary(
 			(body.contacts ?? []) as ContactDto[],
