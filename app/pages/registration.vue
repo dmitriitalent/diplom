@@ -41,29 +41,127 @@ const dormitoryOptions = computed(
 // ─── Form state ───────────────────────────────────────────────────────────────
 
 const form = reactive({
-	// Учётная запись
 	login: "",
 	password: "",
 	passwordConfirm: "",
 	educationEmail: "",
-
-	// Как вас зовут
 	surname: "",
 	name: "",
 	patronymic: "",
-
-	// Учёба
 	hei: undefined as string | undefined,
 	birthdate: undefined as Date | undefined,
-
-	// Для проживающих
 	dormitory: undefined as string | undefined,
 	building: "",
 	floor: "",
 	room: "",
-
-	// Согласие
 	consentUserAgreement: false,
+});
+
+const isResident = ref(false);
+
+// ─── Email verification state ─────────────────────────────────────────────────
+
+const studentEmailRegex = /^[^@]+@mai\.education$/i;
+
+const emailCodeSent = ref(false);
+const emailVerified = ref(false);
+const verificationCode = ref("");
+const codeSending = ref(false);
+const codeVerifying = ref(false);
+const sendCodeError = ref("");
+const verifyCodeError = ref("");
+const resendCooldown = ref(0);
+let resendTimer: ReturnType<typeof setInterval> | null = null;
+
+const isValidStudentEmail = computed(() =>
+	studentEmailRegex.test(form.educationEmail.trim()),
+);
+
+watch(
+	() => form.educationEmail,
+	(newVal, oldVal) => {
+		if (newVal !== oldVal && (emailCodeSent.value || emailVerified.value)) {
+			resetEmailVerification();
+		}
+	},
+);
+
+const resetEmailVerification = () => {
+	emailCodeSent.value = false;
+	emailVerified.value = false;
+	verificationCode.value = "";
+	sendCodeError.value = "";
+	verifyCodeError.value = "";
+	if (resendTimer) {
+		clearInterval(resendTimer);
+		resendTimer = null;
+		resendCooldown.value = 0;
+	}
+};
+
+const startResendCooldown = () => {
+	resendCooldown.value = 60;
+	resendTimer = setInterval(() => {
+		resendCooldown.value--;
+		if (resendCooldown.value <= 0) {
+			clearInterval(resendTimer!);
+			resendTimer = null;
+		}
+	}, 1000);
+};
+
+const onSendCode = async () => {
+	if (codeSending.value || resendCooldown.value > 0) return;
+	if (!isValidStudentEmail.value) {
+		sendCodeError.value = "Введите корректную студенческую почту @mai.education";
+		return;
+	}
+
+	codeSending.value = true;
+	sendCodeError.value = "";
+
+	try {
+		await $fetch("/api/auth/send-verification-code", {
+			method: "POST",
+			body: { email: form.educationEmail.trim().toLowerCase() },
+		});
+		emailCodeSent.value = true;
+		startResendCooldown();
+	} catch (err: any) {
+		sendCodeError.value = err?.data?.message ?? "Не удалось отправить код";
+	} finally {
+		codeSending.value = false;
+	}
+};
+
+const onVerifyCode = async () => {
+	if (codeVerifying.value) return;
+	if (!verificationCode.value.trim()) {
+		verifyCodeError.value = "Введите код из письма";
+		return;
+	}
+
+	codeVerifying.value = true;
+	verifyCodeError.value = "";
+
+	try {
+		await $fetch("/api/auth/verify-code", {
+			method: "POST",
+			body: {
+				email: form.educationEmail.trim().toLowerCase(),
+				code: verificationCode.value.trim(),
+			},
+		});
+		emailVerified.value = true;
+	} catch (err: any) {
+		verifyCodeError.value = err?.data?.message ?? "Неверный код";
+	} finally {
+		codeVerifying.value = false;
+	}
+};
+
+onBeforeUnmount(() => {
+	if (resendTimer) clearInterval(resendTimer);
 });
 
 // ─── Validation ───────────────────────────────────────────────────────────────
@@ -78,14 +176,12 @@ const errors = reactive({
 });
 
 const passwordRegex = /^(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{6,}$/;
-const emailRegex =
-	/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const validate = () => {
 	errors.login = form.login.length < 6;
 	errors.password = !passwordRegex.test(form.password);
 	errors.passwordConfirm = form.password !== form.passwordConfirm;
-	errors.educationEmail = !emailRegex.test(form.educationEmail);
+	errors.educationEmail = !studentEmailRegex.test(form.educationEmail);
 	errors.birthdate = !form.birthdate;
 	errors.consent = !form.consentUserAgreement;
 	return (
@@ -104,6 +200,10 @@ const submitError = ref("");
 const loading = ref(false);
 
 const onSubmit = async () => {
+	if (!emailVerified.value) {
+		submitError.value = "Сначала подтвердите студенческую почту";
+		return;
+	}
 	if (!validate()) return;
 	if (loading.value) return;
 
@@ -118,6 +218,7 @@ const onSubmit = async () => {
 		hei: form.hei,
 		birthdate: form.birthdate,
 		consentUserAgreement: form.consentUserAgreement,
+		isResident: isResident.value,
 		surname: form.surname,
 		name: form.name,
 		patronymic: form.patronymic,
@@ -204,17 +305,124 @@ const onSubmit = async () => {
 						</span>
 					</div>
 
+					<!-- ── Студенческая почта + верификация ── -->
 					<div :class="$style.fieldGroup">
 						<UiInput
 							v-model="form.educationEmail"
 							placeholder="Студенческая почта"
 							left-icon-name="material-symbols:mail-outline"
 							:status="errors.educationEmail ? 'error' : undefined"
-							@blur="errors.educationEmail = !emailRegex.test(form.educationEmail)"
+							:disabled="emailVerified"
+							@blur="errors.educationEmail = !studentEmailRegex.test(form.educationEmail)"
 						/>
 						<span v-if="errors.educationEmail" :class="$style.errorMsg">
-							Введите корректный email
+							Введите почту в формате *@mai.education
 						</span>
+						<span v-if="!errors.educationEmail && !emailVerified" :class="$style.hint">
+							Только адреса вида <strong>*@mai.education</strong>
+						</span>
+
+						<!-- Кнопка отправки кода (до отправки) -->
+						<template v-if="!emailCodeSent && !emailVerified">
+							<button
+								type="button"
+								:class="[
+									$style.sendCodeBtn,
+									(!isValidStudentEmail || codeSending || resendCooldown > 0) && $style.sendCodeBtnDisabled,
+								]"
+								:disabled="!isValidStudentEmail || codeSending || resendCooldown > 0"
+								@click="onSendCode"
+							>
+								<Icon
+									:name="codeSending ? 'mdi:loading' : 'mdi:email-send-outline'"
+									:class="[$style.sendCodeIcon, codeSending && $style.spinning]"
+								/>
+								{{ codeSending ? "Отправка..." : "Получить код верификации" }}
+							</button>
+							<span v-if="sendCodeError" :class="$style.errorMsg">
+								{{ sendCodeError }}
+							</span>
+						</template>
+
+						<!-- Ввод кода (после отправки, до верификации) -->
+						<template v-if="emailCodeSent && !emailVerified">
+							<div :class="$style.codeSection">
+								<div :class="$style.codeHint">
+									<Icon name="mdi:email-check-outline" :class="$style.codeHintIcon" />
+									Код отправлен на <strong>{{ form.educationEmail }}</strong>
+								</div>
+
+								<UiInput
+									v-model="verificationCode"
+									placeholder="Введите код из письма"
+									left-icon-name="mdi:key-outline"
+									:status="verifyCodeError ? 'error' : undefined"
+								/>
+
+								<div :class="$style.mailLinkRow">
+									<Icon name="mdi:open-in-new" :class="$style.mailLinkIcon" />
+									<a
+										href="https://mail.mai.education/"
+										target="_blank"
+										rel="noopener noreferrer"
+										:class="$style.mailLink"
+									>
+										Открыть почту MAI
+									</a>
+									<span :class="$style.mailLinkHint">
+										(если не пришло письмо)
+									</span>
+								</div>
+
+								<span v-if="verifyCodeError" :class="$style.errorMsg">
+									{{ verifyCodeError }}
+								</span>
+
+								<div :class="$style.codeActions">
+									<button
+										type="button"
+										:class="$style.confirmCodeBtn"
+										:disabled="codeVerifying"
+										@click="onVerifyCode"
+									>
+										<Icon
+											:name="codeVerifying ? 'mdi:loading' : 'mdi:check'"
+											:class="[$style.sendCodeIcon, codeVerifying && $style.spinning]"
+										/>
+										{{ codeVerifying ? "Проверка..." : "Подтвердить код" }}
+									</button>
+
+									<button
+										type="button"
+										:class="[
+											$style.resendBtn,
+											(resendCooldown > 0 || codeSending) && $style.resendBtnDisabled,
+										]"
+										:disabled="resendCooldown > 0 || codeSending"
+										@click="onSendCode"
+									>
+										{{
+											resendCooldown > 0
+												? `Повторно через ${resendCooldown}с`
+												: "Отправить снова"
+										}}
+									</button>
+								</div>
+							</div>
+						</template>
+
+						<!-- Бейдж успешной верификации -->
+						<div v-if="emailVerified" :class="$style.verifiedBadge">
+							<Icon name="mdi:check-circle-outline" :class="$style.verifiedIcon" />
+							<span>Почта подтверждена</span>
+							<button
+								type="button"
+								:class="$style.changeEmailBtn"
+								@click="resetEmailVerification"
+							>
+								Изменить
+							</button>
+						</div>
 					</div>
 				</div>
 
@@ -274,31 +482,49 @@ const onSubmit = async () => {
 				<div :class="$style.section">
 					<div :class="$style.sectionTitle">Для проживающих</div>
 
-					<UiSelect
-						v-model="form.dormitory"
-						:options="dormitoryOptions"
-						placeholder="Общежитие"
-						left-icon-name="material-symbols:home-work-outline-rounded"
-					/>
+					<label :class="$style.consent">
+						<input
+							v-model="isResident"
+							type="checkbox"
+							:class="$style.consentCheckbox"
+						/>
+						<span :class="$style.consentText">
+							Я являюсь проживающим в общежитии
+						</span>
+					</label>
 
-					<div :class="$style.row">
-						<UiInput
-							v-model="form.building"
-							placeholder="Корпус"
+					<template v-if="isResident">
+						<span :class="$style.residentHint">
+							<Icon name="mdi:information-outline" :class="$style.residentHintIcon" />
+							После регистрации администратор получит заявку на вашу верификацию как проживающего.
+						</span>
+
+						<UiSelect
+							v-model="form.dormitory"
+							:options="dormitoryOptions"
+							placeholder="Общежитие"
 							left-icon-name="material-symbols:home-work-outline-rounded"
 						/>
+
+						<div :class="$style.row">
+							<UiInput
+								v-model="form.building"
+								placeholder="Корпус"
+								left-icon-name="material-symbols:home-work-outline-rounded"
+							/>
+							<UiInput
+								v-model="form.floor"
+								placeholder="Этаж"
+								left-icon-name="material-symbols:home-work-outline-rounded"
+							/>
+						</div>
+
 						<UiInput
-							v-model="form.floor"
-							placeholder="Этаж"
+							v-model="form.room"
+							placeholder="Комната"
 							left-icon-name="material-symbols:home-work-outline-rounded"
 						/>
-					</div>
-
-					<UiInput
-						v-model="form.room"
-						placeholder="Комната"
-						left-icon-name="material-symbols:home-work-outline-rounded"
-					/>
+					</template>
 				</div>
 
 				<!-- ── Согласие и кнопка ───────────────────────────────── -->
@@ -322,15 +548,20 @@ const onSubmit = async () => {
 					</span>
 				</label>
 
-				<UiButton
-					accent
-					type="submit"
-					:disabled="loading"
-					:class="$style.submitBtn"
-					@click="onSubmit"
-				>
-					{{ loading ? "Регистрация..." : "Зарегистрироваться" }}
-				</UiButton>
+				<div :class="$style.submitWrap">
+					<UiButton
+						accent
+						type="submit"
+						:disabled="loading || !emailVerified"
+						:class="$style.submitBtn"
+						@click="onSubmit"
+					>
+						{{ loading ? "Регистрация..." : "Зарегистрироваться" }}
+					</UiButton>
+					<span v-if="!emailVerified" :class="$style.submitHint">
+						Сначала подтвердите студенческую почту выше
+					</span>
+				</div>
 
 				<div :class="$style.loginLink">
 					Уже есть аккаунт?&nbsp;—&nbsp;
@@ -463,6 +694,197 @@ const onSubmit = async () => {
 			}
 		}
 
+		// ── Кнопка отправки кода ─────────────────────────────────
+
+		.sendCodeBtn {
+			@include text-s;
+
+			display: inline-flex;
+			align-items: center;
+			column-gap: 6px;
+			align-self: flex-start;
+			padding: 7px 14px;
+			border-radius: 8px;
+			border: 1px solid rgba($color-accent-rgb, 0.4);
+			background: rgba($color-accent-rgb, 0.08);
+			color: $color-accent;
+			cursor: pointer;
+			font-weight: 600;
+			transition: background 0.15s;
+
+			&:hover:not(:disabled) {
+				background: rgba($color-accent-rgb, 0.15);
+			}
+
+			.sendCodeIcon {
+				width: 15px;
+				height: 15px;
+			}
+		}
+
+		.sendCodeBtnDisabled {
+			opacity: 0.45;
+			cursor: not-allowed;
+		}
+
+		// ── Блок ввода кода ──────────────────────────────────────
+
+		.codeSection {
+			display: flex;
+			flex-direction: column;
+			row-gap: 8px;
+			padding: 14px;
+			border-radius: 10px;
+			border: 1px solid rgba($color-accent-rgb, 0.2);
+			background: rgba($color-accent-rgb, 0.04);
+		}
+
+		.codeHint {
+			@include text-s;
+			@include color-black;
+
+			display: flex;
+			align-items: center;
+			column-gap: 6px;
+			opacity: 0.7;
+
+			.codeHintIcon {
+				width: 15px;
+				height: 15px;
+				flex-shrink: 0;
+				color: $color-accent;
+				opacity: 1;
+			}
+		}
+
+		.mailLinkRow {
+			display: flex;
+			align-items: center;
+			column-gap: 4px;
+
+			.mailLinkIcon {
+				width: 13px;
+				height: 13px;
+				opacity: 0.5;
+			}
+		}
+
+		.mailLink {
+			@include text-s;
+			@include color-accent;
+
+			font-weight: 600;
+			text-decoration: underline;
+		}
+
+		.mailLinkHint {
+			@include text-s;
+			@include color-black;
+
+			opacity: 0.45;
+		}
+
+		.codeActions {
+			display: flex;
+			align-items: center;
+			column-gap: 8px;
+			flex-wrap: wrap;
+			row-gap: 6px;
+		}
+
+		.confirmCodeBtn {
+			@include text-s;
+
+			display: inline-flex;
+			align-items: center;
+			column-gap: 6px;
+			padding: 7px 14px;
+			border-radius: 8px;
+			border: none;
+			background: $color-accent;
+			color: #fff;
+			cursor: pointer;
+			font-weight: 600;
+			transition: opacity 0.15s;
+
+			&:disabled {
+				opacity: 0.55;
+				cursor: not-allowed;
+			}
+		}
+
+		.resendBtn {
+			@include text-s;
+			@include color-black;
+
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			opacity: 0.55;
+			text-decoration: underline;
+			padding: 0;
+		}
+
+		.resendBtnDisabled {
+			cursor: not-allowed;
+			text-decoration: none;
+		}
+
+		// ── Бейдж верификации ────────────────────────────────────
+
+		.verifiedBadge {
+			@include text-s;
+
+			display: inline-flex;
+			align-items: center;
+			column-gap: 6px;
+			padding: 7px 12px;
+			border-radius: 8px;
+			background: #efffde;
+			color: #1c5b1c;
+			border: 1px solid rgba(28, 91, 28, 0.2);
+			align-self: flex-start;
+
+			.verifiedIcon {
+				width: 16px;
+				height: 16px;
+				flex-shrink: 0;
+			}
+		}
+
+		.changeEmailBtn {
+			@include text-s;
+
+			background: transparent;
+			border: none;
+			cursor: pointer;
+			color: inherit;
+			opacity: 0.6;
+			text-decoration: underline;
+			padding: 0;
+			margin-left: 4px;
+		}
+
+		// ── Подсказка для проживающих ────────────────────────────
+
+		.residentHint {
+			@include text-s;
+			@include color-black;
+
+			display: flex;
+			align-items: flex-start;
+			column-gap: 6px;
+			opacity: 0.6;
+			line-height: 1.5;
+
+			.residentHintIcon {
+				width: 14px;
+				height: 14px;
+				flex-shrink: 0;
+				margin-top: 2px;
+			}
+		}
+
 		// ── Согласие ─────────────────────────────────────────────
 
 		.consentError {
@@ -502,9 +924,23 @@ const onSubmit = async () => {
 
 		// ── Кнопка регистрации ───────────────────────────────────
 
+		.submitWrap {
+			display: flex;
+			flex-direction: column;
+			row-gap: 6px;
+		}
+
 		.submitBtn {
 			width: 100%;
 			box-sizing: border-box;
+		}
+
+		.submitHint {
+			@include text-s;
+			@include color-black;
+
+			text-align: center;
+			opacity: 0.45;
 		}
 
 		// ── Ссылка на вход ───────────────────────────────────────
@@ -520,6 +956,18 @@ const onSubmit = async () => {
 				@include color-accent;
 
 				text-decoration: underline;
+			}
+		}
+
+		// ── Анимация ─────────────────────────────────────────────
+
+		.spinning {
+			animation: spin 0.8s linear infinite;
+
+			@keyframes spin {
+				to {
+					transform: rotate(360deg);
+				}
 			}
 		}
 	}

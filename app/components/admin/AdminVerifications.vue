@@ -14,6 +14,8 @@ await fetchPending();
 const commentDraft = ref<Record<string, string>>({});
 const busy = ref<Record<string, "approve" | "reject" | null>>({});
 
+const isEmailDoc = (documentId: string) => documentId.includes("@");
+
 const formatDate = (s?: string) => {
 	if (!s) return "";
 	return new Date(s).toLocaleString("ru-RU", {
@@ -87,7 +89,17 @@ const onReject = async (v: Verification) => {
 				</div>
 
 				<div :class="$style.body">
+					<!-- Email-верификация: показываем почту вместо изображения -->
+					<div v-if="isEmailDoc(v.documentId)" :class="$style.emailDoc">
+						<Icon name="mdi:email-check-outline" :class="$style.emailDocIcon" />
+						<div :class="$style.emailDocContent">
+							<span :class="$style.emailDocLabel">Верификация по студенческой почте</span>
+							<code :class="$style.emailDocValue">{{ v.documentId }}</code>
+						</div>
+					</div>
+					<!-- Документ-изображение (старый способ) -->
 					<a
+						v-else
 						:href="`/api/images/byGuid?guid=${v.documentId}`"
 						target="_blank"
 						:class="$style.docLink"
@@ -299,6 +311,46 @@ const onReject = async (v: Verification) => {
 			grid-template-columns: 1fr;
 			gap: 10px;
 		}
+	}
+
+	.emailDoc {
+		display: flex;
+		align-items: flex-start;
+		column-gap: 10px;
+		padding: 14px;
+		border-radius: 8px;
+		background: #efffde;
+		border: 1px solid rgba(28, 91, 28, 0.2);
+		align-self: flex-start;
+	}
+
+	.emailDocIcon {
+		width: 22px;
+		height: 22px;
+		color: #1c5b1c;
+		flex-shrink: 0;
+		margin-top: 1px;
+	}
+
+	.emailDocContent {
+		display: flex;
+		flex-direction: column;
+		row-gap: 4px;
+	}
+
+	.emailDocLabel {
+		@include text-s;
+
+		color: #1c5b1c;
+		font-weight: 600;
+	}
+
+	.emailDocValue {
+		@include text-s;
+
+		font-family: monospace;
+		color: #1c5b1c;
+		word-break: break-all;
 	}
 
 	.docLink {
