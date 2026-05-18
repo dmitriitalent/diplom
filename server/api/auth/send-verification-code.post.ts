@@ -30,7 +30,9 @@ export default defineEventHandler(async (event) => {
 
 	try {
 		await sendVerificationEmail(email, code);
+		console.log(`[verify] code for ${email}: ${code}`);
 	} catch (err: any) {
+		console.error(`[verify] sendMail error:`, err);
 		throw createError({
 			statusCode: 502,
 			message: "Не удалось отправить письмо. Попробуйте позже.",
