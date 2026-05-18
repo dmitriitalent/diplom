@@ -29,15 +29,6 @@ const isSelf = computed(
 	() => mounted.value && self.value?.id === userId.value,
 );
 
-// ─── Плашка «не верифицирован» (только для своего профиля) ──────────────────
-const { isVerified } = storeToRefs(useAuthStore());
-const verifyWarning = useVerifyWarning();
-const showVerifyWarning = computed(
-	() => isSelf.value && !isVerified.value && !verifyWarning.isDismissed.value,
-);
-const onGoVerify = () => router.push("/profile/self/settings#verification");
-const onVerifyLater = () => verifyWarning.dismissLater();
-const onVerifyNever = () => verifyWarning.dismissForever();
 
 // ─── Profile data ─────────────────────────────────────────────────────────────
 
@@ -519,32 +510,6 @@ const formatActivityWhen = (iso?: string) => {
 				</div>
 			</div>
 
-			<!-- ── Verify warning (только для владельца, если не верифицирован) -->
-			<div v-if="showVerifyWarning" :class="$style.verifyPlate">
-				<Icon
-					name="material-symbols:gpp-maybe-outline"
-					:class="$style.verifyIcon"
-				/>
-				<div :class="$style.verifyBody">
-					<span :class="$style.verifyTitle">
-						Ваш аккаунт не верифицирован
-					</span>
-					<span :class="$style.verifyHint">
-						Пока вы не подтвердите, что живёте в общежитии, часть
-						разделов будет недоступна — например, новости и
-						расписание. Загрузите документ — это займёт меньше
-						минуты.
-					</span>
-					<div :class="$style.verifyActions">
-						<UiButton accent @click="onGoVerify">
-							Верифицироваться
-						</UiButton>
-						<UiButton @click="onVerifyLater">Позже</UiButton>
-						<UiButton @click="onVerifyNever">Никогда</UiButton>
-					</div>
-				</div>
-			</div>
-
 			<!-- ── Activities carousel ───────────────────────────────── -->
 			<section
 				v-if="activities?.activities?.length"
@@ -916,77 +881,6 @@ const formatActivityWhen = (iso?: string) => {
 	@include respond-to(mobile) {
 		width: 16px;
 		height: 16px;
-	}
-}
-
-// ── Verify warning plate ───────────────────────────────────────────
-
-.verifyPlate {
-	@include color-warn-bg(0.18);
-	@include shadow;
-
-	display: flex;
-	align-items: flex-start;
-	column-gap: 16px;
-	padding: 18px 20px;
-	border-radius: 12px;
-	border: 1px solid rgba($color-warn-rgb, 0.4);
-	backdrop-filter: blur(12px);
-
-	@include respond-to(mobile) {
-		padding: 14px 16px;
-		column-gap: 12px;
-	}
-}
-
-.verifyIcon {
-	@include color-warn;
-
-	width: 40px;
-	height: 40px;
-	flex-shrink: 0;
-
-	@include respond-to(mobile) {
-		width: 32px;
-		height: 32px;
-	}
-}
-
-.verifyBody {
-	display: flex;
-	flex-direction: column;
-	row-gap: 8px;
-	min-width: 0;
-}
-
-.verifyTitle {
-	@include text-m;
-	@include color-black;
-
-	font-weight: 600;
-}
-
-.verifyHint {
-	@include text-s;
-	@include color-black(0.7);
-
-	line-height: 1.5;
-}
-
-.verifyActions {
-	display: flex;
-	column-gap: 8px;
-	flex-wrap: wrap;
-	row-gap: 8px;
-	margin-top: 4px;
-
-	@include respond-to(mobile) {
-		flex-direction: column;
-		column-gap: 0;
-
-		> * {
-			width: 100%;
-		}
 	}
 }
 
