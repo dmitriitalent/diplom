@@ -1,80 +1,7 @@
 import axios from "axios";
-import sharp from "sharp";
+import { maybeCompressImage } from "~~/server/utils/imageCompression";
 
 const FILENAME = "images/upload.post.ts";
-
-// ─── Параметры сжатия ──────────────────────────────────────────
-// Сжимать всё, что больше этого размера (байт). Итог гарантированно меньше TARGET_MAX_BYTES.
-const COMPRESSION_THRESHOLD = 1 * 1024 * 1024; // 1 MB
-// Целевой максимум для бэкенда. Если после сжатия больше — снижаем качество ещё.
-const TARGET_MAX_BYTES = 4 * 1024 * 1024; // 4 MB
-// Максимальные размеры после сжатия
-const MAX_WIDTH = 1920;
-const MAX_HEIGHT = 1080;
-// Стартовое качество и шаг снижения
-const START_QUALITY = 80;
-const MIN_QUALITY = 35;
-const QUALITY_STEP = 10;
-// ──────────────────────────────────────────────────────────────
-
-type CompressedResult = {
-	buffer: Buffer;
-	mimeType: string;
-	filename: string;
-};
-
-const compressImage = async (
-	input: Buffer,
-	originalMime: string,
-	originalName: string,
-): Promise<CompressedResult> => {
-	const base = originalName.replace(/\.[^/.]+$/, "") || "image";
-
-	// PNG c прозрачностью лучше держать в PNG, иначе уйдёт в JPEG (без альфы).
-	const meta = await sharp(input, { failOn: "none" }).metadata();
-	const hasAlpha = !!meta.hasAlpha;
-	const keepPng = originalMime === "image/png" && hasAlpha;
-
-	const needsResize =
-		(meta.width ?? 0) > MAX_WIDTH || (meta.height ?? 0) > MAX_HEIGHT;
-
-	const buildPipeline = (quality: number) => {
-		let p = sharp(input, { failOn: "none" }).rotate();
-		if (needsResize) {
-			p = p.resize({
-				width: MAX_WIDTH,
-				height: MAX_HEIGHT,
-				fit: "inside",
-				withoutEnlargement: true,
-			});
-		}
-		if (keepPng) {
-			p = p.png({ compressionLevel: 9, palette: true });
-		} else if (originalMime === "image/webp") {
-			p = p.webp({ quality });
-		} else {
-			p = p.jpeg({ quality, mozjpeg: true });
-		}
-		return p;
-	};
-
-	// Итеративно снижаем качество, пока не уложимся в TARGET_MAX_BYTES
-	let quality = START_QUALITY;
-	let buffer = await buildPipeline(quality).toBuffer();
-	while (buffer.length > TARGET_MAX_BYTES && quality > MIN_QUALITY && !keepPng) {
-		quality -= QUALITY_STEP;
-		buffer = await buildPipeline(quality).toBuffer();
-	}
-
-	const mime = keepPng
-		? "image/png"
-		: originalMime === "image/webp"
-			? "image/webp"
-			: "image/jpeg";
-	const ext = keepPng ? "png" : originalMime === "image/webp" ? "webp" : "jpg";
-
-	return { buffer, mimeType: mime, filename: `${base}.${ext}` };
-};
 
 export default defineEventHandler(async (event) => {
 	try {
@@ -113,40 +40,46 @@ export default defineEventHandler(async (event) => {
 			});
 		}
 
-		// ─── Сжатие, если файл слишком большой и это изображение ───
-		let fileData: Buffer = fileItem.data;
-		let fileType: string = fileItem.type ?? "application/octet-stream";
-		let fileName: string = fileItem.filename ?? "image";
+		// ─── Сжатие через общий util ──────────────────────────────────
+		const originalSize = fileItem.data.length;
+		const compressed = await maybeCompressImage(
+			fileItem.data,
+			fileItem.type ?? "application/octet-stream",
+			fileItem.filename ?? "image",
+		);
 
-		const isImage = fileType.startsWith("image/");
-		if (isImage && fileData.length > COMPRESSION_THRESHOLD) {
-			try {
-				const compressed = await compressImage(fileData, fileType, fileName);
-				console.log(
-					`[${FILENAME}] compressed ${fileData.length} → ${compressed.buffer.length} bytes (${fileName})`,
-				);
-				fileData = compressed.buffer;
-				fileType = compressed.mimeType;
-				fileName = compressed.filename;
-			} catch (compErr) {
-				console.log(`[${FILENAME}] compression failed, sending original`, compErr);
-			}
+		if (compressed.buffer.length !== originalSize) {
+			console.log(
+				`[${FILENAME}] compressed ${originalSize} → ${compressed.buffer.length} bytes (${compressed.filename})`,
+			);
 		}
 
 		const formData = new FormData();
-		const blob = new Blob([fileData], { type: fileType });
-		formData.append("file", blob, fileName);
+		const blob = new Blob([compressed.buffer], { type: compressed.mimeType });
+		formData.append("file", blob, compressed.filename);
 		formData.append("external_id", externalId);
 
 		const cookie = getHeader(event, "cookie");
 		const url = `${config.api}/images`;
+
+		const fmt = (b: number) =>
+			`${b} B (${(b / 1024).toFixed(1)} KB / ${(b / 1024 / 1024).toFixed(2)} MB)`;
+		console.log(
+			`[${FILENAME}] → POST ${url} | file=${compressed.filename} type=${compressed.mimeType} size=${fmt(compressed.buffer.length)}`,
+		);
 
 		const res = await axios.post(url, formData, {
 			headers: {
 				cookie,
 			},
 			withCredentials: true,
+			maxContentLength: Infinity,
+			maxBodyLength: Infinity,
 		});
+
+		console.log(
+			`[${FILENAME}] ← ${res.status} from backend (uploaded ${fmt(compressed.buffer.length)})`,
+		);
 
 		return res.data;
 	} catch (err: any) {

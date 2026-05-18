@@ -1,11 +1,13 @@
 import type { Activity } from "~/entities/Activity";
 import type { News } from "~/entities/News";
+import type { Order } from "~/entities/Order";
 import type { Product } from "~/entities/Product";
 import type { Service } from "~/entities/Service";
 import type { ServiceComment } from "~/entities/Service";
 import type { User } from "~/entities/User";
 import type { ActivityDtoById } from "~~/server/dto/activity/byId";
 import type { NewsDtoById } from "~~/server/dto/news/byId";
+import type { OrderDtoById } from "~~/server/dto/order/byId";
 import type { byIdProduct } from "~~/server/dto/product/byId";
 import type { ServiceDtoById } from "~~/server/dto/service/byId";
 import type { ServiceCommentsListDto } from "~~/server/dto/service/comment";
@@ -168,6 +170,39 @@ async function fetchFullService(id: string): Promise<Partial<Service>> {
 	};
 }
 
+async function fetchFullOrder(id: string): Promise<Partial<Order>> {
+	const headers = getHeaders();
+	const orderFetch = await $fetch<OrderDtoById>("/api/order/byId?id=" + id, {
+		headers,
+	});
+	let author: User | undefined;
+	if (orderFetch.authorId) {
+		try {
+			const authorFetch = await $fetch<byId>(
+				"/api/profile/byId?id=" + orderFetch.authorId,
+				{ headers, credentials: "include" },
+			);
+			author = unwrapProfile(authorFetch);
+		} catch {
+			author = undefined;
+		}
+	}
+	return {
+		id: orderFetch.id,
+		type: orderFetch.type,
+		description: orderFetch.description,
+		imageIds: orderFetch.imageIds,
+		authorId: orderFetch.authorId,
+		createdAt: orderFetch.createdAt,
+		updatedAt: orderFetch.updatedAt,
+		closedAt: orderFetch.closedAt,
+		closeType: orderFetch.closeType,
+		closeComment: orderFetch.closeComment,
+		status: orderFetch.status,
+		author,
+	};
+}
+
 // ─── Cache factory ───────────────────────────────────────────────────────────
 
 function makeCache<T extends { id: string }>(
@@ -268,6 +303,9 @@ export const useCacheStore = defineStore("cacheStore", () => {
 	const servicesState = ref<CacheRecord<Service>>({});
 	const servicesOrder = ref<string[]>([]);
 
+	const ordersState = ref<CacheRecord<Order>>({});
+	const ordersOrder = ref<string[]>([]);
+
 	const news = makeCache<News>(newsState, newsOrder, fetchFullNews);
 	const activities = makeCache<Activity>(
 		activitiesState,
@@ -284,6 +322,7 @@ export const useCacheStore = defineStore("cacheStore", () => {
 		servicesOrder,
 		fetchFullService,
 	);
+	const orders = makeCache<Order>(ordersState, ordersOrder, fetchFullOrder);
 
 	return {
 		// state — экспортируем, чтобы Pinia их видел и сериализовал.
@@ -295,10 +334,13 @@ export const useCacheStore = defineStore("cacheStore", () => {
 		productsOrder,
 		servicesState,
 		servicesOrder,
+		ordersState,
+		ordersOrder,
 		// API
 		news,
 		activities,
 		products,
 		services,
+		orders,
 	};
 });
