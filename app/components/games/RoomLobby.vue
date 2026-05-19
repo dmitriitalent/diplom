@@ -1,58 +1,63 @@
 <script setup lang="ts">
 import type { PropType } from "vue";
+import type {
+	AliasSettings,
+	DictEntry,
+	DictsManifest,
+	Lang,
+	PapersSettings,
+	Room,
+} from "~/entities/GameRoom";
 
 const props = defineProps({
-	room: { type: Object, required: true },
+	room: { type: Object as PropType<Room>, required: true },
 	selfUserId: { type: String, required: true },
 	manifest: {
-		type: Object as PropType<{
-			ru: Array<{ id: string; name: string }>;
-			en: Array<{ id: string; name: string }>;
-		}>,
+		type: Object as PropType<DictsManifest>,
 		default: () => ({ ru: [], en: [] }),
 	},
 });
 
 const emit = defineEmits<{
-	(e: "update-settings", settings: any): void;
+	(
+		e: "update-settings",
+		settings: Partial<AliasSettings> | Partial<PapersSettings>,
+	): void;
 	(e: "start"): void;
 	(e: "kick", userId: string): void;
 	(e: "leave"): void;
 }>();
 
-const isHost = computed(() => props.room.hostId === props.selfUserId);
+const isHost = computed<boolean>(() => props.room.hostId === props.selfUserId);
 
-const settings = computed({
-	get: () => props.room.settings,
-	set: (v) => emit("update-settings", v),
-});
-
-const update = (patch: any) => {
-	emit("update-settings", { ...props.room.settings, ...patch });
+const update = (
+	patch: Partial<AliasSettings> | Partial<PapersSettings>,
+): void => {
+	emit("update-settings", patch);
 };
 
-const langOptions = [
+const langOptions: Array<{ value: Lang; name: string }> = [
 	{ value: "ru", name: "Русский" },
 	{ value: "en", name: "English" },
 ];
 
-const dictOptions = computed(() => {
-	const list = props.manifest[props.room.settings.lang as "ru" | "en"] ?? [];
+const dictOptions = computed<Array<{ value: string; name: string }>>(() => {
+	const list: DictEntry[] = props.manifest[props.room.settings.lang] ?? [];
 	return list.map((d) => ({ value: d.id, name: d.name }));
 });
 
-const modeOptions = [
+const modeOptions: Array<{ value: "auto" | "manual"; name: string }> = [
 	{ value: "auto", name: "Автогенерация слов" },
 	{ value: "manual", name: "Игроки придумывают сами" },
 ];
 
-const copyCode = () => {
+const copyCode = (): void => {
 	if (typeof navigator !== "undefined" && navigator.clipboard) {
 		navigator.clipboard.writeText(props.room.code);
 	}
 };
 
-const canStart = computed(() => {
+const canStart = computed<boolean>(() => {
 	if (props.room.game === "alias") {
 		return (
 			props.room.players.length >= 4 &&
@@ -61,6 +66,14 @@ const canStart = computed(() => {
 	}
 	return props.room.players.length >= 3;
 });
+
+const aliasSettings = computed<AliasSettings | null>(() =>
+	props.room.game === "alias" ? props.room.settings : null,
+);
+
+const papersSettings = computed<PapersSettings | null>(() =>
+	props.room.game === "papers" ? props.room.settings : null,
+);
 </script>
 
 <template>
@@ -73,10 +86,7 @@ const canStart = computed(() => {
 				<span :class="$style.codeLabel">Код:</span>
 				<span :class="$style.codeValue">{{ room.code }}</span>
 				<UiButton unset :class="$style.copyBtn" @click="copyCode">
-					<Icon
-						name="mdi:content-copy"
-						:class="$style.copyIcon"
-					/>
+					<Icon name="mdi:content-copy" :class="$style.copyIcon" />
 				</UiButton>
 			</div>
 		</div>
@@ -90,15 +100,16 @@ const canStart = computed(() => {
 					:class="[$style.playerItem, !p.online && $style.offline]"
 				>
 					<Icon
-						:name="
-							p.online
-								? 'mdi:circle'
-								: 'mdi:circle-outline'
-						"
+						:name="p.online ? 'mdi:circle' : 'mdi:circle-outline'"
 						:class="$style.dot"
 					/>
-					<span>{{ p.name }} {{ p.surname }}</span>
-					<span v-if="p.userId === room.hostId" :class="$style.hostTag">
+					<span :class="$style.name"
+						>{{ p.name }} {{ p.surname }}</span
+					>
+					<span
+						v-if="p.userId === room.hostId"
+						:class="$style.hostTag"
+					>
 						хост
 					</span>
 					<UiButton
@@ -121,8 +132,9 @@ const canStart = computed(() => {
 				<UiSelect
 					:model-value="room.settings.lang"
 					:options="langOptions"
-					:disabled="!isHost"
-					@update:model-value="(v) => update({ lang: v })"
+					@update:model-value="
+						(v: string | number) => update({ lang: v as Lang })
+					"
 				/>
 			</div>
 
@@ -131,20 +143,22 @@ const canStart = computed(() => {
 				<UiSelect
 					:model-value="room.settings.dictionary"
 					:options="dictOptions"
-					:disabled="!isHost"
-					@update:model-value="(v) => update({ dictionary: v })"
+					@update:model-value="
+						(v: string | number) =>
+							update({ dictionary: String(v) })
+					"
 				/>
 			</div>
 
-			<template v-if="room.game === 'alias'">
+			<template v-if="aliasSettings">
 				<div :class="$style.row">
 					<label :class="$style.label">Время раунда, сек</label>
 					<UiInput
 						type="number"
-						:model-value="String(room.settings.roundTime)"
-						:disabled="!isHost"
+						:model-value="String(aliasSettings.roundTime)"
 						@update:model-value="
-							(v: any) => update({ roundTime: Number(v) || 60 })
+							(v: string | number) =>
+								update({ roundTime: Number(v) || 60 })
 						"
 					/>
 				</div>
@@ -152,33 +166,34 @@ const canStart = computed(() => {
 					<label :class="$style.label">Очков до победы</label>
 					<UiInput
 						type="number"
-						:model-value="String(room.settings.scoreToWin)"
-						:disabled="!isHost"
+						:model-value="String(aliasSettings.scoreToWin)"
 						@update:model-value="
-							(v: any) => update({ scoreToWin: Number(v) || 30 })
+							(v: string | number) =>
+								update({ scoreToWin: Number(v) || 30 })
 						"
 					/>
 				</div>
 				<div :class="$style.row">
 					<label :class="$style.label">Штраф за пропуск</label>
 					<UiCheckbox
-						:model-value="!!room.settings.skipPenalty"
-						:disabled="!isHost"
+						:model-value="aliasSettings.skipPenalty"
 						@update:model-value="
-							(v) => update({ skipPenalty: !!v })
+							(v: boolean) => update({ skipPenalty: v })
 						"
 					/>
 				</div>
 			</template>
 
-			<template v-if="room.game === 'papers'">
+			<template v-if="papersSettings">
 				<div :class="$style.row">
 					<label :class="$style.label">Режим слов</label>
 					<UiSelect
-						:model-value="room.settings.mode"
+						:model-value="papersSettings.mode"
 						:options="modeOptions"
-						:disabled="!isHost"
-						@update:model-value="(v) => update({ mode: v })"
+						@update:model-value="
+							(v: string | number) =>
+								update({ mode: v as 'auto' | 'manual' })
+						"
 					/>
 				</div>
 			</template>
@@ -196,10 +211,16 @@ const canStart = computed(() => {
 			</UiButton>
 		</div>
 
-		<p v-if="isHost && !canStart && room.game === 'alias'" :class="$style.hint">
+		<p
+			v-if="isHost && !canStart && room.game === 'alias'"
+			:class="$style.hint"
+		>
 			Нужно чётное количество игроков, минимум 4.
 		</p>
-		<p v-if="isHost && !canStart && room.game === 'papers'" :class="$style.hint">
+		<p
+			v-if="isHost && !canStart && room.game === 'papers'"
+			:class="$style.hint"
+		>
 			Нужно минимум 3 игрока.
 		</p>
 	</div>
@@ -293,6 +314,11 @@ const canStart = computed(() => {
 		display: flex;
 		align-items: center;
 		column-gap: 8px;
+
+		.name {
+			@include text-s;
+			@include color-black;
+		}
 
 		&.offline {
 			opacity: 0.45;

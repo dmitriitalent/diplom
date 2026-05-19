@@ -2,6 +2,9 @@
 import type { Cached } from "~/stores/cacheStore";
 import type { Activity } from "~/entities/Activity";
 import { useDevice } from "~/composables/device";
+import { useSelfStore } from "~/stores/selfStore";
+import ParticipantGalleryComponent from "~/components/ParticipantGalleryComponent.vue";
+import TracksListComponent from "~/components/TracksListComponent.vue";
 
 const props = defineProps<{
 	activity: Cached<Activity>;
@@ -22,6 +25,12 @@ const emit = defineEmits<{
 }>();
 
 const { deviceClassList } = useDevice();
+
+const { self } = useSelfStore();
+const selfUserId = computed<string>(() => String(self?.id ?? ""));
+const canUploadGallery = computed<boolean>(
+	() => props.isParticipant || props.isAuthor,
+);
 
 const bookmarks = useBookmarks("activity");
 const isBookmarked = computed(() =>
@@ -583,6 +592,22 @@ const moderationLabel = computed(() => {
 					</div>
 				</aside>
 			</div>
+
+			<TracksListComponent
+				v-if="activity.id"
+				:class="$style.galleryBlock"
+				:activity-id="activity.id"
+				:can-edit="canUploadGallery"
+				:self-user-id="selfUserId"
+			/>
+
+			<ParticipantGalleryComponent
+				v-if="activity.id"
+				:class="$style.galleryBlock"
+				:activity-id="activity.id"
+				:can-upload="canUploadGallery"
+				:self-user-id="selfUserId"
+			/>
 		</div>
 	</div>
 </template>
@@ -592,6 +617,10 @@ const moderationLabel = computed(() => {
 	position: relative;
 	min-height: 100dvh;
 	overflow-x: clip;
+
+	.galleryBlock {
+		margin-top: 24px;
+	}
 
 	.container {
 		position: relative;

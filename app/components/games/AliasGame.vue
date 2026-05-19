@@ -1,39 +1,55 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from "vue";
+import type { PropType } from "vue";
+import type {
+	AliasRoom,
+	AliasState,
+	AliasTeam,
+	AliasTurnSlot,
+	ClientMessage,
+	Player,
+} from "~/entities/GameRoom";
 
 const props = defineProps({
-	room: { type: Object, required: true },
+	room: { type: Object as PropType<AliasRoom>, required: true },
 	selfUserId: { type: String, required: true },
 });
 
 const emit = defineEmits<{
-	(e: "send", msg: any): void;
+	(e: "send", msg: ClientMessage): void;
 }>();
 
-const isHost = computed(() => props.room.hostId === props.selfUserId);
-const state = computed(() => props.room.state);
-const turn = computed(
-	() => state.value.turnQueue?.[state.value.currentTurnIdx],
+const isHost = computed<boolean>(() => props.room.hostId === props.selfUserId);
+const state = computed<AliasState>(() => props.room.state);
+const turn = computed<AliasTurnSlot | undefined>(
+	() => state.value.turnQueue[state.value.currentTurnIdx],
 );
-const currentTeam = computed(() => state.value.teams?.[turn.value?.teamIdx]);
-const speaker = computed(() =>
-	props.room.players.find((p: any) => p.userId === turn.value?.speakerUserId),
+const currentTeam = computed<AliasTeam | undefined>(() =>
+	turn.value ? state.value.teams[turn.value.teamIdx] : undefined,
 );
-const isSpeaker = computed(
+const speaker = computed<Player | undefined>(() =>
+	props.room.players.find((p) => p.userId === turn.value?.speakerUserId),
+);
+const isSpeaker = computed<boolean>(
 	() => turn.value?.speakerUserId === props.selfUserId,
 );
 
-const now = ref(Date.now());
+const winnerTeam = computed<AliasTeam | undefined>(() => {
+	if (state.value.winnerTeamIdx === null) return undefined;
+	return state.value.teams[state.value.winnerTeamIdx];
+});
+
+const now = ref<number>(Date.now());
 let interval: ReturnType<typeof setInterval> | null = null;
 
-const startTicker = () => {
+const startTicker = (): void => {
 	if (interval) return;
 	interval = setInterval(() => {
 		now.value = Date.now();
 	}, 250);
 };
 
-const stopTicker = () => {
+const stopTicker = (): void => {
 	if (interval) {
 		clearInterval(interval);
 		interval = null;
@@ -47,14 +63,17 @@ watchEffect(() => {
 
 onBeforeUnmount(stopTicker);
 
-const remaining = computed(() => {
+const remaining = computed<number>(() => {
 	if (state.value.phase !== "round-active" || !state.value.roundEndsAt) {
 		return 0;
 	}
-	return Math.max(0, Math.ceil((state.value.roundEndsAt - now.value) / 1000));
+	return Math.max(
+		0,
+		Math.ceil((state.value.roundEndsAt - now.value) / 1000),
+	);
 });
 
-const endRoundSent = ref(false);
+const endRoundSent = ref<boolean>(false);
 
 watchEffect(() => {
 	if (state.value.phase !== "round-active") {
@@ -67,11 +86,18 @@ watchEffect(() => {
 	}
 });
 
-const startTurn = () => emit("send", { type: "alias-start-turn" });
-const guess = () => emit("send", { type: "alias-action", action: "guessed" });
-const skip = () => emit("send", { type: "alias-action", action: "skipped" });
-const newGame = () => emit("send", { type: "new-game" });
-const nextTurn = () => emit("send", { type: "alias-next-turn" });
+const startTurn = (): void => emit("send", { type: "alias-start-turn" });
+const guess = (): void =>
+	emit("send", { type: "alias-action", action: "guessed" });
+const skip = (): void =>
+	emit("send", { type: "alias-action", action: "skipped" });
+const newGame = (): void => emit("send", { type: "new-game" });
+const nextTurn = (): void => emit("send", { type: "alias-next-turn" });
+
+const playerName = (userId: string): string => {
+	const p = props.room.players.find((x) => x.userId === userId);
+	return p ? p.name : "";
+};
 </script>
 
 <template>
@@ -94,9 +120,7 @@ const nextTurn = () => emit("send", { type: "alias-next-turn" });
 						:key="pid"
 						:class="$style.teamPlayer"
 					>
-						{{
-							room.players.find((p: any) => p.userId === pid)?.name
-						}}
+						{{ playerName(pid) }}
 					</span>
 				</div>
 			</div>
@@ -104,7 +128,7 @@ const nextTurn = () => emit("send", { type: "alias-next-turn" });
 
 		<div v-if="state.phase === 'finished'" :class="$style.finished">
 			<h2 :class="$style.title">
-				Победила {{ state.teams[state.winnerTeamIdx]?.name }}!
+				Победила {{ winnerTeam?.name }}!
 			</h2>
 			<UiButton v-if="isHost" accent @click="newGame">
 				Новая партия
@@ -148,7 +172,7 @@ const nextTurn = () => emit("send", { type: "alias-next-turn" });
 			>
 				<div :class="$style.timer">{{ remaining }}</div>
 
-				<div v-if="isSpeaker" :class="$style.wordCard">
+				<div v-if="isSpeaker && state.currentWord" :class="$style.wordCard">
 					{{ state.currentWord }}
 				</div>
 				<p v-else :class="$style.hint">

@@ -1,6 +1,5 @@
-import axios from "axios";
-import type { byId as Profile } from "~~/server/dto/profile/byId";
 import { decodeAccessToken } from "~~/server/utils/staticfiles";
+import { fetchUnwrappedProfile } from "~~/server/utils/profile";
 import {
 	readRoom,
 	resolveCode,
@@ -10,17 +9,20 @@ import {
 
 const FILENAME = "games/join.post.ts";
 
-export default defineEventHandler(async (event) => {
+type JoinBody = { code?: string };
+type JoinResponse = { id: string; code: string };
+
+export default defineEventHandler(async (event): Promise<JoinResponse> => {
 	try {
 		const cookie = getHeader(event, "cookie");
 		const payload = decodeAccessToken(cookie);
-		const userId = payload?.sub;
+		const userId: string | undefined = payload?.sub;
 		if (!userId) {
 			throw createError({ statusCode: 401, message: "Unauthorized" });
 		}
 
-		const body = await readBody(event);
-		const code = String(body?.code ?? "").toUpperCase().trim();
+		const body = (await readBody<JoinBody>(event)) ?? {};
+		const code = String(body.code ?? "").toUpperCase().trim();
 		if (!/^[A-Z0-9]{8}$/.test(code)) {
 			throw createError({ statusCode: 400, message: "Неверный код" });
 		}
@@ -43,22 +45,11 @@ export default defineEventHandler(async (event) => {
 		}
 
 		if (!room.players.some((p) => p.userId === userId)) {
-			const config = useRuntimeConfig();
-			let profile: Profile | null = null;
-			try {
-				const res = await axios.get<Profile>(
-					`${config.api}/profile/` + String(userId),
-					{ headers: { cookie }, withCredentials: true },
-				);
-				profile = res.data;
-			} catch {
-				profile = null;
-			}
-
+			const user = await fetchUnwrappedProfile(userId, cookie);
 			const player: Player = {
 				userId,
-				name: profile?.name ?? "Игрок",
-				surname: profile?.surname ?? "",
+				name: user?.name ?? "Игрок",
+				surname: user?.surname ?? "",
 				online: false,
 				joinedAt: new Date().toISOString(),
 			};
@@ -68,9 +59,10 @@ export default defineEventHandler(async (event) => {
 		}
 
 		return { id: room.id, code: room.code };
-	} catch (err: any) {
+	} catch (err) {
+		const e = err as { statusCode?: number };
 		console.log("error at " + FILENAME, err);
-		if (err.statusCode) throw err;
+		if (e.statusCode) throw err;
 		throw createError({ statusCode: 500, message: "Failed to join room" });
 	}
 });

@@ -10,6 +10,7 @@ import { useDevice } from "~/composables/device";
 import type { byIdProduct } from "~~/server/dto/product/byId";
 import type { ServiceDtoById } from "~~/server/dto/service/byId";
 import type { ActivityDtoById } from "~~/server/dto/activity/byId";
+import type { AbstractDtoById } from "~~/server/dto/abstract/byId";
 
 const { deviceClassList } = useDevice();
 const headers = useRequestHeaders(["cookie"]);
@@ -17,14 +18,17 @@ const headers = useRequestHeaders(["cookie"]);
 const productsBm = useBookmarks("product");
 const servicesBm = useBookmarks("service");
 const activitiesBm = useBookmarks("activity");
+const abstractsBm = useBookmarks("abstract");
 
 type ProductItem = byIdProduct & { _missing?: boolean };
 type ServiceItem = ServiceDtoById & { _missing?: boolean };
 type ActivityItem = ActivityDtoById & { _missing?: boolean };
+type AbstractItem = AbstractDtoById & { _missing?: boolean };
 
 const products = ref<ProductItem[]>([]);
 const services = ref<ServiceItem[]>([]);
 const activities = ref<ActivityItem[]>([]);
+const abstracts = ref<AbstractItem[]>([]);
 const loading = ref(true);
 
 const fetchOne = async <T,>(url: string, id: string): Promise<T | null> => {
@@ -38,7 +42,7 @@ const fetchOne = async <T,>(url: string, id: string): Promise<T | null> => {
 const loadAll = async () => {
 	loading.value = true;
 	try {
-		const [p, s, a] = await Promise.all([
+		const [p, s, a, ab] = await Promise.all([
 			Promise.all(
 				productsBm.ids.value.map((id) =>
 					fetchOne<byIdProduct>("/api/product/byId?id=", id).then(
@@ -63,10 +67,21 @@ const loadAll = async () => {
 					),
 				),
 			),
+			Promise.all(
+				abstractsBm.ids.value.map((id) =>
+					fetchOne<AbstractDtoById>(
+						"/api/abstract/byId?id=",
+						id,
+					).then(
+						(v) => v ?? ({ id, _missing: true } as AbstractItem),
+					),
+				),
+			),
 		]);
 		products.value = p;
 		services.value = s;
 		activities.value = a;
+		abstracts.value = ab;
 	} finally {
 		loading.value = false;
 	}
@@ -85,6 +100,10 @@ const removeService = (id: string) => {
 const removeActivity = (id: string) => {
 	activitiesBm.remove(id);
 	activities.value = activities.value.filter((x) => x.id !== id);
+};
+const removeAbstract = (id: string) => {
+	abstractsBm.remove(id);
+	abstracts.value = abstracts.value.filter((x) => x.id !== id);
 };
 
 const formatPrice = (p?: number) =>
@@ -134,7 +153,7 @@ const formatDate = (iso?: string) => {
 					<div :class="$style.sectionHead">
 						<h2 :class="$style.sectionTitle">Товары</h2>
 						<span :class="$style.count">
-							{{ products.length }} / 10
+							{{ products.length }} / {{ productsBm.max }}
 						</span>
 					</div>
 					<div v-if="!products.length" :class="$style.empty">
@@ -193,7 +212,7 @@ const formatDate = (iso?: string) => {
 					<div :class="$style.sectionHead">
 						<h2 :class="$style.sectionTitle">Услуги</h2>
 						<span :class="$style.count">
-							{{ services.length }} / 10
+							{{ services.length }} / {{ servicesBm.max }}
 						</span>
 					</div>
 					<div v-if="!services.length" :class="$style.empty">
@@ -254,12 +273,74 @@ const formatDate = (iso?: string) => {
 					</div>
 				</section>
 
+				<!-- Конспекты -->
+				<section :class="$style.section">
+					<div :class="$style.sectionHead">
+						<h2 :class="$style.sectionTitle">Конспекты</h2>
+						<span :class="$style.count">
+							{{ abstracts.length }} / {{ abstractsBm.max }}
+						</span>
+					</div>
+					<div v-if="!abstracts.length" :class="$style.empty">
+						Здесь будут сохранённые конспекты
+					</div>
+					<div v-else :class="$style.list">
+						<div
+							v-for="a in abstracts"
+							:key="a.id"
+							:class="$style.item"
+						>
+							<RouterLink
+								:to="`/abstracts/${a.id}`"
+								:class="$style.itemLink"
+							>
+								<div :class="$style.thumb">
+									<img
+										v-if="a.imageIds?.[0]"
+										:src="`/api/images/byGuid?guid=${a.imageIds[0]}`"
+										:class="$style.thumbImg"
+									/>
+									<Icon
+										v-else
+										:name="
+											a.type === 'lab'
+												? 'mdi:flask-outline'
+												: 'mdi:book-open-page-variant-outline'
+										"
+										:class="$style.thumbIcon"
+									/>
+								</div>
+								<div :class="$style.itemInfo">
+									<span :class="$style.itemName">
+										{{ a._missing ? "Недоступно" : a.title }}
+									</span>
+									<span
+										v-if="!a._missing"
+										:class="$style.itemMeta"
+									>
+										{{ a.subject }}
+									</span>
+								</div>
+							</RouterLink>
+							<UiButton
+								:class="$style.removeBtn"
+								@click="removeAbstract(a.id)"
+							>
+								<Icon
+									name="mdi:bookmark-remove-outline"
+									:class="$style.removeIcon"
+								/>
+							</UiButton>
+						</div>
+					</div>
+				</section>
+
 				<!-- Афиша -->
 				<section :class="$style.section">
 					<div :class="$style.sectionHead">
 						<h2 :class="$style.sectionTitle">Афиша</h2>
 						<span :class="$style.count">
-							{{ activities.length }} / 10
+							{{ activities.length }} / {{ activitiesBm.max }}
 						</span>
 					</div>
 					<div v-if="!activities.length" :class="$style.empty">

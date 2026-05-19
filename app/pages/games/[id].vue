@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: "verified" });
+definePageMeta({ middleware: "authenticated" });
 
 useSeoMeta({
 	title: "Игровая комната",
@@ -12,6 +12,13 @@ import { useGameRoom } from "~/composables/useGameRoom";
 import RoomLobby from "~/components/games/RoomLobby.vue";
 import AliasGame from "~/components/games/AliasGame.vue";
 import PapersGame from "~/components/games/PapersGame.vue";
+import type {
+	AliasSettings,
+	ClientMessage,
+	DictsManifest,
+	PapersSettings,
+	Room,
+} from "~/entities/GameRoom";
 
 const route = useRoute();
 const router = useRouter();
@@ -19,48 +26,54 @@ const auth = useAuthStore();
 const { deviceClassList } = useDevice();
 
 const id = route.params.id as string;
-const selfUserId = computed(() => auth.userId ?? "");
+const selfUserId = computed<string>(() => auth.userId ?? "");
 
-const { data: initial, error: initError } = await useAsyncData(
+const headers = useRequestHeaders(["cookie"]);
+
+const { data: initial, error: initError } = await useAsyncData<Room>(
 	"game-room-" + id,
-	() => $fetch<any>("/api/games/byId?id=" + id),
+	() => $fetch<Room>("/api/games/byId?id=" + id, { headers }),
 );
 
 if (!initial.value) {
+	const e = initError.value as
+		| { statusCode?: number; data?: { message?: string } }
+		| null;
 	throw createError({
-		statusCode: initError.value?.statusCode ?? 404,
-		message:
-			(initError.value as any)?.data?.message ?? "Комната не найдена",
+		statusCode: e?.statusCode ?? 404,
+		message: e?.data?.message ?? "Комната не найдена",
 	});
 }
 
-const manifest = ref<{ ru: any[]; en: any[] }>({ ru: [], en: [] });
-const { data: m } = await useAsyncData("games-dicts", () =>
-	$fetch<any>("/api/games/dicts"),
+const manifest = ref<DictsManifest>({ ru: [], en: [] });
+const { data: m } = await useAsyncData<DictsManifest>("games-dicts", () =>
+	$fetch<DictsManifest>("/api/games/dicts", { headers }),
 );
 if (m.value) manifest.value = m.value;
 
 const ws = useGameRoom(id);
-const room = computed(() => ws.room.value ?? initial.value);
+const room = computed<Room | null>(() => ws.room.value ?? initial.value ?? null);
 
-const handleUpdate = (settings: any) => {
+const handleUpdate = (
+	settings: Partial<AliasSettings> | Partial<PapersSettings>,
+): void => {
 	ws.send({ type: "settings-update", settings });
 };
 
-const handleStart = () => {
+const handleStart = (): void => {
 	ws.send({ type: "start-game" });
 };
 
-const handleKick = (userId: string) => {
+const handleKick = (userId: string): void => {
 	ws.send({ type: "kick", userId });
 };
 
-const handleLeave = () => {
+const handleLeave = (): void => {
 	ws.leave();
 	router.push("/games");
 };
 
-const handleSend = (msg: any) => ws.send(msg);
+const handleSend = (msg: ClientMessage): void => ws.send(msg);
 </script>
 
 <template>

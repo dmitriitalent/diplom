@@ -71,6 +71,7 @@ const form: Ref<Form> = ref({
 			validator: (v: string) => v.length >= 6,
 			required: true,
 			leftIconName: "material-symbols:account-circle-full",
+			autocomplete: "username",
 			status: errorLoginStatus,
 		},
 		{
@@ -81,6 +82,7 @@ const form: Ref<Form> = ref({
 			placeholder: "Пароль",
 			required: true,
 			leftIconName: "carbon:password",
+			autocomplete: "current-password",
 			status: errorPasswordStatus,
 		},
 	],

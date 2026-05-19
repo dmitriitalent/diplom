@@ -46,7 +46,7 @@ type Segment = {
 
 const formatDate = (unix: number) => {
 	const d = new Date(unix * 1000);
-	return `${d.getUTCDate()}.${d.getUTCMonth() + 1}.${d.getUTCFullYear()}`;
+	return `${d.getUTCDate() > 9 ? " " : "0"}${d.getUTCDate()}.${d.getUTCMonth() + 1 > 9 ? " " : "0"}${d.getUTCMonth() + 1}`;
 };
 
 const segments = computed<Segment[]>(() => {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: "verified" });
+definePageMeta({ middleware: "authenticated" });
 
 useSeoMeta({
 	title: "Игры",
@@ -11,28 +11,31 @@ import { useDevice } from "~/composables/device";
 const { deviceClassList } = useDevice();
 const router = useRouter();
 
+type CreateResponse = { id: string; code: string };
+
 const joinCode = ref("");
 const creating = ref(false);
 const joining = ref(false);
 const error = ref<string | null>(null);
 
-const create = async (game: "alias" | "papers") => {
+const create = async (game: "alias" | "papers"): Promise<void> => {
 	creating.value = true;
 	error.value = null;
 	try {
-		const res = await $fetch<{ id: string; code: string }>(
-			"/api/games/create",
-			{ method: "POST", body: { game } },
-		);
+		const res = await $fetch<CreateResponse>("/api/games/create", {
+			method: "POST",
+			body: { game },
+		});
 		router.push("/games/" + res.id);
-	} catch (e: any) {
-		error.value = e?.data?.message ?? e?.message ?? "Ошибка создания";
+	} catch (e) {
+		const err = e as { data?: { message?: string }; message?: string };
+		error.value = err.data?.message ?? err.message ?? "Ошибка создания";
 	} finally {
 		creating.value = false;
 	}
 };
 
-const join = async () => {
+const join = async (): Promise<void> => {
 	const code = joinCode.value.trim().toUpperCase();
 	if (code.length !== 8) {
 		error.value = "Код должен содержать 8 символов";
@@ -41,13 +44,14 @@ const join = async () => {
 	joining.value = true;
 	error.value = null;
 	try {
-		const res = await $fetch<{ id: string }>("/api/games/join", {
+		const res = await $fetch<CreateResponse>("/api/games/join", {
 			method: "POST",
 			body: { code },
 		});
 		router.push("/games/" + res.id);
-	} catch (e: any) {
-		error.value = e?.data?.message ?? e?.message ?? "Ошибка подключения";
+	} catch (e) {
+		const err = e as { data?: { message?: string }; message?: string };
+		error.value = err.data?.message ?? err.message ?? "Ошибка подключения";
 	} finally {
 		joining.value = false;
 	}

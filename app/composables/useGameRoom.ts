@@ -1,9 +1,17 @@
-import { ref, shallowRef, onBeforeUnmount } from "vue";
+import { ref, shallowRef, onBeforeUnmount, type Ref, type ShallowRef } from "vue";
+import type { ClientMessage, Room, ServerMessage } from "~/entities/GameRoom";
 
-export type GameRoomState = any;
+export type UseGameRoomReturn = {
+	room: ShallowRef<Room | null>;
+	connected: Ref<boolean>;
+	error: Ref<string | null>;
+	send: (payload: ClientMessage) => void;
+	leave: () => void;
+	disconnect: () => void;
+};
 
-export function useGameRoom(roomId: string) {
-	const room = shallowRef<GameRoomState | null>(null);
+export function useGameRoom(roomId: string): UseGameRoomReturn {
+	const room = shallowRef<Room | null>(null);
 	const connected = ref(false);
 	const error = ref<string | null>(null);
 
@@ -11,13 +19,13 @@ export function useGameRoom(roomId: string) {
 	let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 	let stopped = false;
 
-	const send = (payload: any) => {
+	const send = (payload: ClientMessage): void => {
 		if (ws && ws.readyState === WebSocket.OPEN) {
 			ws.send(JSON.stringify(payload));
 		}
 	};
 
-	const connect = () => {
+	const connect = (): void => {
 		if (typeof window === "undefined") return;
 		const proto = window.location.protocol === "https:" ? "wss" : "ws";
 		const url = `${proto}://${window.location.host}/ws/games`;
@@ -29,13 +37,13 @@ export function useGameRoom(roomId: string) {
 			send({ type: "join-room", roomId });
 		};
 
-		ws.onmessage = (e) => {
+		ws.onmessage = (e: MessageEvent) => {
 			try {
-				const msg = JSON.parse(e.data);
-				if (msg.type === "state" && msg.room) {
+				const msg = JSON.parse(String(e.data)) as ServerMessage;
+				if (msg.type === "state") {
 					room.value = msg.room;
 				} else if (msg.type === "error") {
-					error.value = msg.message ?? "Ошибка";
+					error.value = msg.message;
 				}
 			} catch {}
 		};
@@ -53,11 +61,11 @@ export function useGameRoom(roomId: string) {
 		};
 	};
 
-	const leave = () => {
+	const leave = (): void => {
 		send({ type: "leave-room", roomId });
 	};
 
-	const disconnect = () => {
+	const disconnect = (): void => {
 		stopped = true;
 		if (reconnectTimer) clearTimeout(reconnectTimer);
 		try {
@@ -66,10 +74,7 @@ export function useGameRoom(roomId: string) {
 		ws = null;
 	};
 
-	onBeforeUnmount(() => {
-		disconnect();
-	});
-
+	onBeforeUnmount(disconnect);
 	connect();
 
 	return { room, connected, error, send, leave, disconnect };

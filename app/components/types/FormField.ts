@@ -9,6 +9,7 @@ type FormField = FormElement & {
 	required?: boolean;
 	validator?: Function;
 	leftIconName?: string;
+	autocomplete?: string;
 };
 
 export { type FormField, type FormFieldType };

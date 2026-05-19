@@ -27,5 +27,4 @@ logs
 
 staticfiles
 
-# Локальные демо-страницы для визуализации компонентов
 app/pages/visualize

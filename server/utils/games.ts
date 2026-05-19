@@ -1,100 +1,45 @@
 import fs from "node:fs";
 import path from "node:path";
 import { STATICFILES_DIR, ensureStaticfilesDir } from "./staticfiles";
+import type {
+	AliasState,
+	DictEntry,
+	DictsManifest,
+	Lang,
+	PapersState,
+	Player,
+	Room,
+} from "~~/app/entities/GameRoom";
 
-export const GAMES_DIR = path.join(STATICFILES_DIR, "games");
-export const ROOMS_DIR = path.join(GAMES_DIR, "rooms");
-export const CODES_DIR = path.join(GAMES_DIR, "codes");
-export const DICTS_DIR = path.join(GAMES_DIR, "dicts");
+export type {
+	AliasPhase,
+	AliasRoom,
+	AliasRoundEntry,
+	AliasSettings,
+	AliasState,
+	AliasTeam,
+	AliasTurnSlot,
+	ClientMessage,
+	DictEntry,
+	DictsManifest,
+	Lang,
+	PapersAssignment,
+	PapersPhase,
+	PapersRoom,
+	PapersSettings,
+	PapersState,
+	Player,
+	Room,
+	RoomStatus,
+	ServerMessage,
+} from "~~/app/entities/GameRoom";
 
-export type Lang = "ru" | "en";
+export const GAMES_DIR: string = path.join(STATICFILES_DIR, "games");
+export const ROOMS_DIR: string = path.join(GAMES_DIR, "rooms");
+export const CODES_DIR: string = path.join(GAMES_DIR, "codes");
+export const DICTS_DIR: string = path.join(GAMES_DIR, "dicts");
 
-export type Player = {
-	userId: string;
-	name: string;
-	surname: string;
-	online: boolean;
-	joinedAt: string;
-};
-
-export type AliasSettings = {
-	lang: Lang;
-	dictionary: string;
-	roundTime: number;
-	scoreToWin: number;
-	skipPenalty: boolean;
-};
-
-export type PapersSettings = {
-	mode: "auto" | "manual";
-	lang: Lang;
-	dictionary: string;
-};
-
-export type AliasTeam = {
-	id: number;
-	name: string;
-	playerIds: string[];
-	score: number;
-};
-
-export type AliasState = {
-	phase:
-		| "lobby"
-		| "round-pre"
-		| "round-active"
-		| "round-result"
-		| "finished";
-	teams: AliasTeam[];
-	currentTurnIdx: number;
-	turnQueue: Array<{ teamIdx: number; speakerUserId: string }>;
-	currentWord: string | null;
-	roundEndsAt: number | null;
-	roundEntries: Array<{ word: string; status: "guessed" | "skipped" }>;
-	usedWords: string[];
-	wordPool: string[];
-	winnerTeamIdx: number | null;
-};
-
-export type PapersAssignment = {
-	from: string | null;
-	word: string | null;
-};
-
-export type PapersState = {
-	phase: "lobby" | "assigning" | "playing" | "finished";
-	assignTargets: Record<string, string>;
-	assignments: Record<string, PapersAssignment>;
-	finishedPlayers: string[];
-	turnQueue: string[];
-	currentTurnIdx: number;
-};
-
-export type RoomBase = {
-	id: string;
-	code: string;
-	hostId: string;
-	createdAt: string;
-	updatedAt: string;
-	status: "lobby" | "playing" | "finished";
-	players: Player[];
-};
-
-export type AliasRoom = RoomBase & {
-	game: "alias";
-	settings: AliasSettings;
-	state: AliasState;
-};
-
-export type PapersRoom = RoomBase & {
-	game: "papers";
-	settings: PapersSettings;
-	state: PapersState;
-};
-
-export type Room = AliasRoom | PapersRoom;
-
-export function ensureGamesDirs() {
+export function ensureGamesDirs(): void {
 	ensureStaticfilesDir();
 	for (const d of [GAMES_DIR, ROOMS_DIR, CODES_DIR]) {
 		if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
@@ -106,7 +51,9 @@ const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export function genInviteCode(): string {
 	let out = "";
 	for (let i = 0; i < 8; i++) {
-		out += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+		out += CODE_ALPHABET[
+			Math.floor(Math.random() * CODE_ALPHABET.length)
+		];
 	}
 	return out;
 }
@@ -158,12 +105,14 @@ export function deleteRoom(id: string): void {
 	}
 }
 
+type CodeFile = { roomId: string };
+
 export function resolveCode(code: string): string | null {
 	ensureGamesDirs();
 	const fp = path.join(CODES_DIR, `${code.toUpperCase()}.json`);
 	if (!fs.existsSync(fp)) return null;
 	try {
-		const data = JSON.parse(fs.readFileSync(fp, "utf-8"));
+		const data = JSON.parse(fs.readFileSync(fp, "utf-8")) as CodeFile;
 		return data.roomId ?? null;
 	} catch {
 		return null;
@@ -172,9 +121,10 @@ export function resolveCode(code: string): string | null {
 
 export function writeCode(code: string, roomId: string): void {
 	ensureGamesDirs();
+	const data: CodeFile = { roomId };
 	fs.writeFileSync(
 		path.join(CODES_DIR, `${code}.json`),
-		JSON.stringify({ roomId }),
+		JSON.stringify(data),
 		"utf-8",
 	);
 }
@@ -196,14 +146,11 @@ export function loadDict(lang: Lang, dictionary: string): string[] {
 	}
 }
 
-export function loadDictsManifest(): {
-	ru: Array<{ id: string; name: string; count: number }>;
-	en: Array<{ id: string; name: string; count: number }>;
-} {
+export function loadDictsManifest(): DictsManifest {
 	const fp = path.join(DICTS_DIR, "index.json");
 	if (!fs.existsSync(fp)) return { ru: [], en: [] };
 	try {
-		return JSON.parse(fs.readFileSync(fp, "utf-8"));
+		return JSON.parse(fs.readFileSync(fp, "utf-8")) as DictsManifest;
 	} catch {
 		return { ru: [], en: [] };
 	}
@@ -217,7 +164,10 @@ export function shuffleInPlace<T>(arr: T[]): T[] {
 	return arr;
 }
 
-export function pickRandomWord(lang: Lang, dictionary: string): string | null {
+export function pickRandomWord(
+	lang: Lang,
+	dictionary: string,
+): string | null {
 	const words = loadDict(lang, dictionary);
 	if (words.length === 0) return null;
 	return words[Math.floor(Math.random() * words.length)] ?? null;
@@ -248,3 +198,6 @@ export function makePapersInitialState(): PapersState {
 		currentTurnIdx: 0,
 	};
 }
+
+export type { Player as GamePlayer };
+export type { DictEntry as GameDictEntry };
