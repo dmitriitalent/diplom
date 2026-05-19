@@ -2,6 +2,9 @@
 import type { Cached } from "~/stores/cacheStore";
 import type { Activity } from "~/entities/Activity";
 import { useDevice } from "~/composables/device";
+import { useSelfStore } from "~/stores/selfStore";
+import ParticipantGalleryComponent from "~/components/ParticipantGalleryComponent.vue";
+import TracksListComponent from "~/components/TracksListComponent.vue";
 
 const props = defineProps<{
 	activity: Cached<Activity>;
@@ -11,6 +14,12 @@ const props = defineProps<{
 	moderateForm: { comment: string; status: string };
 	inviteCode: string | null;
 }>();
+
+const { self } = useSelfStore();
+const selfUserId = computed<string>(() => String(self?.id ?? ""));
+const canUploadGallery = computed<boolean>(
+	() => props.isParticipant || props.isAuthor,
+);
 
 const emit = defineEmits<{
 	(e: "delete"): void;
@@ -188,6 +197,20 @@ const formatDate = (iso?: string) => {
 					</RouterLink>
 				</div>
 			</div>
+
+			<TracksListComponent
+				v-if="activity.id"
+				:activity-id="activity.id"
+				:can-edit="canUploadGallery"
+				:self-user-id="selfUserId"
+			/>
+
+			<ParticipantGalleryComponent
+				v-if="activity.id"
+				:activity-id="activity.id"
+				:can-upload="canUploadGallery"
+				:self-user-id="selfUserId"
+			/>
 		</div>
 	</div>
 </template>

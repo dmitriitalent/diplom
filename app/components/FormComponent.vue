@@ -152,6 +152,7 @@ const isValidSelect = (
 					:type="elem.type"
 					v-model="elem.value"
 					:status="elem.status"
+					:autocomplete="elem.autocomplete"
 					:class="$style.input"
 				></UiInput>
 			</div>
@@ -205,6 +206,7 @@ const isValidSelect = (
 							:placeholder="rowElem.placeholder"
 							:type="rowElem.type"
 							v-model="rowElem.value"
+							:autocomplete="rowElem.autocomplete"
 							:class="$style.input"
 						></UiInput>
 					</div>

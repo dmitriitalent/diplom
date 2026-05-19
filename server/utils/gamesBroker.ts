@@ -1,31 +1,35 @@
-import type { Room } from "./games";
+import type {
+	PapersAssignment,
+	Room,
+	ServerMessage,
+} from "~~/app/entities/GameRoom";
 import { readRoom, writeRoom, deleteRoom } from "./games";
 
-type Peer = {
+export type BrokerPeer = {
 	id: string;
 	userId: string;
 	roomId: string | null;
 	send: (data: string) => void;
 };
 
-const peers = new Map<string, Peer>();
+const peers = new Map<string, BrokerPeer>();
 const roomPeers = new Map<string, Set<string>>();
 const cleanupTimers = new Map<string, NodeJS.Timeout>();
 
-const GRACE_MS = 30_000;
+const GRACE_MS = 30000;
 
-export function registerPeer(peer: Peer) {
+export function registerPeer(peer: BrokerPeer): void {
 	peers.set(peer.id, peer);
 }
 
-export function unregisterPeer(peerId: string) {
+export function unregisterPeer(peerId: string): void {
 	const peer = peers.get(peerId);
 	if (!peer) return;
 	if (peer.roomId) leaveRoom(peerId, peer.roomId);
 	peers.delete(peerId);
 }
 
-export function joinRoom(peerId: string, roomId: string) {
+export function joinRoom(peerId: string, roomId: string): void {
 	const peer = peers.get(peerId);
 	if (!peer) return;
 	if (peer.roomId && peer.roomId !== roomId) {
@@ -56,7 +60,7 @@ export function joinRoom(peerId: string, roomId: string) {
 	}
 }
 
-export function leaveRoom(peerId: string, roomId: string) {
+export function leaveRoom(peerId: string, roomId: string): void {
 	const peer = peers.get(peerId);
 	if (peer) peer.roomId = null;
 
@@ -86,24 +90,28 @@ export function leaveRoom(peerId: string, roomId: string) {
 	scheduleCleanupIfEmpty(roomId);
 }
 
-export function scheduleCleanupIfEmpty(roomId: string) {
+export function scheduleCleanupIfEmpty(roomId: string): void {
 	const set = roomPeers.get(roomId);
 	if (set && set.size > 0) return;
+
 	const existing = cleanupTimers.get(roomId);
 	if (existing) clearTimeout(existing);
+
 	const t = setTimeout(() => {
 		cleanupTimers.delete(roomId);
 		const still = roomPeers.get(roomId);
 		if (still && still.size > 0) return;
 		deleteRoom(roomId);
 	}, GRACE_MS);
+
 	cleanupTimers.set(roomId, t);
 }
 
-export function getPeersInRoom(roomId: string): Peer[] {
+export function getPeersInRoom(roomId: string): BrokerPeer[] {
 	const set = roomPeers.get(roomId);
 	if (!set) return [];
-	const out: Peer[] = [];
+
+	const out: BrokerPeer[] = [];
 	for (const id of set) {
 		const p = peers.get(id);
 		if (p) out.push(p);
@@ -125,37 +133,35 @@ export function maskRoomForUser(room: Room, viewerUserId: string): Room {
 		}
 		return room;
 	}
-	if (room.game === "papers") {
-		const masked: typeof room.state.assignments = {};
-		for (const [uid, a] of Object.entries(room.state.assignments)) {
-			if (uid === viewerUserId) {
-				masked[uid] = { from: a.from, word: null };
-			} else {
-				masked[uid] = a;
-			}
+	const masked: Record<string, PapersAssignment> = {};
+	for (const [uid, a] of Object.entries(room.state.assignments)) {
+		if (uid === viewerUserId) {
+			masked[uid] = { from: a.from, word: null };
+		} else {
+			masked[uid] = a;
 		}
-		return { ...room, state: { ...room.state, assignments: masked } };
 	}
-	return room;
+	return { ...room, state: { ...room.state, assignments: masked } };
 }
 
-export function broadcastRoom(roomId: string) {
+export function broadcastRoom(roomId: string): void {
 	const room = readRoom(roomId);
 	if (!room) return;
+
 	for (const peer of getPeersInRoom(roomId)) {
 		const masked = maskRoomForUser(room, peer.userId);
-		peer.send(
-			JSON.stringify({ type: "state", room: masked }),
-		);
+		const payload: ServerMessage = { type: "state", room: masked };
+		peer.send(JSON.stringify(payload));
 	}
 }
 
-export function sendToPeer(peerId: string, payload: any) {
+export function sendToPeer(peerId: string, payload: ServerMessage): void {
 	const peer = peers.get(peerId);
 	if (!peer) return;
+
 	peer.send(JSON.stringify(payload));
 }
 
-export function getPeer(peerId: string): Peer | undefined {
+export function getPeer(peerId: string): BrokerPeer | undefined {
 	return peers.get(peerId);
 }

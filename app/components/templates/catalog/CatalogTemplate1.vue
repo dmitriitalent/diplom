@@ -217,7 +217,11 @@ const ownerRoom = computed(() => {
 							:class="[$style.price, isFree && $style.priceFree]"
 						>
 							{{ priceLabel }}
-							<span v-if="!isFree && product.price != null" :class="$style.currency">₽</span>
+							<span
+								v-if="!isFree && product.price != null"
+								:class="$style.currency"
+								>₽</span
+							>
 						</span>
 						<span v-if="isFree" :class="$style.freeTag">
 							<Icon
@@ -279,7 +283,10 @@ const ownerRoom = computed(() => {
 							/>
 							Написать продавцу
 						</UiButton>
-						<UiButton :accent="isBookmarked" @click="onToggleBookmark">
+						<UiButton
+							:accent="isBookmarked"
+							@click="onToggleBookmark"
+						>
 							<Icon
 								:name="
 									isBookmarked
@@ -607,6 +614,10 @@ const ownerRoom = computed(() => {
 		padding: 12px 0;
 		border-top: 1px solid rgba($color-black-rgb, 0.08);
 		border-bottom: 1px solid rgba($color-black-rgb, 0.08);
+
+		@include respond-to(desktop) {
+			align-items: unset;
+		}
 	}
 
 	.price {
@@ -627,6 +638,8 @@ const ownerRoom = computed(() => {
 	}
 
 	.freeTag {
+		@include text-xs;
+
 		display: inline-flex;
 		align-items: center;
 		column-gap: 4px;
@@ -634,12 +647,15 @@ const ownerRoom = computed(() => {
 		border-radius: 100px;
 		background: #efffde;
 		color: #1c5b1c;
-
-		@include text-xs;
-
 		font-weight: 600;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
+
+		@include respond-to(desktop) {
+			height: 14px;
+			margin-bottom: 7px;
+			margin-top: auto;
+		}
 	}
 
 	.freeTagIcon {

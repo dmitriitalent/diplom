@@ -1,6 +1,17 @@
-export const BOOKMARKS_MAX_PER_CATEGORY = 10;
+export type BookmarkCategory =
+	| "product"
+	| "service"
+	| "activity"
+	| "abstract";
 
-export type BookmarkCategory = "product" | "service" | "activity";
+export const BOOKMARKS_MAX: Record<BookmarkCategory, number> = {
+	product: 10,
+	service: 10,
+	activity: 10,
+	abstract: 20,
+};
+
+export const BOOKMARKS_MAX_PER_CATEGORY = 10;
 
 export const useBookmarks = (category: BookmarkCategory) => {
 	const cookie = useCookie<string[]>(`bookmarks_${category}`, {
@@ -9,6 +20,8 @@ export const useBookmarks = (category: BookmarkCategory) => {
 		sameSite: "lax",
 	});
 
+	const max = BOOKMARKS_MAX[category];
+
 	const ids = computed<string[]>(() => cookie.value ?? []);
 
 	const isBookmarked = (id: string) => ids.value.includes(id);
@@ -16,7 +29,7 @@ export const useBookmarks = (category: BookmarkCategory) => {
 	const add = (id: string): boolean => {
 		const list = ids.value;
 		if (list.includes(id)) return true;
-		if (list.length >= BOOKMARKS_MAX_PER_CATEGORY) return false;
+		if (list.length >= max) return false;
 		cookie.value = [...list, id];
 		return true;
 	};
@@ -39,6 +52,6 @@ export const useBookmarks = (category: BookmarkCategory) => {
 		add,
 		remove,
 		toggle,
-		max: BOOKMARKS_MAX_PER_CATEGORY,
+		max,
 	};
 };

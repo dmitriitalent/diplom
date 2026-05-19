@@ -35,9 +35,11 @@ const ORDER_TYPES = [
 
 const orderTypeOptions = ORDER_TYPES.map((t) => ({ value: t, name: t }));
 
+const headers = useRequestHeaders(["cookie"]);
+
 const { data: original } = await useAsyncData<OrderDtoById>(
 	"order-edit-" + id,
-	() => $fetch<OrderDtoById>("/api/order/byId?id=" + id),
+	() => $fetch<OrderDtoById>("/api/order/byId?id=" + id, { headers }),
 );
 
 if (!original.value) {

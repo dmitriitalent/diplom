@@ -10,8 +10,14 @@ export default defineNuxtConfig({
 
 	runtimeConfig: {
 		api: "http://localhost:8080",
+		smtp: {
+			host: "smtp.gmail.com",
+			port: 587,
+			user: "dmitriitalent@gmail.com",
+			pass: "zvpgywekgiexntyp",
+			from: '"Hostelite.ru" <dmitriitalent@gmail.com>',
+		},
 		public: {
-<<<<<<< HEAD
 			publicRoutes: [
 				"/",
 				"/login",
@@ -21,11 +27,7 @@ export default defineNuxtConfig({
 				"/agreements/privacy",
 				"/agreements/terms",
 			],
-			api: "http://api-gateway:8080",
-=======
-			publicRoutes: ["/", "/login", "/registration"],
 			api: "http://localhost:8080",
->>>>>>> 16ffce4 (add games, orders)
 		},
 	},
 

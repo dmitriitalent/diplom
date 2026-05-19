@@ -1,54 +1,65 @@
 <script setup lang="ts">
+import type { PropType } from "vue";
+import type {
+	ClientMessage,
+	PapersAssignment,
+	PapersRoom,
+	PapersState,
+	PapersSettings,
+	Player,
+} from "~/entities/GameRoom";
+
 const props = defineProps({
-	room: { type: Object, required: true },
+	room: { type: Object as PropType<PapersRoom>, required: true },
 	selfUserId: { type: String, required: true },
 });
 
 const emit = defineEmits<{
-	(e: "send", msg: any): void;
+	(e: "send", msg: ClientMessage): void;
 }>();
 
-const isHost = computed(() => props.room.hostId === props.selfUserId);
-const state = computed(() => props.room.state);
-const settings = computed(() => props.room.settings);
+type PickWordResponse = { word: string | null };
+
+const isHost = computed<boolean>(() => props.room.hostId === props.selfUserId);
+const state = computed<PapersState>(() => props.room.state);
+const settings = computed<PapersSettings>(() => props.room.settings);
 
 const myTarget = computed<string | null>(
-	() => state.value.assignTargets?.[props.selfUserId] ?? null,
+	() => state.value.assignTargets[props.selfUserId] ?? null,
 );
-const myTargetPlayer = computed(() =>
-	props.room.players.find((p: any) => p.userId === myTarget.value),
+const myTargetPlayer = computed<Player | undefined>(() =>
+	props.room.players.find((p) => p.userId === myTarget.value),
 );
 
-const myWordSubmitted = computed(() => {
-	if (!myTarget.value) return false;
-	return !!state.value.assignments?.[myTarget.value]?.word;
+const myWordSubmitted = computed<boolean>(() => {
+	const t = myTarget.value;
+	if (!t) return false;
+	const a: PapersAssignment | undefined = state.value.assignments[t];
+	return !!a?.word;
 });
 
-const wordDraft = ref("");
+const wordDraft = ref<string>("");
 
-const submitWord = () => {
+const submitWord = (): void => {
 	const word = wordDraft.value.trim();
 	if (!word) return;
 	emit("send", { type: "papers-assign-word", word });
 };
 
-const generateClient = async () => {
+const generateClient = async (): Promise<void> => {
 	try {
-		const data = await $fetch<{ word: string | null }>(
-			"/api/games/pick-word",
-			{
-				query: {
-					lang: settings.value.lang,
-					dict: settings.value.dictionary,
-				},
+		const data = await $fetch<PickWordResponse>("/api/games/pick-word", {
+			query: {
+				lang: settings.value.lang,
+				dict: settings.value.dictionary,
 			},
-		);
+		});
 		if (data?.word) wordDraft.value = data.word;
 	} catch {}
 };
 
-const otherPlayers = computed(() =>
-	props.room.players.filter((p: any) => p.userId !== props.selfUserId),
+const otherPlayers = computed<Player[]>(() =>
+	props.room.players.filter((p) => p.userId !== props.selfUserId),
 );
 
 const turnUserId = computed<string | null>(() => {
@@ -58,32 +69,39 @@ const turnUserId = computed<string | null>(() => {
 	return q[idx] ?? null;
 });
 
-const turnPlayer = computed(() =>
-	props.room.players.find((p: any) => p.userId === turnUserId.value),
+const turnPlayer = computed<Player | undefined>(() =>
+	props.room.players.find((p) => p.userId === turnUserId.value),
 );
 
-const isMyTurn = computed(() => turnUserId.value === props.selfUserId);
+const isMyTurn = computed<boolean>(
+	() => turnUserId.value === props.selfUserId,
+);
 
-const isFinished = (uid: string) =>
-	(state.value.finishedPlayers ?? []).includes(uid);
+const isFinished = (uid: string): boolean =>
+	state.value.finishedPlayers.includes(uid);
 
 const openMenuFor = ref<string | null>(null);
 
-const toggleMenu = (uid: string) => {
+const toggleMenu = (uid: string): void => {
 	openMenuFor.value = openMenuFor.value === uid ? null : uid;
 };
 
-const finishPlayer = (uid: string) => {
+const finishPlayer = (uid: string): void => {
 	emit("send", { type: "papers-finish-player", userId: uid });
 	openMenuFor.value = null;
 };
 
-const newWord = (uid: string) => {
+const newWord = (uid: string): void => {
 	emit("send", { type: "papers-new-word", userId: uid });
 	openMenuFor.value = null;
 };
 
-const newGame = () => emit("send", { type: "new-game" });
+const newGame = (): void => emit("send", { type: "new-game" });
+
+const submittedForTarget = (target: string | undefined): boolean => {
+	if (!target) return false;
+	return !!state.value.assignments[target];
+};
 </script>
 
 <template>
@@ -132,9 +150,9 @@ const newGame = () => emit("send", { type: "new-game" });
 					>
 						<Icon
 							:name="
-								state.assignments[
-									state.assignTargets[p.userId]
-								]
+								submittedForTarget(
+									state.assignTargets[p.userId],
+								)
 									? 'mdi:check-circle'
 									: 'mdi:dots-horizontal-circle-outline'
 							"

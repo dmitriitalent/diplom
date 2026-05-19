@@ -21,9 +21,7 @@ const isCommandant = auth.isCommandant;
 
 const orders = ref<Array<Order>>([]);
 
-const mapOrder = async (
-	f: OrderListDto["items"][number],
-): Promise<Order> => {
+const mapOrder = async (f: OrderListDto["items"][number]): Promise<Order> => {
 	let author;
 	try {
 		const authorFetch = await $fetch<byId>(
@@ -218,46 +216,64 @@ const printList = () => {
 }
 
 @media print {
-	.wrapper {
-		.container {
-			display: none !important;
+	:global(html),
+	:global(body) {
+		background: #fff !important;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	:global(body *) {
+		visibility: hidden !important;
+		box-shadow: none !important;
+		background: transparent !important;
+		backdrop-filter: none !important;
+	}
+
+	.printSheet,
+	.printSheet * {
+		visibility: visible !important;
+	}
+
+	.printSheet {
+		display: block !important;
+		position: absolute !important;
+		left: 0;
+		top: 0;
+		width: 100%;
+		padding: 20px;
+		box-sizing: border-box;
+		color: #000;
+		background: #fff !important;
+
+		.printTitle {
+			font-size: 22px;
+			margin: 0 0 4px;
 		}
 
-		.printSheet {
-			display: block;
-			padding: 20px;
-			color: #000;
-			background: #fff;
+		.printSubtitle {
+			font-size: 12px;
+			margin: 0 0 16px;
+			opacity: 0.7;
+		}
 
-			.printTitle {
-				font-size: 22px;
-				margin: 0 0 4px;
+		.printTable {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 11px;
+
+			th,
+			td {
+				border: 1px solid #333;
+				padding: 4px 6px;
+				vertical-align: top;
+				text-align: left;
 			}
 
-			.printSubtitle {
-				font-size: 12px;
-				margin: 0 0 16px;
-				opacity: 0.7;
-			}
-
-			.printTable {
-				width: 100%;
-				border-collapse: collapse;
-				font-size: 11px;
-
-				th,
-				td {
-					border: 1px solid #333;
-					padding: 4px 6px;
-					vertical-align: top;
-					text-align: left;
-				}
-
-				thead {
-					th {
-						background: #eee;
-						font-weight: 600;
-					}
+			thead {
+				th {
+					background: #eee !important;
+					font-weight: 600;
 				}
 			}
 		}

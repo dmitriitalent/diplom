@@ -1,18 +1,26 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 
-const transporter = nodemailer.createTransport({
-	host: "smtp.gmail.com",
-	port: 587,
-	secure: false,
-	auth: {
-		user: "dmitriitalent@gmail.com",
-		pass: "zvpgywekgiexntyp",
-	},
-});
+let transporter: Transporter | null = null;
+
+function getTransporter(): Transporter {
+	if (transporter) return transporter;
+	const { smtp } = useRuntimeConfig();
+	transporter = nodemailer.createTransport({
+		host: smtp.host,
+		port: Number(smtp.port),
+		secure: Number(smtp.port) === 465,
+		auth: {
+			user: smtp.user,
+			pass: smtp.pass,
+		},
+	});
+	return transporter;
+}
 
 export async function sendVerificationEmail(to: string, code: string): Promise<void> {
-	await transporter.sendMail({
-		from: '"Hostelite.ru" <dmitriitalent@gmail.com>',
+	const { smtp } = useRuntimeConfig();
+	await getTransporter().sendMail({
+		from: smtp.from || `"Hostelite.ru" <${smtp.user}>`,
 		to,
 		subject: "Код верификации Hostelite",
 		html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">

@@ -14,7 +14,7 @@ const { deviceClassList, isDevice } = useDevice();
 const sidebarOpen = ref(false);
 
 const auth = useAuthStore();
-const { isAdmin, isVerified } = storeToRefs(auth);
+const { isAdmin, isVerified, isAuthenticated } = storeToRefs(auth);
 
 const { isDark, toggle: toggleTheme } = useTheme();
 const { enabled: shaderEnabled, toggle: toggleShader } = useShader();
@@ -55,8 +55,13 @@ const close = () => {
 					<RouterLink v-if="isVerified" to="/orders">
 						<UiButton :class="$style.link" inset>Заявки</UiButton>
 					</RouterLink>
-					<RouterLink v-if="isVerified" to="/games">
+					<RouterLink v-if="isAuthenticated" to="/games">
 						<UiButton :class="$style.link" inset>Игры</UiButton>
+					</RouterLink>
+					<RouterLink v-if="isAuthenticated" to="/abstracts">
+						<UiButton :class="$style.link" inset
+							>Конспекты</UiButton
+						>
 					</RouterLink>
 					<RouterLink v-if="isAdmin" to="/admin">
 						<UiButton :class="$style.link" inset>Админ</UiButton>
@@ -216,12 +221,21 @@ const close = () => {
 							</UiButton>
 						</RouterLink>
 						<RouterLink
-							v-if="isVerified"
+							v-if="isAuthenticated"
 							to="/games"
 							@click="close"
 						>
 							<UiButton :class="$style.sidebarLink" inset>
 								Игры
+							</UiButton>
+						</RouterLink>
+						<RouterLink
+							v-if="isAuthenticated"
+							to="/abstracts"
+							@click="close"
+						>
+							<UiButton :class="$style.sidebarLink" inset>
+								Конспекты
 							</UiButton>
 						</RouterLink>
 						<RouterLink v-if="isAdmin" to="/admin" @click="close">
@@ -367,7 +381,7 @@ const close = () => {
 
 			.links {
 				display: flex;
-				column-gap: 20px;
+				column-gap: 6px;
 
 				.link {
 					font-weight: 450;
