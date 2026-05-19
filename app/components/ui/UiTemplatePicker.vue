@@ -10,30 +10,25 @@ const emit = defineEmits<{
 	(e: "update:modelValue", value: number): void;
 }>();
 
-/**
- * Для каждого шаблона проверяем, существует ли превью на BFF.
- * Храним состояние: true = загружено, false = ошибка/нет файла, null = загружается
- */
-const previewStatus = ref<Record<string, boolean | null>>({});
+const failed = ref<Record<string, boolean>>({});
 
 const previewUrl = (key: string) => `/api/staticfiles/${key}`;
 
-const initPreviews = () => {
-	for (const tpl of props.templates) {
-		if (previewStatus.value[tpl.key] !== undefined) continue;
-		previewStatus.value[tpl.key] = null; // загружается
-		fetch(previewUrl(tpl.key), { method: "HEAD" })
-			.then((r) => {
-				previewStatus.value[tpl.key] = r.ok;
-			})
-			.catch(() => {
-				previewStatus.value[tpl.key] = false;
-			});
-	}
+const onError = (key: string) => {
+	failed.value[key] = true;
 };
 
-onMounted(initPreviews);
-watch(() => props.templates, initPreviews, { deep: true });
+watch(
+	() => props.templates,
+	(list) => {
+		const next: Record<string, boolean> = {};
+		for (const t of list) {
+			if (failed.value[t.key]) next[t.key] = true;
+		}
+		failed.value = next;
+	},
+	{ deep: true },
+);
 </script>
 
 <template>
@@ -45,19 +40,18 @@ watch(() => props.templates, initPreviews, { deep: true });
 			@click="emit('update:modelValue', tpl.id)"
 		>
 			<div :class="$style.preview">
-				<!-- Показываем изображение, если BFF вернул OK -->
 				<img
-					v-if="previewStatus[tpl.key] === true"
+					v-if="!failed[tpl.key]"
 					:src="previewUrl(tpl.key)"
 					:alt="tpl.name"
 					:class="$style.previewImg"
-					@error="previewStatus[tpl.key] = false"
+					@error="onError(tpl.key)"
 				/>
-				<!-- Скелетон пока HEAD-запрос ещё не вернулся -->
-				<div v-else-if="previewStatus[tpl.key] === null" :class="$style.previewSkeleton" />
-				<!-- Fallback если файла нет -->
 				<div v-else :class="$style.previewFallback">
-					<Icon name="mdi:view-dashboard-outline" :class="$style.previewIcon" />
+					<Icon
+						name="mdi:view-dashboard-outline"
+						:class="$style.previewIcon"
+					/>
 				</div>
 			</div>
 			<div :class="$style.label">{{ tpl.name }}</div>
