@@ -61,13 +61,20 @@ export const useAuthStore = defineStore("authStore", () => {
 		});
 	};
 
-	const refresh = () => {
+	const refresh = async () => {
 		const headers = useRequestHeaders(["cookie"]);
 
-		return $fetch("/api/auth/refresh", {
+		const res = await $fetch("/api/auth/refresh", {
 			method: "POST",
 			headers: headers,
 		});
+
+		if (import.meta.client) {
+			refreshCookie("accessToken");
+			refreshCookie("refreshToken");
+		}
+
+		return res;
 	};
 
 	const logout = () => {
