@@ -11,7 +11,7 @@ export type Self = {
 		value: Date;
 		visibility: SelfDataVisibility;
 	};
-	dormitory: Dormitory;
+	dormitory?: Dormitory;
 	building: {
 		value: string;
 		visibility: SelfDataVisibility;

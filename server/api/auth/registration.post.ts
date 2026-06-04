@@ -98,10 +98,18 @@ export default defineEventHandler(async (event) => {
 	} catch (err: any) {
 		console.log("error at " + FILENAME, err?.response?.data);
 
+		// ВРЕМЕННО для теста — прокидываем реальный текст ошибки бэкенда,
+		// чтобы понять причину отказа. Вернуть заглушку после отладки.
+		const backendData = err?.response?.data;
+		const realMessage =
+			backendData?.message ||
+			(typeof backendData === "string" ? backendData : null) ||
+			JSON.stringify(backendData) ||
+			"Такая почта уже используется";
+
 		throw createError({
 			statusCode: err?.response?.status || 500,
-			statusMessage:
-				err?.response?.data?.message || "Такая почта уже используется",
+			statusMessage: realMessage,
 		});
 	}
 });

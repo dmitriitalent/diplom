@@ -78,12 +78,23 @@ export const useSelfStore = defineStore("selfStore", () => {
 	};
 
 	const fillSelf = async (byIdDto: byId): Promise<Self> => {
-		const dormitory = await $fetch<DormitoryDtoGetById>(
-			"/api/dormitory/byId?id=" + byIdDto.dormitoryId,
-			{
-				headers: useRequestHeaders(["cookie"]),
-			},
-		);
+		// Общежитие есть не у всех (например, у не-резидентов или ещё не
+		// верифицированных пользователей dormitoryId пустой). Если его нет
+		// или запрос упал — не роняем заполнение self, иначе self останется
+		// null и собственный профиль будет выглядеть как чужой.
+		let dormitory: DormitoryDtoGetById | undefined = undefined;
+		if (byIdDto.dormitoryId) {
+			try {
+				dormitory = await $fetch<DormitoryDtoGetById>(
+					"/api/dormitory/byId?id=" + byIdDto.dormitoryId,
+					{
+						headers: useRequestHeaders(["cookie"]),
+					},
+				);
+			} catch (err) {
+				console.log("fillSelf: dormitory fetch failed", err);
+			}
+		}
 
 		const newSelf: Self = {
 			avatarId: byIdDto.avatarId,

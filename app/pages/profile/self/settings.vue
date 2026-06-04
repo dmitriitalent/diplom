@@ -94,7 +94,7 @@ const form = reactive({
 		"EVERYONE") as SelfDataVisibility,
 
 	// Где живёте
-	dormitory: self.value?.dormitory.id as string | undefined,
+	dormitory: self.value?.dormitory?.id as string | undefined,
 	building: self.value?.building.value ?? "",
 	buildingVisibility: (self.value?.building.visibility ??
 		"EVERYONE") as SelfDataVisibility,
@@ -225,7 +225,7 @@ const onClickReset = () => {
 	form.birthdate = self.value?.birthdate.value as Date | undefined;
 	form.birthdateVisibility = (self.value?.birthdate.visibility ??
 		"EVERYONE") as SelfDataVisibility;
-	form.dormitory = self.value?.dormitory.id as string | undefined;
+	form.dormitory = self.value?.dormitory?.id as string | undefined;
 	form.building = self.value?.building.value ?? "";
 	form.buildingVisibility = (self.value?.building.visibility ??
 		"EVERYONE") as SelfDataVisibility;
