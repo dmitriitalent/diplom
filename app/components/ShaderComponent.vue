@@ -125,7 +125,7 @@ onMounted(() => {
 	// EMISSION_DURATION секундам. Направление и базовая скорость заданы
 	// заранее, чтобы порядок и углы выглядели равномерно.
 	type AliveParticle = Particle & { alive: boolean; spawnAt: number };
-	const particles: AliveParticle[] = [];
+	const particles = Array<AliveParticle>();
 	for (let i = 0; i < PARTICLE_COUNT; i++) {
 		const angle = (i / PARTICLE_COUNT) * Math.PI * 2 + Math.random() * 0.3;
 		const speed = PARTICLE_SPEED * (0.6 + Math.random() * 1.0);
@@ -216,7 +216,7 @@ onMounted(() => {
 		const cy = height / 2;
 
 		for (let i = 0; i < particles.length; i++) {
-			const p = particles[i];
+			const p = particles[i] as AliveParticle;
 
 			// Пробуждение по расписанию: появляется в центре с заданной скоростью
 			if (!p.alive) {

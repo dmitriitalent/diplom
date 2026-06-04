@@ -230,10 +230,11 @@ const submitError = ref("");
 const loading = ref(false);
 
 const onSubmit = async () => {
-	if (!emailVerified.value) {
-		submitError.value = "Сначала подтвердите студенческую почту";
-		return;
-	}
+	// ВРЕМЕННО ОТКЛЮЧЕНО для теста — вернуть верификацию студенческой почты.
+	// if (!emailVerified.value) {
+	// 	submitError.value = "Сначала подтвердите студенческую почту";
+	// 	return;
+	// }
 	if (!validate()) return;
 	if (loading.value) return;
 
@@ -666,18 +667,19 @@ const onSubmit = async () => {
 				</p>
 
 				<div :class="$style.submitWrap">
+					<!-- ВРЕМЕННО: убрана блокировка по emailVerified для теста -->
 					<UiButton
 						accent
 						type="submit"
-						:disabled="loading || !emailVerified"
+						:disabled="loading"
 						:class="$style.submitBtn"
 						@click="onSubmit"
 					>
 						{{ loading ? "Регистрация..." : "Зарегистрироваться" }}
 					</UiButton>
-					<span v-if="!emailVerified" :class="$style.submitHint">
+					<!-- <span v-if="!emailVerified" :class="$style.submitHint">
 						Сначала подтвердите студенческую почту выше
-					</span>
+					</span> -->
 				</div>
 
 				<div :class="$style.loginLink">
