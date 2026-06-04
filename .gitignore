@@ -25,6 +25,11 @@ logs
 .env.*
 !.env.example
 
-staticfiles
+# staticfiles — рантайм-данные (загрузки, превью, комнаты игр) не коммитим.
+# Исключение: словари для игр должны попадать на сервер через гит.
+/staticfiles/*
+!/staticfiles/games
+/staticfiles/games/*
+!/staticfiles/games/dicts
 
 app/pages/visualize

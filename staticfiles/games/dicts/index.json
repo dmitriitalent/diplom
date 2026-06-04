@@ -1,0 +1,81 @@
+{
+  "ru": [
+    {
+      "id": "custom_15kfun",
+      "name": "15K Fun",
+      "count": 15524
+    },
+    {
+      "id": "custom_clearmeanings",
+      "name": "Чёткие значения",
+      "count": 4677
+    },
+    {
+      "id": "orange_easy",
+      "name": "Orange: лёгкий",
+      "count": 2050
+    },
+    {
+      "id": "orange_brainstorm",
+      "name": "Orange: мозговой штурм",
+      "count": 2410
+    },
+    {
+      "id": "orange_optimus",
+      "name": "Orange: оптимум",
+      "count": 3106
+    },
+    {
+      "id": "thehat_celebrities",
+      "name": "The Hat: знаменитости",
+      "count": 335
+    },
+    {
+      "id": "thehat_easy",
+      "name": "The Hat: лёгкий",
+      "count": 4198
+    },
+    {
+      "id": "thehat_hard",
+      "name": "The Hat: сложный",
+      "count": 1997
+    },
+    {
+      "id": "thehat_normal",
+      "name": "The Hat: средний",
+      "count": 6624
+    }
+  ],
+  "en": [
+    {
+      "id": "orange_easy",
+      "name": "Orange: лёгкий",
+      "count": 2108
+    },
+    {
+      "id": "orange_brainstorm",
+      "name": "Orange: мозговой штурм",
+      "count": 4695
+    },
+    {
+      "id": "orange_optimus",
+      "name": "Orange: оптимум",
+      "count": 3981
+    },
+    {
+      "id": "thehat_easy",
+      "name": "The Hat: лёгкий",
+      "count": 705
+    },
+    {
+      "id": "thehat_hard",
+      "name": "The Hat: сложный",
+      "count": 132
+    },
+    {
+      "id": "thehat_normal",
+      "name": "The Hat: средний",
+      "count": 423
+    }
+  ]
+}
