@@ -206,7 +206,8 @@ const validate = () => {
 	errors.login = form.login.length < 6;
 	errors.password = !passwordRegex.test(form.password);
 	errors.passwordConfirm = form.password !== form.passwordConfirm;
-	errors.educationEmail = !studentEmailRegex.test(form.educationEmail);
+	// ВРЕМЕННО ОТКЛЮЧЕНО для теста — вернуть проверку формата студенческой почты.
+	// errors.educationEmail = !studentEmailRegex.test(form.educationEmail);
 	errors.dormitory = isResident.value && !form.dormitory;
 	errors.consentTerms = !form.consentTerms;
 	errors.consent = !form.consentUserAgreement;
@@ -216,7 +217,7 @@ const validate = () => {
 		!errors.login &&
 		!errors.password &&
 		!errors.passwordConfirm &&
-		!errors.educationEmail &&
+		// !errors.educationEmail &&
 		!errors.dormitory &&
 		!errors.consentTerms &&
 		!errors.consent &&
